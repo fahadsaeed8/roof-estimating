@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import {
   FaInstagram,
   FaFacebook,
@@ -13,22 +14,14 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* App Links */}
         <div className="space-y-4">
-          <img
-            src="/google-play.png"
-            alt="Google Play"
-            className="h-12 cursor-pointer"
-          />
-          <img
-            src="/app-store.png"
-            alt="App Store"
-            className="h-12 cursor-pointer"
-          />
+          <Image src={"/play-store.png"} width={185} height={85} alt="" />
+          <Image src={"/app-store.png"} width={185} height={85} alt="" />
         </div>
 
         {/* iRoofing */}
         <div>
-          <h3 className="font-semibold text-lg mb-4">iRoofing</h3>
-          <ul className="space-y-2 text-gray-300 text-sm">
+          <h3 className="font-semibold text-2xl mb-4">iRoofing</h3>
+          <ul className="space-y-2 text-gray-300 text-xl">
             <li>
               <a href="#" className="hover:text-white">
                 Home
@@ -64,8 +57,8 @@ export default function Footer() {
 
         {/* About Us */}
         <div>
-          <h3 className="font-semibold text-lg mb-4">About Us</h3>
-          <ul className="space-y-2 text-gray-300 text-sm">
+          <h3 className="font-semibold text-2xl mb-4">About Us</h3>
+          <ul className="space-y-2 text-gray-300 text-xl">
             <li>
               <a href="#" className="hover:text-white">
                 Company
@@ -91,8 +84,8 @@ export default function Footer() {
 
         {/* Features */}
         <div>
-          <h3 className="font-semibold text-lg mb-4">Features</h3>
-          <ul className="space-y-2 text-gray-300 text-sm">
+          <h3 className="font-semibold text-2xl mb-4">Features</h3>
+          <ul className="space-y-2 text-gray-300 text-xl">
             <li>
               <a href="#" className="hover:text-white">
                 Measurements
@@ -135,21 +128,21 @@ export default function Footer() {
       {/* Visit iRoofing */}
       <div className="max-w-7xl mx-auto px-6 mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h3 className="font-semibold text-lg mb-2">Visit iRoofing</h3>
+          <h3 className="font-semibold text-lg mb-2">Visit Our Office</h3>
           <p className="text-gray-300 text-sm">
-            3127 W Hallandale Beach
+            500 Park Avenue
             <br />
-            Blvd Suite 107,
+            Suite 210,
             <br />
-            Hallandale Beach, FL 33009
+            New York, NY 10022
           </p>
           <p className="mt-4 text-sm text-gray-300">
-            <span className="font-medium">Contact Phone:</span> +1 (800)
-            646-6270
+            <span className="font-medium">Contact Phone:</span> +1 (212)
+            555-7890
           </p>
           <p className="text-sm text-gray-300">
-            <span className="font-medium">Customer Support Mail:</span>{" "}
-            info@iroofing.org
+            <span className="font-medium">Support Email:</span>{" "}
+            support@example.com
           </p>
         </div>
 
