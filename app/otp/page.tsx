@@ -1,17 +1,9 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
-export default function ResetPassword() {
-  const [email, setEmail] = useState("");
-  const router = useRouter();
-
-  const handleSend = () => {
-    if (email) {
-      router.push("/otp");
-    }
-  };
+export default function OTPVerification() {
+  const [otp, setOtp] = useState("");
 
   return (
     <div className="min-h-screen pt-[75px] flex items-center justify-center bg-[#0B2244]">
@@ -27,10 +19,10 @@ export default function ResetPassword() {
           />
         </div>
 
-        {/* Password illustration */}
+        {/* OTP illustration */}
         <div className="flex justify-center mb-12 -mt-12 relative">
           <div className="border bg-blue-100 border-gray-300 rounded-md px-8 py-2 flex items-center space-x-2">
-            <span className="text-2xl">• • • • •</span>
+            <span className="text-2xl">• • • •</span>
           </div>
           <span className="absolute right-18 -top-7 text-2xl font-bold text-gray-500">
             ?
@@ -38,38 +30,36 @@ export default function ResetPassword() {
         </div>
 
         {/* Title */}
-        <h2 className="text-lg font-bold text-[#0B2244] mb-2">
-          Reset Password
-        </h2>
+        <h2 className="text-lg font-bold text-[#0B2244] mb-2">Enter OTP</h2>
 
         {/* Description */}
         <p className="text-gray-600 text-sm mb-6">
-          Enter the email address you used to sign up and
+          We have sent a 4-digit code to your email.
           <br />
-          we will send you a link to reset your password
+          Please enter it below to verify your account.
         </p>
 
-        {/* Email input */}
+        {/* OTP input */}
         <input
-          type="email"
-          placeholder="E-Mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
+          type="text"
+          placeholder="Enter OTP"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          maxLength={4}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244] text-center tracking-widest"
         />
 
         {/* Button */}
         <button
-          disabled={!email}
-          onClick={handleSend} // <-- added click handler
-          className={`w-full py-2 mt-5 rounded-md text-white text-sm font-medium transition 
+          disabled={otp.length !== 4}
+          className={`w-full py-2 mt-5 cursor-pointer rounded-md text-white text-sm font-medium transition 
             ${
-              email
+              otp.length === 4
                 ? "bg-[#0B2244] hover:bg-[#132c57]"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
         >
-          Send Reset Instructions
+          Verify OTP
         </button>
       </div>
     </div>
