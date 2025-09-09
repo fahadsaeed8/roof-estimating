@@ -18,34 +18,20 @@ interface MenuItem {
 
 const Header: React.FC<HeaderProps> = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = (menu: string) => {
     setActiveMenu(activeMenu === menu ? null : menu);
   };
 
   const whyRoof: MenuItem[] = [
-    {
-      label: "Contractor Reviews",
-      link: "/contractor-reviews",
-    },
-    {
-      label: "About Us",
-      link: "/about",
-    },
-    {
-      label: "Manufacturers",
-      link: "/manufacturers",
-    },
-    {
-      label: "Distributors",
-      link: "/distributors",
-    },
+    { label: "Contractor Reviews", link: "/contractor-reviews" },
+    { label: "About Us", link: "/about" },
+    { label: "Manufacturers", link: "/manufacturers" },
+    { label: "Distributors", link: "/distributors" },
   ];
 
   const features: MenuItem[] = [
@@ -109,7 +95,7 @@ const Header: React.FC<HeaderProps> = () => {
           >
             {item.label}
             {item.subItems && (
-              <i className="fas fa-chevron-right ml-2 md:ml-0 text-[14px] md:text-lg"></i>
+              <i className="fas fa-chevron-right ml-2 text-[14px]"></i>
             )}
           </a>
 
@@ -142,34 +128,17 @@ const Header: React.FC<HeaderProps> = () => {
     </div>
   );
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target as Node)
-      ) {
-        setShowSearch(false);
-      }
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setActiveMenu(null);
-        setHoveredItem(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+  // detect screen size
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // detect scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -178,35 +147,19 @@ const Header: React.FC<HeaderProps> = () => {
         setScrolled(false);
       }
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const pathname = usePathname();
-  const isHomePage = pathname === "/";
   const isActive = (path: string) => pathname === path;
 
-  const bgClass = isHomePage
-    ? scrolled
-      ? "bg-black/60"
-      : "bg-transparent"
-    : "bg-black/60";
-
-  useEffect(() => {
-    if (!isHomePage) return;
-
-    const handleScroll = () => {
-      if (window.scrollY > 10) setScrolled(true);
-      else setScrolled(false);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomePage]);
-
   return (
-    <div className="relative w-full h-screen overflow-hidden" ref={menuRef}>
+    <section
+      className="relative w-full min-h-screen overflow-hidden flex flex-col justify-center"
+      ref={menuRef}
+    >
+      {/* Background Video */}
       <video
         autoPlay
         loop
@@ -220,18 +173,21 @@ const Header: React.FC<HeaderProps> = () => {
         />
       </video>
 
-      {/* Dark overlay (optional for contrast) */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black/10"></div>
+
+      {/* Navbar */}
       <div
-        className={`w-full text-sm pl-15 pr-34 font-medium fixed top-0 left-0 z-40 pt-[50px] transition-colors duration-300 ${
-          scrolled ? "bg-black/60" : "bg-transparent"
+        className={`w-full fixed top-0 left-0 z-40  transition-colors duration-300 ${
+          scrolled
+            ? "bg-gradient-to-r from-[#5a5d2f] to-[#2d394b] pr-34 pl-15  h-[140px]"
+            : "bg-transparent pt-15 pl-15 pr-34 py-4"
         }`}
       >
-        <div className="md:flex justify-between items-center">
-          <div className="flex mt-5 md:mt-0 items-center space-x-6 relative">
-            <Image src={"/Logo.png"} width={225} height={5} alt="logo" />
-          </div>
-          <div className="lg:flex md:flex-wrap items-center space-x-6 text-black relative">
+        <div className="flex justify-between items-center px-6 ">
+          <Image src={"/Logo.png"} width={225} height={40} alt="logo" />
+
+          <div className="hidden  lg:flex items-center space-x-6 text-white">
             <div
               className="relative group"
               onMouseLeave={() => !isMobile && setHoveredItem(null)}
@@ -256,7 +212,7 @@ const Header: React.FC<HeaderProps> = () => {
               onMouseLeave={() => !isMobile && setHoveredItem(null)}
             >
               <div
-                className="flex items-center gap-1 text-[18px] cursor-pointer text-white hover:text-white hover:bg-[#2d394b] p-2 font-semibold"
+                className="flex items-center gap-1 text-[18px] cursor-pointer hover:bg-[#2d394b] p-2 font-semibold"
                 onClick={() => isMobile && toggleMenu("teamStore")}
               >
                 Features{" "}
@@ -270,57 +226,56 @@ const Header: React.FC<HeaderProps> = () => {
               onMouseLeave={() => !isMobile && setHoveredItem(null)}
             >
               <div
-                className="flex items-center gap-1 text-[18px] cursor-pointer text-white hover:text-white hover:bg-[#2d394b] p-2 font-semibold"
+                className="flex items-center gap-1 text-[18px] cursor-pointer hover:bg-[#2d394b] p-2 font-semibold"
                 onClick={() => isMobile && toggleMenu("support")}
               >
-                Resources
+                Resources{" "}
                 <i className="fas fa-chevron-down text-xs mt-[2px]"></i>
               </div>
               {renderDropdown(resources, "support")}
             </div>
 
-            <div className="relative group">
-              <Link href={"/membership"}>
-                <div className="flex items-center gap-1 text-[18px] cursor-pointer text-white hover:text-white hover:bg-[#2d394b] p-2 font-semibold">
-                  Pricing
-                </div>
-              </Link>
-            </div>
+            <Link
+              href={"/membership"}
+              className="text-[18px] font-semibold hover:bg-[#2d394b] p-2"
+            >
+              Pricing
+            </Link>
+
             <div
               className="relative group"
               onMouseLeave={() => !isMobile && setHoveredItem(null)}
             >
               <div
-                className="flex items-center gap-1 text-[18px] cursor-pointer text-white hover:text-white hover:bg-[#2d394b] p-2 font-semibold"
-                onClick={() => isMobile && toggleMenu("support")}
+                className="flex items-center gap-1 text-[18px] cursor-pointer hover:bg-[#2d394b] p-2 font-semibold"
+                onClick={() => isMobile && toggleMenu("contact")}
               >
-                Contact
-                <i className="fas fa-chevron-down text-xs mt-[2px]"></i>
+                Contact <i className="fas fa-chevron-down text-xs mt-[2px]"></i>
               </div>
               {renderDropdown(contact, "contact")}
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="p-5 text-white w-[70%]">
-          <h3 className="text-[65px] font-bold leading-[75px]">
-            Win More Jobs with The Best Roofing Software!
-          </h3>
-          <p className="text-[35px] mt-15">
-            Measure, estimate & simulate roofs in minutes.
-          </p>
-          <div className="flex gap-8 mt-5">
-            <Button className="!bg-black !px-20 !py-3 hover:!bg-gray-800">
-              Subscribe Now
-            </Button>
-
-            <Button className="!bg-green-900 !px-20 !py-3 hover:!bg-green-700">
-              Book A Demo
-            </Button>
-          </div>
+      {/* Hero Content */}
+      <div className="relative z-20 px-6 md:px-20 text-white max-w-4xl mt-[120px]">
+        <h1 className="text-[40px] md:text-[65px] font-bold leading-tight">
+          Win More Jobs with The Best Roofing Software!
+        </h1>
+        <p className="text-[20px] md:text-[30px] mt-5">
+          Measure, estimate & simulate roofs in minutes.
+        </p>
+        <div className="flex gap-6 mt-8 flex-wrap">
+          <Button className="!bg-black !px-10 !py-3 hover:!bg-gray-800">
+            Subscribe Now
+          </Button>
+          <Button className="!bg-green-900 !px-10 !py-3 hover:!bg-green-700">
+            Book A Demo
+          </Button>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

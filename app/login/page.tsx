@@ -10,18 +10,21 @@ export default function Home() {
     <div className="min-h-screen flex pt-[75px] flex-col md:flex-row bg-white">
       {/* Left Section */}
       <div className="flex-1 flex justify-center items-center bg-[#0c2340] px-6 py-10">
-        <div className="bg-white w-full max-w-md rounded-lg shadow p-8">
+        <div className="bg-white w-full max-w-md rounded-lg shadow p-8 ">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <Image src="/Logo.png" alt="iRoofing" width={150} height={40} />
+          <div className="flex justify-center -mb-6 -mt-8">
+            <Image
+              src="/Black-Logo-main.png"
+              alt="iRoofing"
+              width={250}
+              height={10}
+            />
           </div>
 
-          <h2 className="text-center font-medium mb-6">
-            Enter Your Email To Login
-          </h2>
+          <h2 className="text-center font-bold">Enter Your Email To Login</h2>
 
           {/* Login Form */}
-          <form className="space-y-4">
+          <form className="space-y-4 mt-5">
             <div>
               <input
                 type="email"
@@ -44,10 +47,13 @@ export default function Home() {
             {/* Remember Me + Forgot Password */}
             <div className="flex justify-between items-center text-sm">
               <label className="flex items-center gap-2">
-                <input type="checkbox" className="h-4 w-4" />
+                <input type="checkbox" className="h-4 w-4 font-bold" />
                 Remember Me
               </label>
-              <a href="#" className="text-blue-700 hover:underline">
+              <a
+                href="/forget"
+                className="text-blue-700 font-bold hover:underline"
+              >
                 Forgot Password
               </a>
             </div>
@@ -55,16 +61,16 @@ export default function Home() {
             {/* Sign In Button */}
             <button
               type="submit"
-              className="w-full flex justify-center items-center gap-2 bg-white border border-gray-600 text-black py-2 rounded hover:bg-gray-100"
+              className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-700 cursor-pointer text-white py-2 rounded hover:from-blue-600 hover:to-blue-800"
             >
               Sign In →
             </button>
           </form>
 
           {/* Signup Link */}
-          <p className="text-center text-sm mt-4">
+          <p className="text-center font-bold text-sm mt-4">
             Not A Member?{" "}
-            <a href="#" className="text-blue-700 hover:underline">
+            <a href="/signup" className="text-blue-700 hover:underline">
               Sign Up Now
             </a>
           </p>
@@ -78,7 +84,7 @@ export default function Home() {
               No subscription needed! Order low-cost precise roof measurement
               reports in just a few clicks—quick, accurate, and hassle-free.
             </p>
-            <button className="bg-[#c6f414] text-black px-5 py-2 mt-4 rounded font-medium hover:bg-lime-400">
+            <button className="bg-[#c6f414] cursor-pointer text-black px-5 py-2 mt-4 rounded font-medium hover:bg-lime-400">
               Order Now!
             </button>
           </div>
@@ -88,11 +94,11 @@ export default function Home() {
       {/* Right Section */}
       <div className="flex-1 flex flex-col justify-center items-center px-8 py-10">
         <Image
-          src="/roof-screenshot.png"
+          src="/main.png"
           alt="Roof Measurement"
           width={600}
           height={400}
-          className="rounded shadow"
+          className="rounded shadow rounded-xl"
         />
 
         <div className="text-center mt-8 max-w-lg">
