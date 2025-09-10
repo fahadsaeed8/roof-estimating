@@ -39,7 +39,7 @@ export default function Home() {
           ].map((item, idx) => (
             <button
               key={idx}
-              className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
+              className="px-4 py-2 cursor-pointer rounded-md border border-gray-300 hover:bg-gray-100"
             >
               {item}
             </button>
@@ -64,10 +64,10 @@ export default function Home() {
         </p>
 
         <div className="flex flex-wrap gap-4">
-          <button className="bg-lime-500 text-white px-6 py-2 rounded-md font-semibold hover:bg-lime-600">
+          <button className="bg-lime-500 cursor-pointer text-white px-6 py-2 rounded-md font-semibold hover:bg-lime-600">
             Subscribe Now
           </button>
-          <button className="bg-cyan-400 text-white px-6 py-2 rounded-md font-semibold hover:bg-cyan-500">
+          <button className="bg-cyan-400 cursor-pointer text-white px-6 py-2 rounded-md font-semibold hover:bg-cyan-500">
             Book a Demo
           </button>
         </div>
@@ -82,7 +82,7 @@ export default function Home() {
           Get a professional report for just $10 — no subscription required.
           Roofing subscribers enjoy an exclusive discount.
         </p>
-        <button className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded-md hover:bg-yellow-500">
+        <button className="bg-yellow-400 cursor-pointer text-black font-semibold px-6 py-3 rounded-md hover:bg-yellow-500">
           Order Now
         </button>
       </section>
@@ -128,10 +128,10 @@ export default function Home() {
               deliver, powered by our advanced roof software.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="bg-lime-500 text-white px-6 py-2 rounded-md font-semibold hover:bg-lime-600">
+              <button className="bg-lime-500 cursor-pointer text-white px-6 py-2 rounded-md font-semibold hover:bg-lime-600">
                 Subscribe Now
               </button>
-              <button className="bg-cyan-400 text-white px-6 py-2 rounded-md font-semibold hover:bg-cyan-500">
+              <button className="bg-cyan-400 cursor-pointer text-white px-6 py-2 rounded-md font-semibold hover:bg-cyan-500">
                 Book a Demo
               </button>
             </div>
