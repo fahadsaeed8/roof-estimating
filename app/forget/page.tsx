@@ -62,7 +62,7 @@ export default function ResetPassword() {
         <button
           disabled={!email}
           onClick={handleSend} // <-- added click handler
-          className={`w-full py-2 mt-5 rounded-md text-white text-sm font-medium transition 
+          className={`w-full py-2 mt-5 rounded-md cursor-pointer text-white text-sm font-medium transition 
             ${
               email
                 ? "bg-[#0B2244] hover:bg-[#132c57]"
