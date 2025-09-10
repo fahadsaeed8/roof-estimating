@@ -1,10 +1,6 @@
-
-
 import Footer from "@/components/Footer";
-import Header from "@/components/Header";
 import ManualSlider from "@/components/manualSlider";
 import React from "react";
-import { useState } from "react";
 
 const ContractorReview = () => {
   const testimonials = [
