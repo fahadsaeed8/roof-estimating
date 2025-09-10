@@ -43,3 +43,8 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* You can include this class with Tailwind's `@apply` */
+.input-field {
+  @apply border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400;
+}
