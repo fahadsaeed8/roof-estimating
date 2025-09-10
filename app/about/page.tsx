@@ -51,17 +51,23 @@ const About = () => {
           </div>
         </div>
       </section>
-      <div className="bg-[#05374c]">
-        <div className=" relative">
+       <div className=" relative h-[130vh] bg-[#05374c]">
           <img src="/grid.png" alt="" />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <h1 className=" text-[35px] font-bold text-white">
               <span className="text-[#2bc7e9] ">Who</span> We Are
             </h1>
             <img src="/pcimage.png" alt="" />
+            <p className=" text-lg text-white text-center w-[60%]">
+              iRoofing is more than software—it’s a complete digital partner for
+              roofing professionals. From precise measurements to polished
+              proposals, we help contractors work smarter, close deals faster,
+              and cut unnecessary costs. Since 2011, our mission has been to
+              give every roofer the tools to impress clients on the first visit
+              and win more business with confidence.
+            </p>
           </div>
         </div>
-      </div>
     </div>
   );
 };
