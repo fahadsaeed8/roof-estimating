@@ -1,16 +1,54 @@
 "use client";
-import Image from "next/image";
-import { useState } from "react";
 
-export default function Home() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { useMutation } from "@tanstack/react-query";
+import { useDispatch } from "react-redux";
+import { setCookie } from "nookies";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
+
+import { loginAPI } from "@/services/auth";
+import { setCredentials } from "@/redux/slices/authSlice";
+
+export default function LoginPage() {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    password: Yup.string().required("Password is required"),
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: { email: string; password: string }) => loginAPI(data),
+    onSuccess: (data: any) => {
+      const { token, user } = data;
+
+      setCookie(null, "token", token, {
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        path: "/",
+      });
+
+      dispatch(setCredentials({ user, token }));
+      toast.success(data?.message);
+      router.push("/");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.detail);
+    },
+  });
 
   return (
     <div className="min-h-screen flex pt-[75px] flex-col md:flex-row bg-white">
       {/* Left Section */}
       <div className="flex-1 flex justify-center items-center bg-[#0c2340] px-6 py-10">
-        <div className="bg-white w-full max-w-md rounded-lg shadow p-8 ">
+        <div className="bg-white w-full max-w-md rounded-lg shadow p-8">
           {/* Logo */}
           <div className="flex justify-center -mb-6 -mt-8">
             <Image
@@ -23,56 +61,82 @@ export default function Home() {
 
           <h2 className="text-center font-bold">Enter Your Email To Login</h2>
 
-          {/* Login Form */}
-          <form className="space-y-4 mt-5">
-            <div>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-600 py-2"
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-600 py-2"
-              />
-            </div>
+          {/* ✅ Formik form */}
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            validationSchema={validationSchema}
+            onSubmit={(values) => {
+              mutate(values); // call loginAPI
+            }}
+          >
+            {() => (
+              <Form className="space-y-4 mt-5">
+                <div>
+                  <Field
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-600 py-2"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-sm text-red-600"
+                  />
+                </div>
+                <div className="relative">
+                  <Field
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-600 py-2"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="cursor-pointer absolute right-2 top-2 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="text-sm text-red-600"
+                  />
+                </div>
 
-            {/* Remember Me + Forgot Password */}
-            <div className="flex justify-between items-center text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="h-4 w-4 font-bold" />
-                Remember Me
-              </label>
-              <a
-                href="/forget"
-                className="text-blue-700 font-bold hover:underline"
-              >
-                Forgot Password
-              </a>
-            </div>
+                {/* Remember Me + Forgot Password */}
+                <div className="flex justify-between items-center text-sm">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" className="h-4 w-4 font-bold" />
+                    Remember Me
+                  </label>
+                  <Link
+                    href="/forget"
+                    className="text-blue-700 font-bold hover:underline"
+                  >
+                    Forgot Password
+                  </Link>
+                </div>
 
-            {/* Sign In Button */}
-            <button
-              type="submit"
-              className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-700 cursor-pointer text-white py-2 rounded hover:from-blue-600 hover:to-blue-800"
-            >
-              Sign In →
-            </button>
-          </form>
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-700 cursor-pointer text-white py-2 rounded hover:from-blue-600 hover:to-blue-800"
+                >
+                  {isPending ? "Logging in..." : "Sign In →"}
+                </button>
+              </Form>
+            )}
+          </Formik>
 
           {/* Signup Link */}
           <p className="text-center font-bold text-sm mt-4">
             Not A Member?{" "}
-            <a href="/signup" className="text-blue-700 hover:underline">
+            <Link href="/signup" className="text-blue-700 hover:underline">
               Sign Up Now
-            </a>
+            </Link>
           </p>
 
           {/* Roof Report Box */}

@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Smooch_Sans } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "@/components/ClientLayout";
+import ReduxProvider from "@/redux/ReduxProvider";
+import ReactQueryProvider from "@/redux/ReactQueryProvider";
+import { Suspense } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +49,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} antialiased`}
       >
-        <ClientLayout>{children}</ClientLayout>
+        <ReduxProvider>
+          <ReactQueryProvider>
+            <Suspense
+              fallback={
+                <div className="w-full h-screen flex justify-center items-center">
+                  Loading...
+                </div>
+              }
+            >
+              <ClientLayout>{children}</ClientLayout>
+              <ToastContainer />{" "}
+            </Suspense>
+          </ReactQueryProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
