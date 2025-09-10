@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 import React from "react";
 import {
   FaTools,
@@ -48,6 +49,7 @@ const About = () => {
   ];
 
   return (
+    <>
     <div className="bg-[#f8fcf4]">
       <section>
         <div className="relative">
@@ -187,6 +189,8 @@ const About = () => {
         </div>
       </section>
     </div>
+    <Footer/>
+    </>
   );
 };
 

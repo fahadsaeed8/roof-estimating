@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 import Image from "next/image";
 import React from "react";
 
@@ -41,6 +42,7 @@ const Manufacture = () => {
   ];
 
   return (
+    <>
     <div className="bg-[#f8fcf4]">
       <div className="bg-[#05374c] h-screen">
         <div className=" relative">
@@ -195,6 +197,8 @@ const Manufacture = () => {
       </div>
     </section>
     </div>
+    <Footer/>
+    </>
   );
 };
 
