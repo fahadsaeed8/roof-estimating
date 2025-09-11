@@ -123,7 +123,6 @@ const Header = () => {
     </div>
   );
 
-  // detect screen size
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -133,7 +132,6 @@ const Header = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // detect scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -180,8 +178,15 @@ const Header = () => {
         }`}
       >
         <div className="flex justify-between items-center px-6 ">
-          <Image src={"/Logo.png"} width={225} height={40} alt="logo" />
-
+          <Link href={"/"}>
+            <Image
+              className="cursor-pointer"
+              src={"/Logo.png"}
+              width={225}
+              height={40}
+              alt="logo"
+            />
+          </Link>
           <div className="hidden  lg:flex items-center space-x-6 text-white">
             <div
               className="relative group"

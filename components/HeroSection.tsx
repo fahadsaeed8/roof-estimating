@@ -1,14 +1,9 @@
-// app/page.tsx  (Next.js 13+ App Router)
-// If you are using pages directory, name it pages/index.tsx
-
-"use client";
 import React from "react";
 import Image from "next/image";
 
 export default function Home() {
   return (
     <main className="bg-[#f8fdfc] text-gray-900">
-      {/* Top Testimonial Section */}
       <section className="bg-[#163152] text-white py-6 px-4 text-center">
         <p className="max-w-3xl mx-auto italic">
           “I would recommend this roofing app to any roofer that wants to make
@@ -131,7 +126,7 @@ export default function Home() {
               <button className="bg-lime-500 cursor-pointer text-white px-6 py-2 rounded-md font-semibold hover:bg-lime-600">
                 Subscribe Now
               </button>
-              <button className="bg-cyan-400 cursor-pointer text-white px-6 py-2 rounded-md font-semibold hover:bg-cyan-500">
+              <button className="bg-cyan-400 cursor-pointer text-white px-[30px] py-2 rounded-md font-semibold hover:bg-cyan-500">
                 Book a Demo
               </button>
             </div>
