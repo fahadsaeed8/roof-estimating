@@ -20,7 +20,7 @@ export default function Footer() {
 
         {/* iRoofing */}
         <div>
-          <h3 className="font-semibold text-2xl mb-4">iRoofing</h3>
+          <h3 className="font-semibold text-2xl mb-4">Roof Estimate</h3>
           <ul className="space-y-2 text-gray-300 text-xl">
             <li>
               <a href="#" className="hover:text-white">
@@ -28,7 +28,7 @@ export default function Footer() {
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <a href="/pricing" className="hover:text-white">
                 Pricing
               </a>
             </li>
