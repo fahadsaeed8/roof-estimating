@@ -1,3 +1,5 @@
+import Footer from "@/components/Footer";
+import HeaderLayout from "@/components/HeadersLayout";
 import React from "react";
 
 const HelpCenter = () => {
@@ -57,6 +59,8 @@ const HelpCenter = () => {
   ]
 
   return (
+    <>
+    <HeaderLayout/>
     <div className="bg-[#f8fcf4]">
    <div className="bg-[#05374c] h-[85vh] relative overflow-hidden">
   {/* Text + Button Overlay */}
@@ -84,7 +88,7 @@ const HelpCenter = () => {
 
     {/* Button */}
     <div className="flex items-center justify-center absolute top-[90%] lg:top-[80%] xl:top-[84%] left-[8%]">
-      <button className="bg-gradient-to-b from-[#92c86e] to-[#52a577] text-white text-xl font-bold w-[217px] h-[44px] flex items-center justify-center rounded-md">
+      <button className="bg-gradient-to-b from-[#92c86e] to-[#52a577] cursor-pointer text-white text-xl font-bold w-[217px] h-[44px] flex items-center justify-center rounded-md">
         Subscribe Now
       </button>
     </div>
@@ -112,7 +116,7 @@ const HelpCenter = () => {
           ))}
         </div>
          <div className="flex items-center justify-center my-10">
-            <button className="bg-gradient-to-b from-[#92c86e] to-[#52a577] text-white text-xl font-bold w-[217px] h-[44px] flex items-center justify-center rounded-md">
+            <button className="bg-gradient-to-b from-[#92c86e] to-[#52a577] cursor-pointer text-white text-xl font-bold w-[217px] h-[44px] flex items-center justify-center rounded-md">
               Contact us
             </button>
           </div>
@@ -137,6 +141,8 @@ const HelpCenter = () => {
           </div>
       </section>
     </div>
+    <Footer/>
+    </>
   );
 };
 

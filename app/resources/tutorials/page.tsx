@@ -1,5 +1,7 @@
 "use client"
 
+import Footer from "@/components/Footer";
+import HeaderLayout from "@/components/HeadersLayout";
 import VideoCard from "@/components/videoCard";
 import React from "react";
 
@@ -24,6 +26,8 @@ const Tutorials = () => {
   ];
 
   return (
+    <>
+    <HeaderLayout/>
     <div className="bg-[#f8fcf4]">
       <div className="bg-[#05374c] md:h-[50vh] relative">
         <img src="/grid.png" alt="" className=" h-auto object-cover w-[25%]" />
@@ -119,7 +123,7 @@ const Tutorials = () => {
         </h2>
 
         {/* Feature Icons Grid */}
-        <div className="flex items-center justify-center gap-7 w-full max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-7 w-full max-w-6xl mx-auto">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -165,11 +169,11 @@ const Tutorials = () => {
         </section>
         <section id="measurement" className=" mt-20">
           <div className="my-5">
-            <h1 className=" text-5xl font-bold text-center text-gray-800">
+            <h1 className=" md:text-5xl font-bold text-center text-gray-800">
               ROOF MEASUREMENTS
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
             <VideoCard
               thumbnail="/thumb.jpg"
               title="Settings Configuration"
@@ -198,11 +202,11 @@ const Tutorials = () => {
         </section>
         <section id="roof-visualizer" className=" mt-20">
           <div className="my-5">
-            <h1 className=" text-5xl font-bold text-center text-gray-800">
+            <h1 className=" md:text-5xl font-bold text-center text-gray-800">
               ROOF VISUALIZER
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
             <VideoCard
               thumbnail="/thumb.jpg"
               title="Settings Configuration"
@@ -231,11 +235,11 @@ const Tutorials = () => {
         </section>
         <section id="estimator-tool" className=" mt-20">
           <div className="my-5">
-            <h1 className=" text-5xl font-bold text-center text-gray-800">
+            <h1 className=" md:text-5xl font-bold text-center text-gray-800">
               ESTIMATOR TOOL
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
             <VideoCard
               thumbnail="/thumb.jpg"
               title="Settings Configuration"
@@ -264,11 +268,11 @@ const Tutorials = () => {
         </section>
         <section id="customer-database" className=" mt-20">
           <div className="my-5">
-            <h1 className=" text-5xl font-bold text-center text-gray-800">
+            <h1 className=" md:text-5xl font-bold text-center text-gray-800">
               CUSTOMER DATABASE
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
             <VideoCard
               thumbnail="/thumb.jpg"
               title="Settings Configuration"
@@ -297,11 +301,11 @@ const Tutorials = () => {
         </section>
         <section id="sign-contracts" className=" mt-20">
           <div className="my-5">
-            <h1 className=" text-5xl font-bold text-center text-gray-800">
+            <h1 className=" md:text-5xl font-bold text-center text-gray-800">
               SIGN CONTRACTS
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
             <VideoCard
               thumbnail="/thumb.jpg"
               title="Settings Configuration"
@@ -330,11 +334,11 @@ const Tutorials = () => {
         </section>
         <section id="" className=" mt-20">
           <div className="my-5">
-            <h1 className=" text-5xl font-bold text-center text-gray-800">
+            <h1 className=" md:text-5xl font-bold text-center text-gray-800">
               DIGITAL CATALOGS
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
             <VideoCard
               thumbnail="/thumb.jpg"
               title="Settings Configuration"
@@ -363,11 +367,11 @@ const Tutorials = () => {
         </section>
         <section className=" mt-20">
           <div className="my-5">
-            <h1 className=" text-5xl font-bold text-center text-gray-800">
+            <h1 className=" md:text-5xl font-bold text-center text-gray-800">
               ORDER ROOFING MATERIALS
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
             <VideoCard
               thumbnail="/thumb.jpg"
               title="Settings Configuration"
@@ -396,6 +400,8 @@ const Tutorials = () => {
         </section>
       </section>
     </div>
+    <Footer/>
+    </>
   );
 };
 
