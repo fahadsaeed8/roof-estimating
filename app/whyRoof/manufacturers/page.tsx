@@ -45,19 +45,18 @@ const Manufacture = () => {
   return (
     <>
       <HeaderLayout />
-
       <div className="bg-[#f8fcf4]">
-        <div className="bg-[#05374c] h-screen">
+        <div className="bg-[#05374c] md:h-screen">
           <div className=" relative">
             <img src="/grid.png" alt="" />
-            <h1 className=" text-[50px] font-[800] leading-[59px] text-white absolute top-[25%] left-[8%] w-[50%]">
+            <h1 className=" text-[30px] md:text-[50px] font-[800] leading-[59px] text-white absolute top-[10%] lg:top-[25%] left-[8%] lg:w-[50%]">
               {" "}
               <span className="text-[#2bc7e9]">Partner</span> With Us
             </h1>
-            <p className=" text-[36px] text-white absolute top-[44%] left-[8%] w-[40%] leading-none">
+            <p className=" text-xl md:text-[36px] text-white absolute top-[35%] lg:top-[44%] left-[8%] md:w-[40%] leading-none">
               Build Recognition and Trust in the Roofing Market
             </p>
-            <div className="flex items-center justify-center absolute top-[64%] left-[8%]">
+            <div className="flex items-center justify-center absolute top-[70%] xl:top-[64%] left-[8%]">
               <button className="bg-gradient-to-b from-[#92c86e] to-[#52a577] text-white text-xl font-bold w-[217px] h-[44px] flex items-center justify-center rounded-md">
                 Subscribe Now
               </button>
@@ -71,8 +70,8 @@ const Manufacture = () => {
             directly to decision-makers who drive the industry forward.
           </p>
         </section>
-        <section className="py-16 px-20">
-          <div className="max-w-7xl mx-auto">
+        <section className="py-16 px-2 md:px-20">
+          <div className="md:max-w-7xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
               <span className="text-cyan-500">Visibility</span> and Tools for{" "}
               <span className="text-cyan-500">Success</span>
@@ -138,7 +137,7 @@ const Manufacture = () => {
           <div className="flex-1 max-w-xl">
             <div className="rounded-lg overflow-hidden shadow-lg">
               <Image
-                src="/manwork.png" // Replace with the correct image path
+                src="/manwork.png"
                 alt="Roofing contractor at work"
                 width={600}
                 height={400}
@@ -194,7 +193,7 @@ const Manufacture = () => {
               Homeowner and Contractor{" "}
               <span className="text-cyan-500">Engagement</span>
             </h2>
-            <p className=" text-md md:text-lg text-gray-800 font-semibold w-[50%] mt-14">
+            <p className=" text-md md:text-lg text-gray-800 font-semibold md:w-[50%] mt-14">
               By partnering with us, you align with a technology-forward
               platform that offers unmatched exposure, innovative tools, and
               strategic insights. Let’s drive the roofing industry forward
