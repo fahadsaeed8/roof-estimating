@@ -28,17 +28,17 @@ const Distributor = () => {
   return (
     <>
     <div className="bg-[#f8fcf4]">
-      <div className="bg-[#05374c] h-screen">
+      <div className="bg-[#05374c] md:h-screen">
         <div className=" relative">
           <img src="/grid.png" alt="" />
-          <h1 className=" text-[50px] font-[800] leading-[59px] text-white absolute top-[25%] left-[8%] w-[50%]">
+          <h1 className=" text-2xl sm:text-[50px] font-[800] leading-[59px] text-white absolute top-[10%] md:top-[25%] left-[8%] md:w-[50%]">
             {" "}
             <span className="text-[#2bc7e9]">Partner</span> With Us
           </h1>
-          <p className=" text-[36px] text-white absolute top-[44%] left-[8%] w-[40%] leading-none">
+          <p className=" text-2xl sm:text-[36px] text-white absolute top-[40%] md:top-[44%] left-[8%] md:w-[40%] leading-none">
             Expand Your Reach and Maximize Growth Potential
           </p>
-          <div className="flex items-center justify-center absolute top-[64%] left-[8%]">
+          <div className="flex items-center justify-center absolute top-[75%] lg:top-[70%] xl:top-[64%] left-[8%]">
             <button className="bg-gradient-to-b from-[#92c86e] to-[#52a577] text-white text-xl font-bold w-[217px] h-[44px] flex items-center justify-center rounded-md">
               Subscribe Now
             </button>
@@ -87,7 +87,7 @@ const Distributor = () => {
       <div className="bg-[#F9FFF8] py-16 px-6 md:px-20">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2">
           {/* LEFT CONTENT */}
-          <div className="bg-[#00394F] text-white p-10 rounded-l-md shadow-md">
+          <div className="bg-[#00394F] text-white p-4 md:p-10 rounded-l-md shadow-md">
             <h2 className="text-3xl font-bold mb-6">
               Power Your IT Distribution Strategy
             </h2>
@@ -127,7 +127,7 @@ const Distributor = () => {
           </div>
 
           {/* RIGHT FORM */}
-          <div className="bg-white p-10 rounded-r-md shadow-md">
+          <div className="bg-white p-4 md:p-10 rounded-r-md shadow-md">
             <h3 className="text-xl font-bold text-center mb-6">
               Contact us today to explore how our partnership can take your
               distribution business to the next level.
@@ -210,7 +210,7 @@ const Distributor = () => {
               </div>
             </div>
 
-            <div className="flex items-center my-10">
+            <div className="flex items-center justify-center md:justify-start my-10">
               <button className="bg-gradient-to-b from-[#92c86e] to-[#52a577] text-white text-xl font-bold w-[217px] h-[44px] flex items-center justify-center rounded-md">
                 Start Now
               </button>

@@ -53,17 +53,17 @@ const About = () => {
     <div className="bg-[#f8fcf4]">
       <section>
         <div className="relative">
-          <img src="/about1.png" alt="" className="bg-[#1e475a]" />
+          <img src="/about1.png" alt="" className="bg-[#1e475a] h-[80vh] lg:h-fit" />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <h1 className="text-[50px] font-bold text-white">About Us</h1>
-            <p className=" text-[30px] font-bold text-white w-[30%] mx-auto text-center mt-5 leading-none">
+            <p className=" text-[30px] font-bold text-white lg:w-[30%] mx-auto text-center mt-5 leading-none">
               Technology isn’t just a tool,{" "}
               <span className="text-[#2bc7e9]">it’s our vision .</span>
             </p>
           </div>
         </div>
       </section>
-      <section className="flex flex-col items-center justify-center w-[80%] text-center mx-auto my-20">
+      <section className="flex flex-col items-center justify-center md:w-[80%] text-center mx-auto my-20">
         <h1 className=" text-[35px] font-bold">
           <span className="text-[#2bc7e9]">Who</span> We Are
         </h1>
@@ -78,35 +78,36 @@ const About = () => {
           tools, we empower professionals to work smarter, faster, and more
           efficiently—transforming roofing from start to finish.
         </p>
-        <div className="w-[750px] h-[263px] flex bg-white shadow-2xl rounded-2xl my-20">
-          <div className=" flex flex-col items-center justify-center gap-5 text-center px-10">
-            <p className=" text-lg font-semibold text-shadow-gray-800">
-              We started iRoofing because we wanted to offer something both
-              affordable and user-friendly – something we’d actually use
-              ourselves. So, we said goodbye to crazy fees, expensive contracts,
-              and all that other nonsense. It’s just better this way.
-            </p>
-            <h1 className=" text-xl font-bold">
-              Daniel Meridor, CEO & Co Founder
-            </h1>
-          </div>
-          <div className=" w-full">
-            <img
-              src="/aboutman.jpg"
-              alt=""
-              className="w-[232px] h-[263px] rounded-r-2xl object-cover"
-            />
-          </div>
-        </div>
+        <div className="flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl my-10 md:my-20 w-full md:w-[750px] h-auto md:h-[263px]">
+  <div className="flex flex-col items-center justify-center gap-5 text-center p-6 md:px-10">
+    <p className="text-base md:text-lg font-semibold text-shadow-gray-800">
+      We started iRoofing because we wanted to offer something both
+      affordable and user-friendly – something we’d actually use
+      ourselves. So, we said goodbye to crazy fees, expensive contracts,
+      and all that other nonsense. It’s just better this way.
+    </p>
+    <h1 className="text-lg md:text-xl font-bold">
+      Daniel Meridor, CEO & Co Founder
+    </h1>
+  </div>
+  <div className=" w-full">
+    <img
+      src="/aboutman.jpg"
+      alt=""
+      className=" w-full md:w-[232px] h-[200px] md:h-[263px] object-cover rounded-b-2xl md:rounded-b-none md:rounded-r-2xl"
+    />
+  </div>
+</div>
+
       </section>
-      <div className=" relative h-[130vh] bg-[#05374c]">
+      <div className=" relative h-[170vh] xl:h-[130vh] bg-[#05374c]">
         <img src="/grid.png" alt="" />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <h1 className=" text-[35px] font-bold text-white">
             <span className="text-[#2bc7e9] ">Who</span> We Are
           </h1>
           <img src="/pcimage.png" alt="" />
-          <p className=" text-lg text-white text-center w-[60%]">
+          <p className=" text-lg text-white text-center md:w-[60%]">
             iRoofing is more than software—it’s a complete digital partner for
             roofing professionals. From precise measurements to polished
             proposals, we help contractors work smarter, close deals faster, and
@@ -117,7 +118,7 @@ const About = () => {
         </div>
       </div>
       <section className=" my-20">
-        <div className="bg-[#072c45] w-[90%] mx-auto rounded-lg flex items-center gap-14 p-10">
+        <div className="bg-[#072c45] md:w-[90%] mx-auto rounded-lg flex flex-col md:flex-row items-center gap-14 p-10">
           <div className=" text-center">
             <h1 className=" text-white text-[30px] font-bold">
               Smart Strategies
@@ -169,8 +170,8 @@ const About = () => {
           </div>
         </div>
       </section>
-      <section className="flex items-center bg-[#03394d] p-20">
-        <div className="w-[60%]">
+      <section className="flex flex-col gap-5 lg:flex-row items-center bg-[#03394d] p-5 md:p-20">
+        <div className="md:w-[60%]">
           <h1 className=" text-[30px] font-bold text-white">
             {" "}
             Why{" "}<span className="text-[#2bc7e9]">Roof Estimates?</span>{" "}
