@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Smooch_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Poppins, Smooch_Sans,  } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "@/components/ClientLayout";
 import ReduxProvider from "@/redux/ReduxProvider";
@@ -22,6 +22,12 @@ const smoochSans = Smooch_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-smooch-sans",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
@@ -47,7 +53,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} ${poppins.variable} antialiased`}
       >
         <ReduxProvider>
           <ReactQueryProvider>

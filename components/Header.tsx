@@ -5,18 +5,13 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Button from "./CustomButton";
 
-interface HeaderProps {
-  isModalOpen: boolean;
-  setIsModalOpen: (value: boolean) => void;
-}
-
 interface MenuItem {
   label: string;
   link: string;
   subItems?: MenuItem[];
 }
 
-const Header: React.FC<HeaderProps> = () => {
+const Header = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -28,10 +23,10 @@ const Header: React.FC<HeaderProps> = () => {
   };
 
   const whyRoof: MenuItem[] = [
-    { label: "Contractor Reviews", link: "/contractor-reviews" },
-    { label: "About Us", link: "/about" },
-    { label: "Manufacturers", link: "/manufacturers" },
-    { label: "Distributors", link: "/distributors" },
+    { label: "Contractor Reviews", link: "/whyRoof/contractor-reviews" },
+    { label: "About Us", link: "/whyRoof/about" },
+    { label: "Manufacturers", link: "/whyRoof/manufacturers" },
+    { label: "Distributors", link: "/whyRoof/distributors" },
   ];
 
   const features: MenuItem[] = [
@@ -128,7 +123,6 @@ const Header: React.FC<HeaderProps> = () => {
     </div>
   );
 
-  // detect screen size
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -138,7 +132,6 @@ const Header: React.FC<HeaderProps> = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // detect scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -185,8 +178,15 @@ const Header: React.FC<HeaderProps> = () => {
         }`}
       >
         <div className="flex justify-between items-center px-6 ">
-          <Image src={"/Logo.png"} width={225} height={40} alt="logo" />
-
+          <Link href={"/"}>
+            <Image
+              className="cursor-pointer"
+              src={"/Logo.png"}
+              width={225}
+              height={40}
+              alt="logo"
+            />
+          </Link>
           <div className="hidden  lg:flex items-center space-x-6 text-white">
             <div
               className="relative group"
