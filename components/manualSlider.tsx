@@ -21,29 +21,31 @@ const ManualSlider: React.FC<ManualSliderProps> = ({
   itemClass = "",
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !cardRefs.current[currentIndex]) return;
 
-    // 👇 Har instance ke liye random interval 2000–5000ms
     const randomDelay = Math.floor(Math.random() * 3000) + 2000;
 
     const interval = setInterval(() => {
-      if (!containerRef.current) return;
-
       const nextIndex = (currentIndex + 1) % items.length;
       setCurrentIndex(nextIndex);
 
       const container = containerRef.current;
-      const card = container.querySelector("div");
-      if (card) {
-        const cardWidth =
-          (card as HTMLElement).offsetWidth +
-          parseInt(getComputedStyle(container).gap || "0");
+      const card = cardRefs.current[nextIndex];
+
+      if (card && container) {
+        const containerWidth = container.offsetWidth;
+        const cardWidth = card.offsetWidth;
+        const cardOffsetLeft = card.offsetLeft;
+
+        const scrollPosition =
+          cardOffsetLeft - (containerWidth - cardWidth) / 2;
 
         container.scrollTo({
-          left: nextIndex * cardWidth,
+          left: scrollPosition,
           behavior: "smooth",
         });
       }
@@ -55,14 +57,17 @@ const ManualSlider: React.FC<ManualSliderProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`flex items-start justify-start gap-8 overflow-x-auto scroll-smooth no-scrollbar ${containerClass}`}
+      className={`flex items-start justify-start gap-6 overflow-x-auto scroll-smooth no-scrollbar px-4 ${containerClass}`}
     >
-      {items.map((item) => (
+      {items.map((item, index) => (
         <div
           key={item.id}
-          className={`flex-shrink-0 w-[300px] px-5 py-8 text-white bg-[#072b45] rounded-xl shadow-md ${itemClass}`}
+          ref={(el) => {
+            cardRefs.current[index] = el;
+          }}
+          className={`flex-shrink-0 w-[90%] sm:w-[300px] px-5 py-8 text-white bg-[#072b45] rounded-xl shadow-md ${itemClass}`}
         >
-          <h1 className="text-lg font-medium">{item.content}</h1>
+          <h1 className=" md:text-lg font-medium">{item.content}</h1>
           <div className="mt-10">
             <h1 className="text-white text-lg font-bold">{item.author}</h1>
             <p className="text-white">{item.authorName}</p>
