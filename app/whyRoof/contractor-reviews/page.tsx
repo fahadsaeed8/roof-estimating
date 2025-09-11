@@ -1,4 +1,5 @@
 import Footer from "@/components/Footer";
+import HeaderLayout from "@/components/HeadersLayout";
 import ManualSlider from "@/components/manualSlider";
 import React from "react";
 
@@ -365,10 +366,9 @@ const ContractorReview = () => {
     },
   ];
 
-
-
   return (
     <>
+      <HeaderLayout />
       <div className="bg-[#f8fcf4]">
         <div className="bg-[#05374c] h-screen">
           <div className=" relative">
