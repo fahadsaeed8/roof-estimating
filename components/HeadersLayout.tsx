@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import Button from "./CustomButton";
 
 interface MenuItem {
   label: string;
@@ -11,7 +10,7 @@ interface MenuItem {
   subItems?: MenuItem[];
 }
 
-const Header = () => {
+const HeaderLayout = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -149,23 +148,9 @@ const Header = () => {
 
   return (
     <section
-      className="relative w-full min-h-screen overflow-hidden flex flex-col justify-center"
+      className="relative w-full overflow-hidden flex flex-col justify-center"
       ref={menuRef}
     >
-      {/* Background Video */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute top-0 left-0 w-full h-full object-cover"
-      >
-        <source
-          src="https://s3.us-central-1.wasabisys.com/ezsign/Private/Drakerversion.mp4"
-          type="video/mp4"
-        />
-      </video>
-
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/10"></div>
 
@@ -187,6 +172,7 @@ const Header = () => {
               alt="logo"
             />
           </Link>
+
           <div className="hidden  lg:flex items-center space-x-6 text-white">
             <div
               className="relative group"
@@ -257,26 +243,8 @@ const Header = () => {
           </div>
         </div>
       </div>
-
-      {/* Hero Content */}
-      <div className="relative z-20 px-6 md:px-20 text-white max-w-4xl mt-[120px]">
-        <h1 className="text-[40px] md:text-[65px] font-bold leading-tight">
-          Win More Jobs with The Best Roofing Software!
-        </h1>
-        <p className="text-[20px] md:text-[30px] mt-5">
-          Measure, estimate & simulate roofs in minutes.
-        </p>
-        <div className="flex gap-6 mt-8 flex-wrap">
-          <Button className="!bg-black !px-10 !py-3 hover:!bg-gray-800">
-            Subscribe Now
-          </Button>
-          <Button className="!bg-green-900 !px-10 !py-3 hover:!bg-green-700">
-            Book A Demo
-          </Button>
-        </div>
-      </div>
     </section>
   );
 };
 
-export default Header;
+export default HeaderLayout;
