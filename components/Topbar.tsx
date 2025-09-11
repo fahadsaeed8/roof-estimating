@@ -1,33 +1,60 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Button from "./CustomButton";
 import Link from "next/link";
+import { HiMenu, HiX } from "react-icons/hi"; // Hamburger icons
 
 interface TopBarProps {
   hidden?: boolean;
 }
 
 const Topbar: React.FC<TopBarProps> = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div className="relative w-full bg-gradient-to-r from-[#5a5d2f] to-[#2d394b] text-white text-sm font-sans z-50">
-      <div className="flex items-center justify-between pl-20 pr-35 py-4">
-        {/* Left Social Icons */}
-        <div className="flex gap-5 px-5 text-white text-[18px]">
+      <div className="flex items-center justify-between px-5 md:pl-20 md:pr-35 py-4">
+        {/* Left Contact Info */}
+        <div className="flex gap-5 text-white text-[16px] md:text-[18px]">
           <p>+1(800)318-1697</p>
         </div>
 
-        {/* Right Language Selector */}
-        <div className="flex gap-8">
+        {/* Hamburger Icon - Mobile Only */}
+        <div className="md:hidden">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle Menu">
+            {isMenuOpen ? (
+              <HiX className="text-2xl" />
+            ) : (
+              <HiMenu className="text-2xl" />
+            )}
+          </button>
+        </div>
+
+        {/* Desktop Menu */}
+        <div className="hidden md:flex gap-8 items-center">
           <Link
             className="flex hover:text-gray-300 items-center text-[20px] gap-2 cursor-pointer"
-            href={"/login"}
+            href="/login"
           >
             Login
           </Link>
-
           <Button>Start Now</Button>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="md:hidden px-5 pb-4 flex flex-col gap-4">
+          <Link
+            className="flex hover:text-gray-300 items-center text-[18px] gap-2 cursor-pointer"
+            href="/login"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Login
+          </Link>
+          <Button>Start Now</Button>
+        </div>
+      )}
     </div>
   );
 };

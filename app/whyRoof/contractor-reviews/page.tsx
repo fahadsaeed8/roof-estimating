@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import HeaderLayout from "@/components/HeadersLayout";
 import ManualSlider from "@/components/manualSlider";
+import Image from "next/image";
 import React from "react";
 
 const ContractorReview = () => {
@@ -366,24 +367,59 @@ const ContractorReview = () => {
     },
   ];
 
+  interface CardItem {
+    id: number;
+    image: string;
+    title: string;
+    subtitle: string;
+    description: string;
+  }
+
+  const cards: CardItem[] = [
+    {
+      id: 1,
+      image: "/man1.jpg",
+      title: "BRAD G.",
+      subtitle: "HOMETOWN RESTORATION",
+      description:
+        "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
+    },
+    {
+      id: 2,
+      image: "/man2.jpg",
+      title: "BRAD G.",
+      subtitle: "HOMETOWN RESTORATION",
+      description:
+        "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
+    },
+    {
+      id: 3,
+      image: "/man3.jpg",
+      title: "BRAD G.",
+      subtitle: "HOMETOWN RESTORATION",
+      description:
+        "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
+    },
+  ];
+
   return (
     <>
       <HeaderLayout />
       <div className="bg-[#f8fcf4]">
-        <div className="bg-[#05374c] h-screen">
+        <div className="bg-[#05374c] md:h-screen">
           <div className=" relative">
             <img src="/grid.png" alt="" />
-            <h1 className=" text-[50px] font-[800] leading-[59px] text-white absolute top-[25%] left-[8%] w-[50%]">
+            <h1 className=" md:text-[30px] lg:text-[50px] font-[800] leading-[59px] text-white absolute top-[10%] md:top-[25%] left-[8%] w-[50%]">
               {" "}
               <span className="text-[#2bc7e9]">Real Reviews</span> from
               Professional Roofers
             </h1>
-            <p className=" text-[36px] text-white absolute top-[59%] left-[8%] w-[40%]">
+            <p className=" md:text-[36px] text-white absolute top-[35%] md:top-[59%] left-[8%] w-[40%]">
               We raise the roof with our customer support.
             </p>
           </div>
         </div>
-        <section className="bg-[#f8fcf4] h-[50vh] flex items-center justify-center">
+        <section className="bg-[#f8fcf4] md:h-[50vh] flex items-center justify-center">
           <p className="w-[80%] mx-auto text-[21px] font-semibold text-center text-gray-800 leading-[25px]">
             We’re not just about roofing software, we’re about people too. Our
             crew is the cream of the crop in customer care, and it shows. A
@@ -393,7 +429,7 @@ const ContractorReview = () => {
           </p>
         </section>
         <section className="bg-[#f8fcf4]">
-          <div className="px-6 py-10">
+          <div className=" md:px-6 py-10">
             <ManualSlider
               items={testimonials}
               containerClass="pb-4"
@@ -402,7 +438,7 @@ const ContractorReview = () => {
           </div>
         </section>
         <section className="bg-[#f8fcf4]">
-          <div className="px-6 py-10">
+          <div className=" md:px-6 py-10">
             <ManualSlider
               items={moreTestimonials}
               containerClass="pb-4"
@@ -416,28 +452,28 @@ const ContractorReview = () => {
           </button>
         </div>
         <div className="bg-[#f8fcf4]">
-          <section className=" bg-gradient-to-r from-[#fff] via-[#e4f7e2] to-[#fff] h-[80vh] p-20 mt-3">
-            <div className="flex items-center gap-15 h-full">
+          <section className=" bg-gradient-to-r from-[#fff] via-[#e4f7e2] to-[#fff] xl:h-[80vh] p-20 mt-3">
+            <div className="flex flex-col lg:flex-row items-center gap-15 h-full">
               <div>
-                <h1 className=" text-[60px] font-bold w-[80%] leading-none">
+                <h1 className=" text-4xl md:text-[60px] font-bold md:w-[80%] leading-none">
                   Don’t just take our word for it
                 </h1>
               </div>
               <div className="border-l-2 border-l-[#2bc7e9] h-full"></div>
               <div className="flex flex-col gap-5">
-                <div className="flex items-center gap-10">
+                <div className="flex flex-col md:flex-row items-center gap-10">
                   <h1 className=" text-[40px] font-bold">2500+</h1>
                   <p className=" text-3xl">
                     positive reviews from roofing professionals worldwide.
                   </p>
                 </div>
-                <div className="flex items-center gap-10">
+                <div className="flex flex-col md:flex-row items-center gap-10">
                   <h1 className=" text-[40px] font-bold">1500+</h1>
                   <p className=" text-3xl">
                     5-star reviews on industry-leading platforms.
                   </p>
                 </div>
-                <div className="flex items-center gap-10">
+                <div className="flex flex-col md:flex-row items-center gap-10">
                   <h1 className=" text-[40px] font-bold">1000+</h1>
                   <p className=" text-3xl">
                     testimonials praising ease of use and customer support
@@ -447,7 +483,7 @@ const ContractorReview = () => {
             </div>
           </section>
         </div>
-        <section className=" bg-gradient-to-r from-[#fff] via-[#e4f7e2] to-[#fff] py-20 px-20">
+        {/* <section className=" bg-gradient-to-r from-[#fff] via-[#e4f7e2] to-[#fff] py-20 px-20">
           <div className="flex items-center justify-center">
             <img src="/group1.png" alt="" />
           </div>
@@ -456,9 +492,48 @@ const ContractorReview = () => {
               Start Now
             </button>
           </div>
+        </section> */}
+        <section className="bg-[#f4f9f6] py-16 px-4">
+          <div className="max-w-7xl mx-auto grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
+              >
+                {/* Image */}
+                <div className="h-64 w-full relative">
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-t-xl"
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="p-6 flex flex-col flex-1 justify-between">
+                  {/* Stars */}
+                  <div className="text-yellow-400 text-xl mb-3 tracking-wide">
+                    {"★★★★★"}
+                  </div>
+
+                  {/* Name & Company */}
+                  <h3 className="text-sm font-bold text-gray-800 uppercase">
+                    {card.title} {card.subtitle && `· ${card.subtitle}`}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-gray-700 text-sm mt-4">
+                    {card.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
         <section className="bg-[#f8fcf4]">
-          <div className="px-6 py-10">
+          <div className=" md:px-6 py-10">
             <ManualSlider
               items={extraTestimonials}
               containerClass="pb-4"
@@ -467,7 +542,7 @@ const ContractorReview = () => {
           </div>
         </section>
         <section className="bg-[#f8fcf4]">
-          <div className="px-6 py-10">
+          <div className=" md:px-6 py-10">
             <ManualSlider
               items={moreExtraTestimonials}
               containerClass="pb-4"
@@ -476,7 +551,7 @@ const ContractorReview = () => {
           </div>
         </section>
         <section className="bg-[#f8fcf4]">
-          <div className="px-6 py-10">
+          <div className=" md:px-6 py-10">
             <ManualSlider
               items={moreTestimonials}
               containerClass="pb-4"
@@ -485,7 +560,7 @@ const ContractorReview = () => {
           </div>
         </section>
         <section className="bg-[#f8fcf4]">
-          <div className="px-6 py-10">
+          <div className=" md:px-6 py-10">
             <ManualSlider
               items={testimonials}
               containerClass="pb-4"
@@ -494,7 +569,7 @@ const ContractorReview = () => {
           </div>
         </section>
         <section className="bg-[#f8fcf4]">
-          <div className="px-6 py-10">
+          <div className=" md:px-6 py-10">
             <ManualSlider
               items={extraTestimonials}
               containerClass="pb-4"
