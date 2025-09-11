@@ -136,8 +136,8 @@ export default function PricingPage() {
       {/* Testimonial */}
       <section className="max-w-2xl mx-auto text-center mt-16 px-4">
         <p className="italic text-gray-300">
-          "I would recommend this product to any roofer that wants to make the
-          bidding process easier for you and the homeowner."
+          {`"I would recommend this product to any roofer that wants to make the
+          bidding process easier for you and the homeowner."`}
         </p>
         <div className="mt-4 font-semibold">Michael Pittman</div>
         <div className="text-sm text-gray-400">California</div>
@@ -206,8 +206,8 @@ export default function PricingPage() {
       {/* Quote Section */}
       <section className="bg-[#0d2a4d] py-12 px-6 text-center md:text-left md:flex md:items-center md:justify-between max-w-6xl mx-auto rounded-xl">
         <p className="text-gray-300 italic max-w-3xl mx-auto md:mx-0">
-          "We’ve got your back. No set up fees. All we ask is for a single
-          guided session to walk you through everything. Easy, right?"
+          {`"We’ve got your back. No set up fees. All we ask is for a single
+          guided session to walk you through everything. Easy, right?"`}
         </p>
         <div className="mt-6 md:mt-0 text-center md:text-right">
           <p className="font-semibold">Chris H.</p>

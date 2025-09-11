@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import {
   FaInstagram,
   FaFacebook,
@@ -23,34 +24,37 @@ export default function Footer() {
           <h3 className="font-semibold text-2xl mb-4">Roof Estimate</h3>
           <ul className="space-y-2 text-gray-300 text-xl">
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="/" className="hover:text-white">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/pricing" className="hover:text-white">
+              <Link href="/pricing" className="hover:text-white">
                 Pricing
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link
+                href="/whyRoof/contractor-reviews"
+                className="hover:text-white"
+              >
                 Customer Success
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="/whyRoof/manufacturers/" className="hover:text-white">
                 Manufacturers
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="/whyRoof/distributors/" className="hover:text-white">
                 Distributors
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="/resources/help-center/" className="hover:text-white">
                 Help Center
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -60,24 +64,24 @@ export default function Footer() {
           <h3 className="font-semibold text-2xl mb-4">About Us</h3>
           <ul className="space-y-2 text-gray-300 text-xl">
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Company
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Privacy Policy
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Demo
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Blog
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -87,39 +91,39 @@ export default function Footer() {
           <h3 className="font-semibold text-2xl mb-4">Features</h3>
           <ul className="space-y-2 text-gray-300 text-xl">
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Measurements
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Visualizer
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Estimator
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Customer Database
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Digital Catalogs
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Digital Pitch Book
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <Link href="#" className="hover:text-white">
                 Order Materials
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
