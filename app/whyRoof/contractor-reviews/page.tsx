@@ -1,4 +1,5 @@
 import Footer from "@/components/Footer";
+import HeaderLayout from "@/components/HeadersLayout";
 import ManualSlider from "@/components/manualSlider";
 import Image from "next/image";
 import React from "react";
@@ -366,44 +367,44 @@ const ContractorReview = () => {
     },
   ];
 
+  interface CardItem {
+    id: number;
+    image: string;
+    title: string;
+    subtitle: string;
+    description: string;
+  }
 
-interface CardItem {
-  id: number;
-  image: string;
-  title: string;
-  subtitle: string;
-  description: string;
-}
-
-const cards: CardItem[] = [
-  {
-    id: 1,
-    image: "/man1.jpg",
-    title: "BRAD G.",
-    subtitle: "HOMETOWN RESTORATION",
-    description:
-      "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
-  },
-  {
-    id: 2,
-    image: "/man2.jpg",
-    title: "BRAD G.",
-    subtitle: "HOMETOWN RESTORATION",
-    description:
-      "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
-  },
-  {
-    id: 3,
-    image: "/man3.jpg",
-    title: "BRAD G.",
-    subtitle: "HOMETOWN RESTORATION",
-    description:
-      "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
-  },
-];
+  const cards: CardItem[] = [
+    {
+      id: 1,
+      image: "/man1.jpg",
+      title: "BRAD G.",
+      subtitle: "HOMETOWN RESTORATION",
+      description:
+        "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
+    },
+    {
+      id: 2,
+      image: "/man2.jpg",
+      title: "BRAD G.",
+      subtitle: "HOMETOWN RESTORATION",
+      description:
+        "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
+    },
+    {
+      id: 3,
+      image: "/man3.jpg",
+      title: "BRAD G.",
+      subtitle: "HOMETOWN RESTORATION",
+      description:
+        "It is extremely easy to use and allows us to quote roofs remotely while I continue to grow my company. This software is without a doubt the most bang for your buck when measuring roofs. It is the perfect balance for what anyone in the roofing industry needs when weighing cost vs user input. I highly recommend!",
+    },
+  ];
 
   return (
     <>
+      <HeaderLayout />
       <div className="bg-[#f8fcf4]">
         <div className="bg-[#05374c] md:h-screen">
           <div className=" relative">
@@ -492,43 +493,45 @@ const cards: CardItem[] = [
             </button>
           </div>
         </section> */}
-         <section className="bg-[#f4f9f6] py-16 px-4">
-      <div className="max-w-7xl mx-auto grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <div
-            key={card.id}
-            className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
-          >
-            {/* Image */}
-            <div className="h-64 w-full relative">
-              <Image
-                src={card.image}
-                alt={card.title}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-t-xl"
-              />
-            </div>
+        <section className="bg-[#f4f9f6] py-16 px-4">
+          <div className="max-w-7xl mx-auto grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
+              >
+                {/* Image */}
+                <div className="h-64 w-full relative">
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-t-xl"
+                  />
+                </div>
 
-            {/* Content */}
-            <div className="p-6 flex flex-col flex-1 justify-between">
-              {/* Stars */}
-              <div className="text-yellow-400 text-xl mb-3 tracking-wide">
-                {"★★★★★"}
+                {/* Content */}
+                <div className="p-6 flex flex-col flex-1 justify-between">
+                  {/* Stars */}
+                  <div className="text-yellow-400 text-xl mb-3 tracking-wide">
+                    {"★★★★★"}
+                  </div>
+
+                  {/* Name & Company */}
+                  <h3 className="text-sm font-bold text-gray-800 uppercase">
+                    {card.title} {card.subtitle && `· ${card.subtitle}`}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-gray-700 text-sm mt-4">
+                    {card.description}
+                  </p>
+                </div>
               </div>
-
-              {/* Name & Company */}
-              <h3 className="text-sm font-bold text-gray-800 uppercase">
-                {card.title} {card.subtitle && `· ${card.subtitle}`}
-              </h3>
-
-              {/* Description */}
-              <p className="text-gray-700 text-sm mt-4">{card.description}</p>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
+        </section>
         <section className="bg-[#f8fcf4]">
           <div className=" md:px-6 py-10">
             <ManualSlider
