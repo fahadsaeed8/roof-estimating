@@ -59,9 +59,9 @@ const Topbar: React.FC<TopBarProps> = () => {
 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden px-5 pb-4 flex flex-col gap-4">
+        <div className="md:hidden absolute top-full left-0 w-full bg-gradient-to-r from-[#5a5d2f] to-[#2d394b] px-5 py-6 flex flex-col gap-6 items-center text-center shadow-lg">
           <Link
-            className="flex hover:text-gray-300 items-center text-[18px] gap-2 cursor-pointer"
+            className="hover:text-gray-300 text-[18px] cursor-pointer"
             href="/login"
             onClick={() => setIsMenuOpen(false)}
           >
