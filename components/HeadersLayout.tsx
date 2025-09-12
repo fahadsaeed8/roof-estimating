@@ -156,7 +156,7 @@ const HeaderLayout = () => {
 
       {/* Navbar */}
       <div
-        className={`w-full fixed top-0 left-0 z-40  transition-colors duration-300 ${
+        className={`w-full fixed top-0 left-0 z-70  transition-colors duration-300 ${
           scrolled
             ? "bg-gradient-to-r from-[#5a5d2f] to-[#2d394b] pr-34 pl-15  h-[140px]"
             : "bg-transparent pt-15 pl-15 pr-34 py-4"
