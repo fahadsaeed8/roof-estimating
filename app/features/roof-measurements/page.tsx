@@ -189,54 +189,65 @@ export default function RoofMeasurements() {
     },
   ];
 
-interface FAQItem {
-  question: string;
-  answer: string;
-}
+  interface FAQItem {
+    question: string;
+    answer: string;
+  }
 
-const faqItems: FAQItem[] = [
-  {
-    question: 'Is there a limit to how many roof measurement reports I can create?',
-    answer: 'No, there is no limit to how many roof measurement reports you can create. You can generate as many reports as needed for your projects.',
-  },
-  {
-    question: 'Can I use iRoofing to measure from roof blueprints?',
-    answer: 'Yes, iRoofing allows you to upload and measure from blueprints, making it easier to get accurate dimensions without being onsite.',
-  },
-  {
-    question: 'Can I use iRoofing to measure roofs from drone imagery?',
-    answer: 'Absolutely! iRoofing supports roof measurements from drone images, providing precise details when satellite views are insufficient.',
-  },
-  {
-    question: 'How accurate are the roof measurements I create with iRoofing?',
-    answer: 'iRoofing uses advanced imaging and algorithms to provide highly accurate measurements, comparable to traditional on-site methods.',
-  },
-  {
-    question: 'How to order a roof measurement report',
-    answer: 'After completing your roof measurement, you can order a detailed report directly through the iRoofing platform, with options for export and sharing.',
-  },
-  {
-    question: 'How to measure a roof for shingles',
-    answer: 'Use iRoofing to outline the roof surface areas and pitch, which will help calculate the amount of shingles required accurately.',
-  },
-  {
-    question: 'How to measure a roof pitch?',
-    answer: 'Our automatic pitch detector uses imagery data to determine the roof’s slope, which you can review and adjust as needed in the software.',
-  },
-  {
-    question: 'How to measure roof slope',
-    answer: 'Roof slope is calculated by iRoofing using image data combined with pitch detection tools to provide precise slope measurements.',
-  },
-  {
-    question: 'How to measure roofing materials',
-    answer: 'Once roof dimensions are established, you can use iRoofing to estimate quantities of roofing materials required based on your selected product types.',
-  },
-  {
-    question: 'How to measure roof squares?',
-    answer: 'Roof squares are calculated by dividing the total roof area by 100 square feet, which iRoofing automatically computes in the report.',
-  },
-];
-
+  const faqItems: FAQItem[] = [
+    {
+      question:
+        "Is there a limit to how many roof measurement reports I can create?",
+      answer:
+        "No, there is no limit to how many roof measurement reports you can create. You can generate as many reports as needed for your projects.",
+    },
+    {
+      question: "Can I use iRoofing to measure from roof blueprints?",
+      answer:
+        "Yes, iRoofing allows you to upload and measure from blueprints, making it easier to get accurate dimensions without being onsite.",
+    },
+    {
+      question: "Can I use iRoofing to measure roofs from drone imagery?",
+      answer:
+        "Absolutely! iRoofing supports roof measurements from drone images, providing precise details when satellite views are insufficient.",
+    },
+    {
+      question:
+        "How accurate are the roof measurements I create with iRoofing?",
+      answer:
+        "iRoofing uses advanced imaging and algorithms to provide highly accurate measurements, comparable to traditional on-site methods.",
+    },
+    {
+      question: "How to order a roof measurement report",
+      answer:
+        "After completing your roof measurement, you can order a detailed report directly through the iRoofing platform, with options for export and sharing.",
+    },
+    {
+      question: "How to measure a roof for shingles",
+      answer:
+        "Use iRoofing to outline the roof surface areas and pitch, which will help calculate the amount of shingles required accurately.",
+    },
+    {
+      question: "How to measure a roof pitch?",
+      answer:
+        "Our automatic pitch detector uses imagery data to determine the roof’s slope, which you can review and adjust as needed in the software.",
+    },
+    {
+      question: "How to measure roof slope",
+      answer:
+        "Roof slope is calculated by iRoofing using image data combined with pitch detection tools to provide precise slope measurements.",
+    },
+    {
+      question: "How to measure roofing materials",
+      answer:
+        "Once roof dimensions are established, you can use iRoofing to estimate quantities of roofing materials required based on your selected product types.",
+    },
+    {
+      question: "How to measure roof squares?",
+      answer:
+        "Roof squares are calculated by dividing the total roof area by 100 square feet, which iRoofing automatically computes in the report.",
+    },
+  ];
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -244,52 +255,176 @@ const faqItems: FAQItem[] = [
     setActiveIndex(activeIndex === index ? null : index);
   };
 
-
   const featuress = [
-  { label: 'Digital Roof Measurements', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7 7h10v10H7z" />
-    </svg>
-  )},
-  { label: 'Signatures & Documents', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
-  )},
-  { label: 'Automated Estimates', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 018 0v2m-4-4v-6" />
-    </svg>
-  )},
-  { label: 'Catalogs & Materials', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 20h9M12 4v16M3 4h9M3 20h9" />
-    </svg>
-  )},
-  { label: 'Hi-Def Roof Visualizer', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <circle cx="12" cy="12" r="10" strokeWidth={2} />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" />
-    </svg>
-  )},
-  { label: 'Integrated Supply Orders', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
-    </svg>
-  )},
-  { label: 'Sales Presentations', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-6h6v6" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6" />
-    </svg>
-  )},
-  { label: 'Project Management', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <rect width={16} height={12} x={4} y={6} rx={2} ry={2} strokeWidth={2} />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 10h16" />
-    </svg>
-  )},
-];
+    {
+      label: "Digital Roof Measurements",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4M7 7h10v10H7z"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Signatures & Documents",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Automated Estimates",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 17v-2a4 4 0 018 0v2m-4-4v-6"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Catalogs & Materials",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 20h9M12 4v16M3 4h9M3 20h9"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Hi-Def Roof Visualizer",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <circle cx="12" cy="12" r="10" strokeWidth={2} />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4l3 3"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Integrated Supply Orders",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 7h18M3 12h18M3 17h18"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Sales Presentations",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 17v-6h6v6"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12h6"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Project Management",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <rect
+            width={16}
+            height={12}
+            x={4}
+            y={6}
+            rx={2}
+            ry={2}
+            strokeWidth={2}
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 10h16"
+          />
+        </svg>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -858,67 +993,77 @@ const faqItems: FAQItem[] = [
             </div>
           </section>
         </section>
-         <section className="bg-[#f8fdf9] py-16 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        {/* Steps Section */}
-        <div>
-          {steps.map((step, idx) => (
-            <div key={idx} className="flex items-start mb-5">
-              <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-[#01414d] text-white font-semibold rounded-full mr-4">
-                {idx + 1}
-              </div>
-              <p className="text-slate-800 text-sm md:text-base leading-relaxed">
-                {step}
+        <section className="bg-[#f8fdf9] py-16 px-4 sm:px-6">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            {/* Steps Section */}
+            <div>
+              {steps.map((step, idx) => (
+                <div key={idx} className="flex items-start mb-5">
+                  <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-[#01414d] text-white font-semibold rounded-full mr-4">
+                    {idx + 1}
+                  </div>
+                  <p className="text-slate-800 text-sm md:text-base leading-relaxed">
+                    {step}
+                  </p>
+                </div>
+              ))}
+              <p className="italic text-slate-500 text-sm mt-4">
+                Use this roof measurement report to instantly generate an
+                estimate within iRoofing.
               </p>
             </div>
-          ))}
-          <p className="italic text-slate-500 text-sm mt-4">
-            Use this roof measurement report to instantly generate an estimate within iRoofing.
-          </p>
-        </div>
 
-        {/* Thumbnail & Play Button */}
-        <div className="relative w-full cursor-pointer" onClick={() => setIsOpen(true)}>
-          <Image
-            src="/video-thumb.jpg"
-            alt="Video Thumbnail"
-            width={540}
-            height={360}
-            className="rounded shadow-lg w-full h-auto object-cover"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200">
-              <svg fill="white" height="30" viewBox="0 0 24 24" width="30" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 5v14l11-7z" />
-              </svg>
+            {/* Thumbnail & Play Button */}
+            <div
+              className="relative w-full cursor-pointer"
+              onClick={() => setIsOpen(true)}
+            >
+              <Image
+                src="/video-thumb.jpg"
+                alt="Video Thumbnail"
+                width={540}
+                height={360}
+                className="rounded shadow-lg w-full h-auto object-cover"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200">
+                  <svg
+                    fill="white"
+                    height="30"
+                    viewBox="0 0 24 24"
+                    width="30"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Video Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 px-4">
-          <div className="relative w-full max-w-3xl aspect-video">
-            <iframe
-              src="/video.mp4" // For local video. For YouTube: use https://www.youtube.com/embed/VIDEO_ID
-              title="How to use iRoofing"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              className="w-full h-full rounded-lg"
-            ></iframe>
+          {/* Video Modal */}
+          {isOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 px-4">
+              <div className="relative w-full max-w-3xl aspect-video">
+                <iframe
+                  src="/video.mp4" // For local video. For YouTube: use https://www.youtube.com/embed/VIDEO_ID
+                  title="How to use iRoofing"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                  className="w-full h-full rounded-lg"
+                ></iframe>
 
-            {/* Close Button */}
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-2 right-2 bg-white text-black font-bold w-8 h-8 rounded-full shadow hover:bg-gray-200"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-    </section>
+                {/* Close Button */}
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-2 right-2 bg-white text-black font-bold w-8 h-8 rounded-full shadow hover:bg-gray-200"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
         <section className="bg-[#f8fdf9] py-16 px-6">
           <div className="max-w-7xl mx-auto bg-gradient-to-b from-[#042749] to-[#01414d] text-white rounded-md p-8 md:p-12 flex flex-col md:flex-row gap-10">
             {/* Left Side */}
@@ -1101,57 +1246,68 @@ const faqItems: FAQItem[] = [
             </div>
           </div>
         </section>
-      <section className="max-w-4xl mx-auto px-4 py-12">
-      <h2 className="text-2xl font-semibold text-slate-900 mb-2">
-        Roof Measurements - Frequently Asked Questions
-      </h2>
-      <p className="text-md text-slate-700 mb-6 font-semibold">
-        Measurements in iRoofing FAQ’s
-      </p>
+        <section className="max-w-4xl mx-auto px-4 py-12">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">
+            Roof Measurements - Frequently Asked Questions
+          </h2>
+          <p className="text-md text-slate-700 mb-6 font-semibold">
+            Measurements in iRoofing FAQ’s
+          </p>
 
-      <div className="divide-y divide-slate-300 border-t border-b border-slate-300">
-        {faqItems.map((item, index) => (
-          <div key={index} className="py-4 cursor-pointer" onClick={() => toggleIndex(index)}>
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-slate-900">{item.question}</h3>
-              <svg
-                className={`w-5 h-5 text-slate-700 transform transition-transform duration-300 ${
-                  activeIndex === index ? 'rotate-180' : 'rotate-0'
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+          <div className="divide-y divide-slate-300 border-t border-b border-slate-300">
+            {faqItems.map((item, index) => (
+              <div
+                key={index}
+                className="py-4 cursor-pointer"
+                onClick={() => toggleIndex(index)}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            {activeIndex === index && (
-              <div className="mt-2 text-slate-700 text-sm">
-                <p>{item.answer}</p>
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold text-slate-900">
+                    {item.question}
+                  </h3>
+                  <svg
+                    className={`w-5 h-5 text-slate-700 transform transition-transform duration-300 ${
+                      activeIndex === index ? "rotate-180" : "rotate-0"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+                {activeIndex === index && (
+                  <div className="mt-2 text-slate-700 text-sm">
+                    <p>{item.answer}</p>
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
-       <section className="bg-gradient-to-b from-[#023647] to-[#002c3a] py-14 px-5 text-white">
-      <h2 className="text-center text-2xl font-bold mb-12 max-w-4xl mx-auto">
-        Achieve More Results with iRoofing’s Features
-      </h2>
+        </section>
+        <section className="bg-gradient-to-b from-[#023647] to-[#002c3a] py-14 px-5 text-white">
+          <h2 className="text-center text-2xl font-bold mb-12 max-w-4xl mx-auto">
+            Achieve More Results with iRoofing’s Features
+          </h2>
 
-      <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-8">
-        {featuress.map(({ label, icon }, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center justify-center rounded-md border border-white/30 p-6 text-center bg-[#07203f] cursor-pointer hover:bg-white/10 transition"
-          >
-            <div className="mb-3 text-sky-300">{icon}</div>
-            <p className="text-sm font-light">{label}</p>
+          <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-8">
+            {featuress.map(({ label, icon }, i) => (
+              <div
+                key={i}
+                className="flex flex-col items-center justify-center rounded-md border border-white/30 p-6 text-center bg-[#07203f] cursor-pointer hover:bg-white/10 transition"
+              >
+                <div className="mb-3 text-sky-300">{icon}</div>
+                <p className="text-sm font-light">{label}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
+        </section>
       </div>
       <Footer />
     </>
