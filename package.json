@@ -16,6 +16,7 @@
     "framer-motion": "^12.23.12",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.543.0",
+    "date-fns": "^4.1.0",
     "next": "15.5.2",
     "nookies": "^2.5.2",
     "react": "19.1.0",
@@ -24,7 +25,8 @@
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
     "redux-persist": "^6.0.0",
-    "yup": "^1.7.0"
+    "yup": "^1.7.0",
+    "swiper": "^11.2.10"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
