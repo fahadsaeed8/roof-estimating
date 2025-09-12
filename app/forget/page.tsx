@@ -46,7 +46,7 @@ export default function ResetPasswordFlow() {
       setStep(2);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to send OTP");
+      toast.error(err?.response?.data?.detail || "Failed to send OTP");
     },
   });
 

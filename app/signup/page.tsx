@@ -9,8 +9,11 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { signupAPI } from "@/services/auth";
 import Cookies from "js-cookie";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const SignUp = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const mutation = useMutation({
@@ -229,16 +232,25 @@ const SignUp = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <Field
-                  type="password"
-                  name="password"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                />
-                <ErrorMessage
-                  name="password"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
+                <div className="relative">
+                  <Field
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="cursor-pointer absolute right-2 top-2 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
               </div>
 
               <div className="text-xs text-gray-600 space-y-2 max-h-[120px] overflow-y-auto  p-2 rounded-md">

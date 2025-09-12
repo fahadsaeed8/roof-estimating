@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import Button from "./CustomButton";
 import Link from "next/link";
 import { HiMenu, HiX } from "react-icons/hi"; // Hamburger icons
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
 interface TopBarProps {
   hidden?: boolean;
@@ -10,9 +12,19 @@ interface TopBarProps {
 
 const Topbar: React.FC<TopBarProps> = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
+  const isAuthenticatedUser = useSelector(
+    (state: any) => state.auth.isAuthenticated
+  );
+
+  console.log("isAuthenticatedUser", isAuthenticatedUser);
 
   return (
-    <div className="relative w-full bg-gradient-to-r from-[#5a5d2f] to-[#2d394b] text-white text-sm font-sans z-50">
+    <div
+      className={`${
+        isAuthenticatedUser ? "hidden" : "block"
+      } relative w-full bg-gradient-to-r from-[#5a5d2f] to-[#2d394b] text-white text-sm font-sans z-50`}
+    >
       <div className="flex items-center justify-between px-5 md:pl-20 md:pr-35 py-4">
         {/* Left Contact Info */}
         <div className="flex gap-5 text-white text-[16px] md:text-[18px]">
@@ -21,7 +33,10 @@ const Topbar: React.FC<TopBarProps> = () => {
 
         {/* Hamburger Icon - Mobile Only */}
         <div className="md:hidden">
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle Menu">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle Menu"
+          >
             {isMenuOpen ? (
               <HiX className="text-2xl" />
             ) : (
@@ -38,7 +53,7 @@ const Topbar: React.FC<TopBarProps> = () => {
           >
             Login
           </Link>
-          <Button>Start Now</Button>
+          <Button onClick={() => router.push("/signup")}>Start Now</Button>
         </div>
       </div>
 

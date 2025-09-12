@@ -31,8 +31,11 @@ export default function LoginPage() {
       const { token, user } = data;
 
       setCookie(null, "token", token, {
-        maxAge: 30 * 24 * 60 * 60, // 30 days
+        maxAge: 30 * 24 * 60 * 60,
         path: "/",
+        domain: ".roof-estimating.vercel.app",
+        secure: true,
+        sameSite: "strict",
       });
 
       dispatch(setCredentials({ user, token }));

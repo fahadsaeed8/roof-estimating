@@ -222,7 +222,7 @@ const HeaderLayout = () => {
             </div>
 
             <Link
-              href={"/membership"}
+              href={"/pricing"}
               className="text-[18px] font-semibold hover:bg-[#2d394b] p-2"
             >
               Pricing
