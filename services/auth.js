@@ -3,6 +3,9 @@ import { axiosInstance, handleAPIRequest } from "./axiosInstance";
 export const loginAPI = (data) =>
   handleAPIRequest(axiosInstance.post, "api/login", data);
 
+export const roleListAPI = () =>
+  handleAPIRequest(axiosInstance.get, "api/role_list");
+
 export const signupAPI = (data) =>
   handleAPIRequest(axiosInstance.post, "api/signup/", data);
 

@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { signupAPI } from "@/services/auth";
+import { roleListAPI, signupAPI } from "@/services/auth";
 import Cookies from "js-cookie";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -16,6 +16,13 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
+  // ✅ Get roles using React Query
+  const { data: roles, isLoading: rolesLoading } = useQuery({
+    queryKey: ["roles"],
+    queryFn: roleListAPI,
+  });
+
+  // ✅ Signup mutation
   const mutation = useMutation({
     mutationFn: signupAPI,
     onSuccess: (data) => {
@@ -40,6 +47,7 @@ const SignUp = () => {
     company: Yup.string(),
     postal_code: Yup.string().required("Postal code is required"),
     password: Yup.string().min(6, "Password must be at least 6 characters"),
+    role_id: Yup.string().required("Role is required"), // 👈 role validation
     agree: Yup.boolean().oneOf([true], "You must agree to continue"),
   });
 
@@ -53,6 +61,7 @@ const SignUp = () => {
     company: "",
     postal_code: "",
     password: "",
+    role_id: "",
     agree: false,
   };
 
@@ -66,6 +75,7 @@ const SignUp = () => {
       company: values.company,
       postal_code: values.postal_code,
       password: values.password,
+      role_id: Number(values.role_id),
     };
     mutation.mutate(payload);
   };
@@ -101,7 +111,7 @@ const SignUp = () => {
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({ values, handleChange }) => (
+          {({ values }) => (
             <Form className="space-y-4 text-left">
               {/* Account Type */}
               <div>
@@ -125,6 +135,34 @@ const SignUp = () => {
                 </Field>
                 <ErrorMessage
                   name="account_type"
+                  component="div"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
+
+              {/* Role Dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Role <span className="text-red-500">*</span>
+                </label>
+                <Field
+                  as="select"
+                  name="role_id"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
+                >
+                  <option value="">Select a Role</option>
+                  {rolesLoading ? (
+                    <option>Loading...</option>
+                  ) : (
+                    roles?.map((role: any) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))
+                  )}
+                </Field>
+                <ErrorMessage
+                  name="role_id"
                   component="div"
                   className="text-red-500 text-xs mt-1"
                 />
@@ -251,26 +289,6 @@ const SignUp = () => {
                     className="text-red-500 text-xs mt-1"
                   />
                 </div>
-              </div>
-
-              <div className="text-xs text-gray-600 space-y-2 max-h-[120px] overflow-y-auto  p-2 rounded-md">
-                <p>
-                  By checking the box below and clicking the CREATE ACCOUNT
-                  button:
-                </p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>
-                    You accept and hereby electronically sign the Roofing
-                    Privacy Policy and Terms of Use.
-                  </li>
-                  <li>
-                    You consent to Roofing using your information to provide
-                    services and updates.
-                  </li>
-                  <li>
-                    You confirm you have read and understood the agreement.
-                  </li>
-                </ul>
               </div>
 
               {/* Agreement */}

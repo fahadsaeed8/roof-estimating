@@ -28,6 +28,7 @@ export default function LoginPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: (data: { email: string; password: string }) => loginAPI(data),
     onSuccess: (data: any) => {
+      console.log("data login", data);
       const { token, user } = data;
 
       setCookie(null, "token", token, {
@@ -40,7 +41,28 @@ export default function LoginPage() {
 
       dispatch(setCredentials({ user, token }));
       toast.success(data?.message);
-      router.push("/");
+
+      const roleName = data?.role?.name || "";
+      switch (roleName) {
+        case "Admin":
+          router.push("/dashboard/admin");
+          break;
+        case "Customer":
+          router.push("/dashboard/customer");
+          break;
+        case "Crew":
+          router.push("/dashboard/crew");
+          break;
+        case "Estimator":
+          router.push("/dashboard/estimator");
+          break;
+        case "Sale Rep":
+          router.push("/dashboard/sale-rep");
+          break;
+        default:
+          router.push("/");
+          break;
+      }
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.detail);
