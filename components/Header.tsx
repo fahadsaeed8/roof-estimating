@@ -1,9 +1,14 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "./CustomButton";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/authSlice";
+import { destroyCookie } from "nookies";
 
 interface MenuItem {
   label: string;
@@ -17,6 +22,8 @@ const Header = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   const toggleMenu = (menu: string) => {
     setActiveMenu(activeMenu === menu ? null : menu);
@@ -147,6 +154,18 @@ const Header = () => {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
 
+  const handleLogout = () => {
+    dispatch(logout());
+    destroyCookie(null, "token", {
+      path: "/",
+      domain: ".roof-estimating.vercel.app",
+      secure: true,
+      sameSite: "strict",
+    });
+
+    router.push("/login");
+  };
+
   return (
     <section
       className="relative w-full min-h-screen overflow-hidden flex flex-col justify-center"
@@ -254,6 +273,14 @@ const Header = () => {
               </div>
               {renderDropdown(contact, "contact")}
             </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-[18px] cursor-pointer whitespace-nowrap font-semibold hover:bg-[#2d394b] p-2"
+            >
+              Log out
+            </button>
           </div>
         </div>
       </div>
