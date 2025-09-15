@@ -12,7 +12,7 @@ export default function ClientLayout({
 
   return (
     <>
-      <Topbar hidden={isModalOpen} />
+      {/* <Topbar hidden={isModalOpen} /> */}
       {children}
     </>
   );
