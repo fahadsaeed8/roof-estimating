@@ -281,13 +281,13 @@ export default function JobProgressPage() {
                   placeholder="Search updates, descriptions, comments..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full md:w-[420px] pl-10 pr-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
+                  className="w-full md:w-[420px] pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none"
                 />
               </div>
 
               <div className="flex items-center gap-2">
                 <Filter className="text-gray-500" />
-                <select value={filter} onChange={(e) => setFilter(e.target.value as any)} className="rounded-lg border px-3 py-2">
+                <select value={filter} onChange={(e) => setFilter(e.target.value as any)} className="rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none px-3 py-2">
                   <option value="all">All updates</option>
                   <option value="withPhotos">With photos</option>
                   <option value="withComments">With comments</option>
@@ -295,7 +295,7 @@ export default function JobProgressPage() {
               </div>
 
               <div className="hidden md:flex items-center gap-2">
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border px-3 py-2">
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none px-3 py-2">
                   <option value="all">All statuses</option>
                   {STATUS_STEPS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -309,7 +309,7 @@ export default function JobProgressPage() {
                   const el = document.getElementById("add-update-form");
                   if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
+                className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
               >
                 <PlusCircle /> Add Update
               </button>
@@ -371,14 +371,14 @@ export default function JobProgressPage() {
 
                       <div className="flex flex-col items-end gap-3">
                         <div className="flex items-center gap-2">
-                          <button title="Open gallery" onClick={() => openLightbox(u.photos, 0)} disabled={u.photos.length === 0} className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60">
+                          <button title="Open gallery" onClick={() => openLightbox(u.photos, 0)} disabled={u.photos.length === 0} className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60">
                             <Image /> {u.photos.length}
                           </button>
 
                           <button onClick={() => {
                             // quick download all photos as separate downloads
                             u.photos.forEach((p, idx) => downloadImage(p, `job-${id}-update-${u.id}-${idx+1}.jpg`));
-                          }} className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100" title="Download photos">
+                          }} className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100" title="Download photos">
                             <Download /> Save
                           </button>
                         </div>
@@ -391,7 +391,7 @@ export default function JobProgressPage() {
                     {u.photos.length > 0 && (
                       <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {u.photos.map((p, i) => (
-                          <motion.div key={p} whileHover={{ scale: 1.03 }} className="rounded-lg overflow-hidden border">
+                          <motion.div key={i} whileHover={{ scale: 1.03 }} className="rounded-lg overflow-hidden border border-gray-300">
                             <img
                               src={p}
                               alt={`Update photo ${i + 1}`}
@@ -414,12 +414,12 @@ export default function JobProgressPage() {
 
             <form onSubmit={(e) => { e.preventDefault(); handleSubmitUpdate(); }} className="mt-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <select value={formStatus} onChange={(e) => setFormStatus(e.target.value)} className="md:col-span-2 border rounded-lg px-3 py-2">
+                <select value={formStatus} onChange={(e) => setFormStatus(e.target.value)} className="md:col-span-2 border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2">
                   {STATUS_STEPS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
 
                 <div className="flex items-center gap-2">
-                  <label htmlFor="images" className="w-full inline-flex items-center gap-2 justify-center px-3 py-2 border rounded-lg text-sm cursor-pointer hover:bg-gray-50">
+                  <label htmlFor="images" className="w-full inline-flex items-center gap-2 justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm cursor-pointer hover:bg-gray-50">
                     <Camera /> Upload Photos
                   </label>
                   <input id="images" type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
@@ -427,7 +427,7 @@ export default function JobProgressPage() {
               </div>
 
               <div>
-                <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Short description of update..." className="w-full border rounded-lg px-3 py-2 min-h-[100px]" />
+                <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Short description of update..." className="w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 min-h-[100px]" />
               </div>
 
               {formFiles.length > 0 && (
@@ -435,12 +435,12 @@ export default function JobProgressPage() {
                   {formFiles.map((f, idx) => {
                     const url = URL.createObjectURL(f);
                     return (
-                      <div key={idx} className="w-28 h-20 rounded overflow-hidden relative border">
+                      <div key={idx} className="w-28 h-20 rounded overflow-hidden relative border border-gray-300">
                         <img src={url} alt={f.name} className="w-full h-full object-cover" />
                         <button type="button" title="Remove" onClick={() => {
                           setFormFiles((prev) => prev.filter((_, i) => i !== idx));
                           URL.revokeObjectURL(url);
-                        }} className="absolute top-1 right-1 bg-white/80 rounded-full p-0.5 text-xs">✕</button>
+                        }} className="absolute cursor-pointer top-1 right-1 bg-white/80 rounded-full p-0.5 text-xs">✕</button>
                       </div>
                     );
                   })}
@@ -448,11 +448,11 @@ export default function JobProgressPage() {
               )}
 
               <div className="flex items-center gap-3">
-                <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-60">
+                <button type="submit" disabled={isSubmitting} className="inline-flex cursor-pointer items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-60">
                   <PlusCircle /> {isSubmitting ? "Adding..." : "Add Update"}
                 </button>
 
-                <button type="button" onClick={() => { setFormDesc(""); setFormFiles([]); setFormStatus(STATUS_STEPS[0]); }} className="px-3 py-2 rounded-lg border hover:bg-gray-50">
+                <button type="button" onClick={() => { setFormDesc(""); setFormFiles([]); setFormStatus(STATUS_STEPS[0]); }} className="px-3 py-2 cursor-pointer rounded-lg border border-gray-300 hover:bg-gray-50">
                   Reset
                 </button>
               </div>
@@ -465,24 +465,24 @@ export default function JobProgressPage() {
           {lightboxOpen && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
               <div ref={lightboxRef} className="relative max-w-4xl w-full max-h-full">
-                <button aria-label="Close" onClick={closeLightbox} className="absolute top-2 right-2 p-2 bg-white rounded-full"><X /></button>
+                <button aria-label="Close" onClick={closeLightbox} className="absolute top-2 right-2 p-2 bg-white cursor-pointer rounded-full"><X /></button>
 
                 <motion.img key={lightboxImages[lightboxIndex]} initial={{ scale: 0.98 }} animate={{ scale: 1 }} exit={{ scale: 0.98 }} src={lightboxImages[lightboxIndex]} alt="Photo" className="max-h-[80vh] w-auto mx-auto rounded-md object-contain" />
 
                 <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                  <button onClick={prevLightbox} className="p-2 bg-white/90 rounded-full shadow"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
+                  <button onClick={prevLightbox} className="p-2 bg-white/90 cursor-pointer rounded-full shadow"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                 </div>
 
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
-                  <button onClick={nextLightbox} className="p-2 bg-white/90 rounded-full shadow"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
-                  <button onClick={() => downloadImage(lightboxImages[lightboxIndex], `job-${id}-photo-${lightboxIndex+1}.jpg`)} className="p-2 bg-white/90 rounded-full shadow mt-2"><Download /></button>
+                  <button onClick={nextLightbox} className="p-2 cursor-pointer bg-white/90 rounded-full shadow"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
+                  <button onClick={() => downloadImage(lightboxImages[lightboxIndex], `job-${id}-photo-${lightboxIndex+1}.jpg`)} className="p-2 cursor-pointer bg-white/90 rounded-full shadow mt-2"><Download /></button>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <footer className="bg-white text-gray-500 text-center py-6 border-t">
+        <footer className="bg-white text-gray-500 text-center py-6 border-t border-gray-300">
           © {new Date().getFullYear()} Roof Estimate CRM. All rights reserved.
         </footer>
       </motion.main>
@@ -495,8 +495,8 @@ function CommentBox({ onSubmit }: { onSubmit: (text: string) => void }) {
   const [text, setText] = useState("");
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(text); setText(""); }} className="mt-2 flex gap-2">
-      <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Add a comment..." className="flex-1 border rounded-lg px-3 py-2 text-sm" />
-      <button type="submit" className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm"><MessageSquare /></button>
+      <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Add a comment..." className="flex-1 border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 text-sm" />
+      <button type="submit" className="px-3 cursor-pointer py-2 bg-blue-600 text-white rounded-lg text-sm"><MessageSquare /></button>
     </form>
   );
 }

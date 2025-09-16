@@ -62,7 +62,7 @@ export default function RequestEstimatePage() {
           {!submitted ? (
             <>
               {/* Title */}
-              <h2 className="text-3xl font-bold mb-2 text-gray-900">
+              <h2 className="text-3xl text-center font-bold mb-7 text-gray-900">
                 Request Roof Estimate
               </h2>
               <p className="text-gray-600 mb-6">
@@ -83,7 +83,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.name}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.name && formik.errors.name
                         ? "border-red-500"
                         : ""
@@ -108,7 +108,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.email && formik.errors.email
                         ? "border-red-500"
                         : ""
@@ -133,7 +133,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.phone}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.phone && formik.errors.phone
                         ? "border-red-500"
                         : ""
@@ -158,7 +158,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.address}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.address && formik.errors.address
                         ? "border-red-500"
                         : ""
@@ -182,7 +182,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.roofType}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.roofType && formik.errors.roofType
                         ? "border-red-500"
                         : ""
@@ -212,7 +212,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.areaSize}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.areaSize && formik.errors.areaSize
                         ? "border-red-500"
                         : ""
@@ -231,7 +231,7 @@ export default function RequestEstimatePage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Upload Roof Images
                   </label>
-                  <div className="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-blue-400 transition">
+                  <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 cursor-pointer hover:border-green-400 transition">
                     <Upload className="w-5 h-5 text-gray-500 mr-2" />
                     <input
                       type="file"
@@ -253,7 +253,7 @@ export default function RequestEstimatePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-1/2 flex justify-center items-center bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 cursor-pointer rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-70"
+                    className="w-1/3 flex justify-center items-center bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 cursor-pointer rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-70"
                   >
                     {loading ? (
                       <Loader2 className="animate-spin w-5 h-5 mr-2" />

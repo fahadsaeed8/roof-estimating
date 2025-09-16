@@ -304,7 +304,7 @@ export default function PaymentPage() {
                       value={form.name}
                       onChange={handleChange}
                       placeholder="John Doe"
-                      className={`mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.name ? "border-red-300" : "border-gray-200"}`}
+                      className={`mt-1 w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2  ${errors.name ? "border-red-300" : "border-gray-200"}`}
                       aria-invalid={Boolean(errors.name)}
                       aria-describedby={errors.name ? "err-name" : undefined}
                     />
@@ -320,7 +320,7 @@ export default function PaymentPage() {
                         value={form.cardNumber}
                         onChange={handleChange}
                         placeholder="1234 5678 9012 3456"
-                        className={`w-full border rounded-lg px-3 py-2 pr-28 focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.cardNumber ? "border-red-300" : "border-gray-200"}`}
+                        className={`w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 pr-28  ${errors.cardNumber ? "border-red-300" : "border-gray-200"}`}
                         aria-invalid={Boolean(errors.cardNumber)}
                         aria-describedby={errors.cardNumber ? "err-card" : undefined}
                       />
@@ -341,7 +341,7 @@ export default function PaymentPage() {
                           value={form.expiry}
                           onChange={handleChange}
                           placeholder="MM/YY"
-                          className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.expiry ? "border-red-300" : "border-gray-200"}`}
+                          className={`w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2  ${errors.expiry ? "border-red-300" : "border-gray-200"}`}
                           aria-invalid={Boolean(errors.expiry)}
                           aria-describedby={errors.expiry ? "err-exp" : undefined}
                         />
@@ -357,7 +357,7 @@ export default function PaymentPage() {
                           value={form.cvc}
                           onChange={handleChange}
                           placeholder="123"
-                          className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.cvc ? "border-red-300" : "border-gray-200"}`}
+                          className={`w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2  ${errors.cvc ? "border-red-300" : "border-gray-200"}`}
                           aria-invalid={Boolean(errors.cvc)}
                           aria-describedby={errors.cvc ? "err-cvc" : undefined}
                         />
@@ -377,7 +377,7 @@ export default function PaymentPage() {
                     <button
                       type="submit"
                       disabled={processing}
-                      className="w-full inline-flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md disabled:opacity-60"
+                      className="w-full cursor-pointer inline-flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md disabled:opacity-60"
                       aria-busy={processing}
                     >
                       {processing ? <Loader2 className="animate-spin" /> : <Wallet />}
@@ -413,7 +413,7 @@ export default function PaymentPage() {
                   <div className="mt-2">
                     <button
                       onClick={() => downloadLastReceipt()}
-                      className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      className="inline-flex cursor-pointer items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
                       <Download /> Download Receipt
                     </button>
