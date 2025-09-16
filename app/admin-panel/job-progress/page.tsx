@@ -230,13 +230,13 @@ export default function AdminJobProgressPage() {
                   placeholder="Search..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="pl-10 pr-3 py-2 rounded-lg border border-gray-300"
+                  className="pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none"
                 />
               </div>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as any)}
-                className="rounded-lg border border-gray-300 px-3 py-2"
+                className="rounded-lg border border-gray-300 px-3 py-2 focus:border focus:border-green-400 outline-none"
               >
                 <option value="all">All</option>
                 <option value="withPhotos">With Photos</option>
@@ -245,7 +245,7 @@ export default function AdminJobProgressPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2"
+                className="rounded-lg border border-gray-300 px-3 py-2 focus:border focus:border-green-400 outline-none"
               >
                 <option value="all">All Statuses</option>
                 {STATUS_STEPS.map((s) => (
@@ -282,7 +282,7 @@ export default function AdminJobProgressPage() {
                       {u.photos.length}{" "}
                       <button
                         onClick={() => openLightbox(u.photos)}
-                        className="ml-2 text-blue-600 underline"
+                        className="ml-2 cursor-pointer text-blue-600 underline"
                       >
                         View
                       </button>
@@ -297,7 +297,7 @@ export default function AdminJobProgressPage() {
                           <span>{c.text}</span>
                           <button
                             onClick={() => deleteComment(u.id, c.id)}
-                            className="text-red-500 ml-2"
+                            className="text-red-500 ml-2 cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -307,7 +307,7 @@ export default function AdminJobProgressPage() {
                     <td className="p-3 flex gap-2">
                       <button
                         onClick={() => deleteUpdate(u.id)}
-                        className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"
+                        className="px-2 py-1 bg-red-600 cursor-pointer text-white rounded hover:bg-red-700 flex items-center gap-1"
                       >
                         <Trash2 size={14} /> Delete
                       </button>
@@ -327,7 +327,7 @@ export default function AdminJobProgressPage() {
               <select
                 value={formStatus}
                 onChange={(e) => setFormStatus(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border focus:border-green-400 outline-none"
               >
                 {STATUS_STEPS.map((s) => (
                   <option key={s} value={s}>
@@ -339,18 +339,19 @@ export default function AdminJobProgressPage() {
                 value={formDesc}
                 onChange={(e) => setFormDesc(e.target.value)}
                 placeholder="Description..."
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border focus:border-green-400 outline-none"
               />
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handleFiles}
+                className="focus:border focus:border-green-400 outline-none border border-gray-300 p-2 mr-2 rounded-md"
               />
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                className="bg-indigo-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-indigo-700"
               >
                 {isSubmitting ? "Adding..." : "Add Update"}
               </button>
@@ -370,7 +371,7 @@ export default function AdminJobProgressPage() {
               <div ref={lightboxRef} className="relative max-w-4xl w-full">
                 <button
                   onClick={closeLightbox}
-                  className="absolute top-2 right-2 bg-white p-2 rounded-full"
+                  className="absolute top-2 cursor-pointer right-2 bg-white p-2 rounded-full"
                 >
                   <X />
                 </button>
@@ -379,10 +380,10 @@ export default function AdminJobProgressPage() {
                   src={lightboxImages[lightboxIndex]}
                   className="max-h-[80vh] mx-auto rounded"
                 />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <div className="absolute cursor-pointer left-4 top-1/2 -translate-y-1/2">
                   <button
                     onClick={prevLightbox}
-                    className="bg-white p-2 rounded-full"
+                    className="bg-white cursor-pointer p-2 rounded-full"
                   >
                     ◀
                   </button>
@@ -390,7 +391,7 @@ export default function AdminJobProgressPage() {
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   <button
                     onClick={nextLightbox}
-                    className="bg-white p-2 rounded-full"
+                    className="bg-white cursor-pointer p-2 rounded-full"
                   >
                     ▶
                   </button>

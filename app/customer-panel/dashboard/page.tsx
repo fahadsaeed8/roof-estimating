@@ -248,7 +248,7 @@ export default function DashboardPage() {
 
                     <Link
                       href={`/customer-panel/estimates`}
-                      className="flex items-center gap-1 px-3 py-1 text-sm border rounded-md text-gray-700 hover:bg-gray-50"
+                      className="flex items-center gap-1 px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                     >
                       <FileText size={14} /> Estimate
                     </Link>
@@ -280,7 +280,7 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="divide-y">
+            <div className="divide-y divide-gray-300">
               {proposals.map((p) => (
                 <div
                   key={p.id}
@@ -330,7 +330,7 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="divide-y">
+            <div className="divide-y divide-gray-300">
               {payments.map((inv) => (
                 <div
                   key={inv.id}

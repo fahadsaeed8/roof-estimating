@@ -160,7 +160,7 @@ export default function AdminPaymentsPage() {
                       <button
                         onClick={() => updateStatus(p.id, "Paid")}
                         disabled={processingId === p.id || p.status === "Paid"}
-                        className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md flex items-center gap-1 disabled:opacity-60"
+                        className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white text-xs rounded-md flex items-center gap-1 disabled:opacity-60"
                       >
                         {processingId === p.id ? (
                           <Loader2 className="animate-spin h-4 w-4" />
@@ -174,7 +174,7 @@ export default function AdminPaymentsPage() {
                       <button
                         onClick={() => updateStatus(p.id, "Failed")}
                         disabled={processingId === p.id || p.status === "Failed"}
-                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-md flex items-center gap-1 disabled:opacity-60"
+                        className="px-3 py-1 cursor-pointer bg-red-600 hover:bg-red-700 text-white text-xs rounded-md flex items-center gap-1 disabled:opacity-60"
                       >
                         {processingId === p.id ? (
                           <Loader2 className="animate-spin h-4 w-4" />
@@ -188,7 +188,7 @@ export default function AdminPaymentsPage() {
                       <button
                         onClick={() => generateReceiptPdf(p)}
                         disabled={p.status !== "Paid"}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md flex items-center gap-1 disabled:opacity-60"
+                        className="px-3 py-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md flex items-center gap-1 disabled:opacity-60"
                       >
                         <Download className="h-4 w-4" />
                         Receipt

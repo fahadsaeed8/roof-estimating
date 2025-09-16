@@ -151,7 +151,7 @@ function SignaturePad({
   }
 
   return (
-    <div className={`rounded-md border ${className ?? ""} overflow-hidden`}>
+    <div className={`rounded-md border border-gray-300 hover:border-green-400 focus:border focus:border-green-400 outline-none ${className ?? ""} overflow-hidden`}>
       <canvas
         ref={canvasRef}
         className="block w-full"
@@ -161,7 +161,7 @@ function SignaturePad({
         <button
           type="button"
           onClick={clear}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200"
+          className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200"
           aria-label="Clear signature"
         >
           <Trash2 size={14} /> Clear
@@ -170,7 +170,7 @@ function SignaturePad({
         <button
           type="button"
           onClick={undo}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200"
+          className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200"
           aria-label="Undo"
         >
           Undo
@@ -456,7 +456,7 @@ export default function ProposalPage() {
             </div>
 
             {/* Proposal Items */}
-            <div className="mt-6 border rounded-lg p-4 bg-gray-50">
+            <div className="mt-6 border border-gray-300 rounded-lg p-4 bg-gray-50">
               <h3 className="font-semibold mb-2">Scope & Line Items</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700">
                 <li>Remove existing roof system and dispose.</li>
@@ -491,7 +491,7 @@ export default function ProposalPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Jane Doe"
-                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                      className="w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 "
                     />
 
                     <div className="mt-4 signature-area">
@@ -522,7 +522,7 @@ export default function ProposalPage() {
                           await handleSign(url);
                         }}
                         disabled={isSigning}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
+                        className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
                         aria-label="Sign proposal"
                       >
                         <Check size={16} /> {isSigning ? "Signing..." : "Sign & Download"}
@@ -530,7 +530,7 @@ export default function ProposalPage() {
 
                       <button
                         onClick={handleDecline}
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-md hover:bg-red-100"
+                        className="inline-flex cursor-pointer items-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-md hover:bg-red-100"
                       >
                         <X size={14} /> Decline
                       </button>
@@ -553,7 +553,7 @@ export default function ProposalPage() {
                           };
                           generateSignedPdf(tempRec);
                         }}
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100"
+                        className="inline-flex cursor-pointer items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100"
                       >
                         <Download size={14} /> Preview PDF
                       </button>
@@ -597,7 +597,7 @@ export default function ProposalPage() {
                 <div className="flex items-center justify-center gap-3 mt-3">
                   <button
                     onClick={handleDownloadExisting}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   >
                     <Download size={14} /> Download Signed PDF
                   </button>
@@ -610,7 +610,7 @@ export default function ProposalPage() {
                       setSignedRecord(null);
                       setName("");
                     }}
-                    className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
+                    className="inline-flex cursor-pointer items-center gap-2 px-3 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
                   >
                     Reset
                   </button>
@@ -621,7 +621,7 @@ export default function ProposalPage() {
         </section>
 
         {/* Footer */}
-        <footer className="bg-white text-gray-500 text-center py-6 border-t">
+        <footer className="bg-white text-gray-500 text-center py-6 border-t border-gray-300">
           © {new Date().getFullYear()} Roof Estimate CRM. All rights reserved.
         </footer>
       </motion.main>

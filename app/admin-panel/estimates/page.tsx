@@ -106,7 +106,7 @@ export default function AdminRequestEstimatePage() {
         {/* Table */}
         <section className="max-w-6xl mx-auto my-8">
           <div className="overflow-x-auto">
-            <table className="w-full border rounded-lg shadow text-sm">
+            <table className="w-full border border-gray-300 rounded-lg shadow text-sm">
               <thead className="bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
                 <tr>
                   <th className="p-3 text-left">Name</th>
@@ -122,7 +122,7 @@ export default function AdminRequestEstimatePage() {
               </thead>
               <tbody>
                 {estimates.map((e) => (
-                  <tr key={e.id} className="border-t hover:bg-gray-50">
+                  <tr key={e.id} className="border-t border-gray-300 hover:bg-gray-50">
                     <td className="p-3">{e.name}</td>
                     <td className="p-3">{e.email}</td>
                     <td className="p-3">{e.phone}</td>
