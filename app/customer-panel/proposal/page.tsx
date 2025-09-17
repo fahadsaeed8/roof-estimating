@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
+import CustomerDashboardLayout from "@/app/dashboard/customer/page";
 
 /**
  * Proposal Page (Professional + Functional)
@@ -89,7 +90,12 @@ function SignaturePad({
     e.preventDefault();
     const ctx = ctxRef.current!;
     undoStackRef.current.push(
-      ctx.getImageData(0, 0, canvasRef.current!.width, canvasRef.current!.height)
+      ctx.getImageData(
+        0,
+        0,
+        canvasRef.current!.width,
+        canvasRef.current!.height
+      )
     );
     drawingRef.current = true;
     const p = pointerToLocal(e);
@@ -151,7 +157,11 @@ function SignaturePad({
   }
 
   return (
-    <div className={`rounded-md border border-gray-300 hover:border-green-400 focus:border focus:border-green-400 outline-none ${className ?? ""} overflow-hidden`}>
+    <div
+      className={`rounded-md border border-gray-300 hover:border-green-400 focus:border focus:border-green-400 outline-none ${
+        className ?? ""
+      } overflow-hidden`}
+    >
       <canvas
         ref={canvasRef}
         className="block w-full"
@@ -176,7 +186,9 @@ function SignaturePad({
           Undo
         </button>
 
-        <div className="ml-auto text-xs text-gray-500">Sign with finger or stylus</div>
+        <div className="ml-auto text-xs text-gray-500">
+          Sign with finger or stylus
+        </div>
       </div>
     </div>
   );
@@ -251,7 +263,8 @@ export default function ProposalPage() {
     setIsSigning(true);
     try {
       const timestamp = new Date().toISOString();
-      const userAgent = typeof navigator !== "undefined" ? navigator.userAgent : "unknown";
+      const userAgent =
+        typeof navigator !== "undefined" ? navigator.userAgent : "unknown";
 
       const rec: SignedRecord = {
         name: name.trim(),
@@ -326,7 +339,11 @@ export default function ProposalPage() {
     doc.setFontSize(12);
     doc.text("Signed by:", margin, sigY);
     doc.text(`Name: ${rec.name}`, margin, sigY + 16);
-    doc.text(`Date: ${new Date(rec.timestamp).toLocaleString()}`, margin, sigY + 32);
+    doc.text(
+      `Date: ${new Date(rec.timestamp).toLocaleString()}`,
+      margin,
+      sigY + 32
+    );
     doc.text(`Device: ${rec.userAgent}`, margin, sigY + 48);
     if (rec.ip) doc.text(`IP: ${rec.ip}`, margin, sigY + 64);
 
@@ -334,18 +351,27 @@ export default function ProposalPage() {
     try {
       const img = rec.signatureDataUrl;
       // calculate width/height that fits
-      const imgProps = await new Promise<{ w: number; h: number }>((resolve) => {
-        const i = new Image();
-        i.onload = () => resolve({ w: i.width, h: i.height });
-        i.src = img;
-      });
+      const imgProps = await new Promise<{ w: number; h: number }>(
+        (resolve) => {
+          const i = new Image();
+          i.onload = () => resolve({ w: i.width, h: i.height });
+          i.src = img;
+        }
+      );
 
       const maxW = 180;
       const ratio = imgProps.w / imgProps.h;
       const drawW = Math.min(maxW, imgProps.w);
       const drawH = drawW / ratio;
 
-      doc.addImage(rec.signatureDataUrl, "PNG", pageW - margin - drawW, sigY - 10, drawW, drawH);
+      doc.addImage(
+        rec.signatureDataUrl,
+        "PNG",
+        pageW - margin - drawW,
+        sigY - 10,
+        drawW,
+        drawH
+      );
     } catch (e) {
       // ignore image errors
     }
@@ -353,7 +379,11 @@ export default function ProposalPage() {
     // Footer
     doc.setFontSize(9);
     doc.setTextColor(120);
-    doc.text("Roof Estimate CRM — Signed document", margin, doc.internal.pageSize.getHeight() - 30);
+    doc.text(
+      "Roof Estimate CRM — Signed document",
+      margin,
+      doc.internal.pageSize.getHeight() - 30
+    );
 
     // Save PDF
     const fileName = `proposal-${id}-signed.pdf`;
@@ -388,7 +418,10 @@ export default function ProposalPage() {
   function handleDecline() {
     if (!confirm("Are you sure you want to decline this proposal?")) return;
     // you could post to server here. For now we mark locally as declined
-    localStorage.setItem(`proposal-declined-${id}`, JSON.stringify({ date: new Date().toISOString() }));
+    localStorage.setItem(
+      `proposal-declined-${id}`,
+      JSON.stringify({ date: new Date().toISOString() })
+    );
     alert("Proposal declined.");
   }
 
@@ -403,7 +436,7 @@ export default function ProposalPage() {
   }
 
   return (
-    <DashboardLayout>
+    <CustomerDashboardLayout>
       <motion.main
         className="text-gray-900 flex flex-col"
         initial={{ opacity: 0, y: 8 }}
@@ -416,7 +449,9 @@ export default function ProposalPage() {
             <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
               <FileText /> Roof Estimate Proposal
             </h1>
-            <p className="text-sm text-green-100 mt-1">Proposal ID: <span className="font-medium">{id}</span></p>
+            <p className="text-sm text-green-100 mt-1">
+              Proposal ID: <span className="font-medium">{id}</span>
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -440,9 +475,13 @@ export default function ProposalPage() {
           >
             <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">{proposalTitle}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                  {proposalTitle}
+                </h2>
                 <p className="text-gray-600 leading-relaxed max-w-2xl">
-                  Thank you for considering our roofing services. Please review the scope, pricing, and terms below. Sign at the bottom to accept.
+                  Thank you for considering our roofing services. Please review
+                  the scope, pricing, and terms below. Sign at the bottom to
+                  accept.
                 </p>
               </div>
 
@@ -451,7 +490,9 @@ export default function ProposalPage() {
                 <div className="mt-1 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
                   Pending
                 </div>
-                <div className="mt-3 text-sm text-gray-400">Total: <span className="font-semibold">$12,500.00</span></div>
+                <div className="mt-3 text-sm text-gray-400">
+                  Total: <span className="font-semibold">$12,500.00</span>
+                </div>
               </div>
             </div>
 
@@ -460,14 +501,18 @@ export default function ProposalPage() {
               <h3 className="font-semibold mb-2">Scope & Line Items</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700">
                 <li>Remove existing roof system and dispose.</li>
-                <li>Install new architectural shingles (IKO/Atlas equivalent).</li>
+                <li>
+                  Install new architectural shingles (IKO/Atlas equivalent).
+                </li>
                 <li>Install new underlayment, flashing, and ridge vents.</li>
                 <li>10-year workmanship warranty.</li>
               </ul>
             </div>
 
             <div className="mt-6 text-sm text-gray-600">
-              <strong>Terms:</strong> 30% down payment to schedule work, progress payment at 50% completion, final balance due at final inspection and sign-off.
+              <strong>Terms:</strong> 30% down payment to schedule work,
+              progress payment at 50% completion, final balance due at final
+              inspection and sign-off.
             </div>
           </motion.div>
 
@@ -486,7 +531,9 @@ export default function ProposalPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name
+                    </label>
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -503,8 +550,14 @@ export default function ProposalPage() {
                           setHasSignature(has);
                           if (has) {
                             // capture current signature preview (not full fidelity)
-                            const wrapper = document.querySelector<HTMLDivElement>(".signature-area");
-                            const canvas = wrapper?.querySelector<HTMLCanvasElement>("canvas");
+                            const wrapper =
+                              document.querySelector<HTMLDivElement>(
+                                ".signature-area"
+                              );
+                            const canvas =
+                              wrapper?.querySelector<HTMLCanvasElement>(
+                                "canvas"
+                              );
                             if (canvas) {
                               setCapturedDataUrl(canvas.toDataURL("image/png"));
                             }
@@ -525,7 +578,8 @@ export default function ProposalPage() {
                         className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
                         aria-label="Sign proposal"
                       >
-                        <Check size={16} /> {isSigning ? "Signing..." : "Sign & Download"}
+                        <Check size={16} />{" "}
+                        {isSigning ? "Signing..." : "Sign & Download"}
                       </button>
 
                       <button
@@ -540,7 +594,9 @@ export default function ProposalPage() {
                           // preview PDF (generate signed PDF with placeholder data if no signature yet)
                           const url = readSignatureDataUrl();
                           if (!url) {
-                            alert("Please sign (or capture signature) to generate a signed PDF preview.");
+                            alert(
+                              "Please sign (or capture signature) to generate a signed PDF preview."
+                            );
                             return;
                           }
                           // generate pdf from current signature without persisting
@@ -569,7 +625,11 @@ export default function ProposalPage() {
                       <li>Device (user-agent) & public IP (if available)</li>
                       <li>Signed PDF download</li>
                     </ul>
-                    <div className="mt-3 text-xs text-gray-500">A signed copy will be generated and downloaded to your device. Backend saving/integration is optional and can be wired to an API endpoint.</div>
+                    <div className="mt-3 text-xs text-gray-500">
+                      A signed copy will be generated and downloaded to your
+                      device. Backend saving/integration is optional and can be
+                      wired to an API endpoint.
+                    </div>
                   </aside>
                 </div>
               </>
@@ -588,10 +648,18 @@ export default function ProposalPage() {
 
                 <div className="mt-2">
                   <div className="text-sm text-gray-600">Signed by</div>
-                  <div className="text-lg font-semibold">{signedRecord.name}</div>
-                  <div className="text-xs text-gray-500">{new Date(signedRecord.timestamp).toLocaleString()}</div>
-                  <div className="text-xs text-gray-400 mt-2">Device: {signedRecord.userAgent}</div>
-                  <div className="text-xs text-gray-400">IP: {signedRecord.ip ?? "unknown"}</div>
+                  <div className="text-lg font-semibold">
+                    {signedRecord.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(signedRecord.timestamp).toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-2">
+                    Device: {signedRecord.userAgent}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    IP: {signedRecord.ip ?? "unknown"}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-3 mt-3">
@@ -605,7 +673,8 @@ export default function ProposalPage() {
                   <button
                     onClick={() => {
                       // allow re-sign: remove local record
-                      if (!confirm("Remove signed record and allow re-sign?")) return;
+                      if (!confirm("Remove signed record and allow re-sign?"))
+                        return;
                       localStorage.removeItem(`proposal-signed-${id}`);
                       setSignedRecord(null);
                       setName("");
@@ -625,7 +694,7 @@ export default function ProposalPage() {
           © {new Date().getFullYear()} Roof Estimate CRM. All rights reserved.
         </footer>
       </motion.main>
-    </DashboardLayout>
+    </CustomerDashboardLayout>
   );
 }
 
@@ -633,10 +702,34 @@ export default function ProposalPage() {
 /* lucide-react doesn't include FileSignature easily in all versions; provide a small inline placeholder using svg */
 function FileSignatureIconPlaceholder() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-700">
-      <path d="M21 15v4a1 1 0 0 1-1 1h-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M3 7h18M3 11h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M9 21s1-4 4-4 4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      className="text-gray-700"
+    >
+      <path
+        d="M21 15v4a1 1 0 0 1-1 1h-6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3 7h18M3 11h8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 21s1-4 4-4 4 4 4 4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
