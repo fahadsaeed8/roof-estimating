@@ -15,6 +15,7 @@ import {
   PlusCircle,
   FileSignature,
 } from "lucide-react";
+import CustomerDashboardLayout from "@/app/dashboard/customer/page";
 
 type JobStatus = "Pending" | "In Progress" | "Completed";
 type ProposalStatus = "Pending" | "Signed" | "Declined";
@@ -70,8 +71,18 @@ export default function DashboardPage() {
   ]);
 
   const [proposals] = useState<Proposal[]>([
-    { id: 201, title: "Proposal #201", status: "Pending", createdAt: "2025-09-11" },
-    { id: 200, title: "Proposal #200", status: "Signed", createdAt: "2025-09-07" },
+    {
+      id: 201,
+      title: "Proposal #201",
+      status: "Pending",
+      createdAt: "2025-09-11",
+    },
+    {
+      id: 200,
+      title: "Proposal #200",
+      status: "Signed",
+      createdAt: "2025-09-07",
+    },
   ]);
 
   const [payments] = useState<Payment[]>([
@@ -107,11 +118,13 @@ export default function DashboardPage() {
   // Navigation helpers
   const openProposal = (id: number) => router.push(`/customer-panel/proposal`);
   const openPayment = (id: string) => router.push(`/customer-panel/payment`);
-  const openJobProgress = (id: number) => router.push(`/customer-panel/job-progress`);
-  const openRequestEstimate = () => router.push(`/customer-panel/request-estimate`);
+  const openJobProgress = (id: number) =>
+    router.push(`/customer-panel/job-progress`);
+  const openRequestEstimate = () =>
+    router.push(`/customer-panel/request-estimate`);
 
   return (
-    <DashboardLayout>
+    <CustomerDashboardLayout>
       <motion.div
         className="space-y-8"
         initial={{ opacity: 0 }}
@@ -120,7 +133,10 @@ export default function DashboardPage() {
       >
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <motion.div initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+          <motion.div
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+          >
             <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
               <Briefcase className="text-blue-600" /> My Dashboard
             </h1>
@@ -162,7 +178,9 @@ export default function DashboardPage() {
               <Briefcase size={16} /> Total Jobs
             </div>
             <div className="mt-2 text-2xl font-semibold">{jobs.length}</div>
-            <div className="mt-3 text-xs text-gray-400">All jobs in your account</div>
+            <div className="mt-3 text-xs text-gray-400">
+              All jobs in your account
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition">
@@ -172,7 +190,9 @@ export default function DashboardPage() {
             <div className="mt-2 text-2xl font-semibold">
               {jobs.filter((j) => j.status === "Pending").length}
             </div>
-            <div className="mt-3 text-xs text-gray-400">Awaiting scheduling or approval</div>
+            <div className="mt-3 text-xs text-gray-400">
+              Awaiting scheduling or approval
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition">
@@ -182,7 +202,9 @@ export default function DashboardPage() {
             <div className="mt-2 text-2xl font-semibold">
               {jobs.filter((j) => j.status === "In Progress").length}
             </div>
-            <div className="mt-3 text-xs text-gray-400">Crew currently working</div>
+            <div className="mt-3 text-xs text-gray-400">
+              Crew currently working
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition">
@@ -192,7 +214,9 @@ export default function DashboardPage() {
             <div className="mt-2 text-2xl font-semibold">
               {jobs.filter((j) => j.status === "Completed").length}
             </div>
-            <div className="mt-3 text-xs text-gray-400">Jobs marked complete</div>
+            <div className="mt-3 text-xs text-gray-400">
+              Jobs marked complete
+            </div>
           </div>
         </motion.section>
 
@@ -224,9 +248,12 @@ export default function DashboardPage() {
               >
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <Briefcase size={18} className="text-blue-600" /> {job.title}
+                    <Briefcase size={18} className="text-blue-600" />{" "}
+                    {job.title}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-2">{job.description}</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {job.description}
+                  </p>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
@@ -376,6 +403,6 @@ export default function DashboardPage() {
           </a>
         </footer>
       </motion.div>
-    </DashboardLayout>
+    </CustomerDashboardLayout>
   );
 }

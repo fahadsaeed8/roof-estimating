@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { Upload, CheckCircle, Loader2 } from "lucide-react";
+import CustomerDashboardLayout from "@/app/dashboard/customer/page";
 
 export default function RequestEstimatePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -51,7 +52,7 @@ export default function RequestEstimatePage() {
   };
 
   return (
-    <DashboardLayout>
+    <CustomerDashboardLayout>
       <main className=" flex justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -281,6 +282,6 @@ export default function RequestEstimatePage() {
           )}
         </motion.div>
       </main>
-    </DashboardLayout>
+    </CustomerDashboardLayout>
   );
 }

@@ -1,140 +1,94 @@
 "use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Menu, LogOut, LayoutDashboard, FileText, CreditCard, Briefcase, ClipboardPlus } from "lucide-react";
 
-import React, { useState } from "react";
+const navItems = [
+  { name: "Dashboard", href: "/customer-panel/dashboard", icon: LayoutDashboard },
+  { name: "Proposals", href: "/customer-panel/proposal", icon: FileText },
+  { name: "Payments", href: "/customer-panel/payment", icon: CreditCard },
+  { name: "Job Progress", href: "/customer-panel/job-progress", icon: Briefcase },
+  { name: "Request Estimate", href: "/customer-panel/request-estimate", icon: ClipboardPlus },
+];
 
-export default function CustomerDashboard() {
-  const [activeMenu, setActiveMenu] = useState("Dashboard");
-
-  const renderContent = () => {
-    switch (activeMenu) {
-      case "Dashboard":
-        return (
-          <div>
-            <h1 className="text-3xl font-bold mb-6">Customer Dashboard</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold">Active Orders</h2>
-                <p className="text-2xl font-bold">5</p>
-              </div>
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold">Pending Payments</h2>
-                <p className="text-2xl font-bold">$1,200</p>
-              </div>
-            </div>
-          </div>
-        );
-      case "Orders":
-        return (
-          <div>
-            <h1 className="text-2xl font-bold mb-4">My Orders</h1>
-            <div className="bg-white shadow rounded-lg p-6">
-              <ul className="space-y-3">
-                <li className="p-3 border rounded-lg hover:bg-gray-50">
-                  Order #2045 – Roof Repair –{" "}
-                  <span className="text-green-600">Completed</span>
-                </li>
-                <li className="p-3 border rounded-lg hover:bg-gray-50">
-                  Order #2067 – New Installation –{" "}
-                  <span className="text-yellow-600">In Progress</span>
-                </li>
-                <li className="p-3 border rounded-lg hover:bg-gray-50">
-                  Order #2090 – Tile Replacement –{" "}
-                  <span className="text-red-600">Pending</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        );
-      case "Invoices":
-        return (
-          <div>
-            <h1 className="text-2xl font-bold mb-4">Invoices</h1>
-            <div className="bg-white shadow rounded-lg p-6">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="p-2">Invoice #</th>
-                    <th className="p-2">Amount</th>
-                    <th className="p-2">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="p-2">INV-1001</td>
-                    <td className="p-2">$450</td>
-                    <td className="p-2 text-green-600">Paid</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="p-2">INV-1002</td>
-                    <td className="p-2">$750</td>
-                    <td className="p-2 text-yellow-600">Pending</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-2">INV-1003</td>
-                    <td className="p-2">$1200</td>
-                    <td className="p-2 text-red-600">Overdue</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      case "Support":
-        return (
-          <div>
-            <h1 className="text-2xl font-bold mb-4">Support</h1>
-            <div className="bg-white shadow rounded-lg p-6">
-              <p className="text-gray-600">
-                Need help? Submit a ticket below and our support team will reach
-                out.
-              </p>
-              <form className="mt-4 space-y-4">
-                <input
-                  type="text"
-                  placeholder="Subject"
-                  className="w-full p-2 border rounded"
-                />
-                <textarea
-                  placeholder="Describe your issue..."
-                  className="w-full p-2 border rounded"
-                  rows={4}
-                ></textarea>
-                <button className="bg-yellow-700 text-white px-4 py-2 rounded hover:bg-yellow-600">
-                  Submit Ticket
-                </button>
-              </form>
-            </div>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
+export default function CustomerDashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-100 text-gray-900">
       {/* Sidebar */}
-      <aside className="w-64 bg-yellow-700 text-white flex flex-col">
-        <div className="p-4 text-2xl font-bold border-b border-yellow-500">
-          Customer
+      <aside
+        className={`fixed z-20 inset-y-0 left-0 transform bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        <div className="h-16 flex items-center justify-center font-bold text-xl border-b bg-gradient-to-r from-green-600 to-teal-600 text-white">
+          Customer Panel
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          {["Dashboard", "Orders", "Invoices", "Support"].map((menu) => (
-            <button
-              key={menu}
-              onClick={() => setActiveMenu(menu)}
-              className={`block w-full text-left p-2 rounded ${
-                activeMenu === menu ? "bg-yellow-500" : "hover:bg-yellow-500"
-              }`}
-            >
-              {menu}
-            </button>
-          ))}
+        <nav className="p-4 space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200
+                  ${
+                    isActive
+                      ? "bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md"
+                      : "text-gray-700 hover:bg-green-100"
+                  }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
         </nav>
+        <div className="absolute bottom-0 w-full p-4 border-t">
+          <Link href={'/login'}>
+          <button
+            className="flex cursor-pointer  items-center gap-2 w-full px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+            aria-label="Logout"
+          >
+            <LogOut className="h-5 w-5" />
+            Logout
+          </button>
+          </Link>
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 overflow-y-auto">{renderContent()}</main>
+      {/* Main content */}
+      <div className="flex-1 flex flex-col md:ml-64">
+        {/* Navbar */}
+        <header className="h-16 bg-white shadow flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Open sidebar menu"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          <h1 className="font-semibold text-lg tracking-wide">Roof Estimate CRM</h1>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-600">John Doe</span>
+            <img
+              src="https://i.pravatar.cc/40"
+              alt="profile"
+              className="w-10 h-10 rounded-full border shadow-sm"
+            />
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50">{children}</main>
+      </div>
     </div>
   );
 }

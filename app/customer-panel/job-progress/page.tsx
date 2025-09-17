@@ -16,6 +16,7 @@ import {
   Filter,
   MessageSquare,
 } from "lucide-react";
+import CustomerDashboardLayout from "@/app/dashboard/customer/page";
 
 /* -------------------- Types -------------------- */
 type Update = {
@@ -49,7 +50,7 @@ export default function JobProgressPage() {
         date: "2025-09-10",
         status: "Materials Delivered",
         description: "Roofing materials delivered on site and staged in driveway.",
-        photos: ["/cycle.png", "/cycle.png"],
+        photos: ["/damageroof.jpg", "/damageroof.jpg"],
         comments: [{ id: 1, text: "Delivery arrived on time.", date: "2025-09-10" }],
       },
       {
@@ -57,7 +58,7 @@ export default function JobProgressPage() {
         date: "2025-09-12",
         status: "Work Started",
         description: "Crew began roof removal and preparation.",
-        photos: ["/cycle.png"],
+        photos: ["/damageroof.jpg"],
         comments: [],
       },
       {
@@ -65,7 +66,7 @@ export default function JobProgressPage() {
         date: "2025-09-14",
         status: "50% Complete",
         description: "Half of the roof has been installed with new shingles.",
-        photos: ["/cycle.png"],
+        photos: ["/damageroof.jpg"],
         comments: [{ id: 2, text: "Looks great so far!", date: "2025-09-14" }],
       },
     ];
@@ -244,7 +245,7 @@ export default function JobProgressPage() {
 
   /* -------------------- Render -------------------- */
   return (
-    <DashboardLayout>
+   <CustomerDashboardLayout>
       <motion.main initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="text-gray-900">
         {/* Header */}
         <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-5 px-6 md:px-12 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -486,7 +487,7 @@ export default function JobProgressPage() {
           © {new Date().getFullYear()} Roof Estimate CRM. All rights reserved.
         </footer>
       </motion.main>
-    </DashboardLayout>
+  </CustomerDashboardLayout>
   );
 }
 

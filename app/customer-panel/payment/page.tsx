@@ -14,6 +14,7 @@ import {
   Lock,
 } from "lucide-react";
 import jsPDF from "jspdf"; // default import
+import CustomerDashboardLayout from "@/app/dashboard/customer/page";
 
 /* --------------------------- Types --------------------------- */
 interface PaymentForm {
@@ -249,7 +250,7 @@ export default function PaymentPage() {
 
   /* ---------------- UI ---------------- */
   return (
-    <DashboardLayout>
+    <CustomerDashboardLayout>
       <motion.main
         className="flex flex-col text-gray-900"
         initial={{ opacity: 0, y: 8 }}
@@ -429,6 +430,6 @@ export default function PaymentPage() {
           © {new Date().getFullYear()} Roof Estimate CRM. All rights reserved.
         </footer>
       </motion.main>
-    </DashboardLayout>
+</CustomerDashboardLayout>
   );
 }

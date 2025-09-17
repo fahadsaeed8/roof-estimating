@@ -47,18 +47,18 @@ export default function LoginPage() {
         case "Admin":
           router.push("/dashboard/admin");
           break;
-        case "Customer":
-          router.push("/dashboard/customer");
-          break;
-        case "Crew":
-          router.push("/dashboard/crew");
-          break;
-        case "Estimator":
-          router.push("/dashboard/estimator");
-          break;
-        case "Sale Rep":
-          router.push("/dashboard/sale-rep");
-          break;
+        // case "Customer":
+        //   router.push("/dashboard/customer");
+        //   break;
+        // case "Crew":
+        //   router.push("/dashboard/crew");
+        //   break;
+        // case "Estimator":
+        //   router.push("/dashboard/estimator");
+        //   break;
+        // case "Sale Rep":
+        //   router.push("/dashboard/sale-rep");
+        //   break;
         default:
           router.push("/");
           break;
@@ -187,7 +187,7 @@ export default function LoginPage() {
           alt="Roof Measurement"
           width={600}
           height={400}
-          className="rounded shadow rounded-xl"
+          className="shadow rounded-xl"
         />
 
         <div className="text-center mt-8 max-w-lg">
@@ -209,3 +209,8 @@ export default function LoginPage() {
     </div>
   );
 }
+
+
+
+
+
