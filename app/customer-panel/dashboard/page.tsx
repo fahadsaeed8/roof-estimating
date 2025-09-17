@@ -158,7 +158,7 @@ export default function DashboardPage() {
             </button>
 
             <Link
-              href="/customer-panel/estimates"
+              href="/customer-panel/view-all-estimate"
               className="inline-flex items-center gap-1 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-100"
             >
               <ClipboardList size={18} /> View All Estimates

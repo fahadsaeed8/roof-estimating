@@ -9,6 +9,7 @@ import {
   Users,
   HardHat,
 } from "lucide-react";
+import AdminDashboardLayout from "@/app/dashboard/admin/page";
 
 const roles = [
   {
@@ -53,7 +54,8 @@ export default function SelectRolePage() {
   const [hoveredRole, setHoveredRole] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200 p-6">
+    <AdminDashboardLayout>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-3">
           Select Your Role
@@ -109,5 +111,6 @@ export default function SelectRolePage() {
         })}
       </div>
     </div>
+    </AdminDashboardLayout>
   );
 }
