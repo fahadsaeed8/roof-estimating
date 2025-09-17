@@ -176,7 +176,7 @@ export default function DashboardLayout() {
     <div className="flex text-gray-900 bg-gray-50">
       <div className="flex-1 flex flex-col">
         <CustomerPanelNavbar />
-        <main className=" flex justify-center my-10">
+        <main className=" flex justify-center mb-10">
           <div className=" w-6xl mx-auto my-10">
             <div className="">
               <h1 className="text-2xl md:text-4xl font-bold text-center mb-8">
@@ -656,6 +656,15 @@ export default function DashboardLayout() {
             )}
           </div>
         </main>
+        <div className="w-full h-14 text-white bg-black/80 flex items-center justify-between px-3 text-xs">
+        <div>
+          <h1 className="text-[11px] text-gray-200">@ Copyright 2025 Roof Estimate</h1>
+        </div>
+        <div className="flex items-center justify-center gap-5">
+          <h1>Terms of Use</h1>
+          <h1>Privacy Policy</h1>
+        </div>
+        </div>
       </div>
     </div>
   );
