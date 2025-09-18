@@ -257,9 +257,9 @@ export default function PaymentPage() {
         animate={{ opacity: 1, y: 0 }}
       >
         {/* Header */}
-        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 px-6 md:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 px-6 md:px-12 flex flex-col md:flex-row justify-between text-center md:text-start items-center gap-3">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold flex items-center gap-3">
+            <h1 className="md:text-2xl font-bold flex items-center gap-3">
               <CreditCardIcon /> Roof Estimate Payment
             </h1>
             <p className="text-sm text-green-100 mt-1">Invoice ID: <span className="font-medium">{invoiceId}</span></p>
@@ -272,7 +272,7 @@ export default function PaymentPage() {
         </header>
 
         {/* Content */}
-        <section className="flex-1 p-6 md:p-10 flex justify-center">
+        <section className="flex-1 my-10 flex justify-center">
           <motion.div
             className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 md:p-8"
             initial={{ scale: 0.995, opacity: 0 }}

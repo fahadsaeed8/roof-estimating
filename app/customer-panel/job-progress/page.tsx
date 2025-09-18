@@ -49,9 +49,12 @@ export default function JobProgressPage() {
         id: 1,
         date: "2025-09-10",
         status: "Materials Delivered",
-        description: "Roofing materials delivered on site and staged in driveway.",
+        description:
+          "Roofing materials delivered on site and staged in driveway.",
         photos: ["/damageroof.jpg", "/damageroof.jpg"],
-        comments: [{ id: 1, text: "Delivery arrived on time.", date: "2025-09-10" }],
+        comments: [
+          { id: 1, text: "Delivery arrived on time.", date: "2025-09-10" },
+        ],
       },
       {
         id: 2,
@@ -75,7 +78,9 @@ export default function JobProgressPage() {
       const saved = localStorage.getItem("jobprogress_demo_" + id);
       if (saved) {
         const parsed = JSON.parse(saved) as Update[];
-        return parsed.concat(initial.filter(i => !parsed.find(p => p.id === i.id)));
+        return parsed.concat(
+          initial.filter((i) => !parsed.find((p) => p.id === i.id))
+        );
       }
     } catch {}
     return initial;
@@ -101,7 +106,9 @@ export default function JobProgressPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter & search
-  const [filter, setFilter] = useState<"all" | "withPhotos" | "withComments">("all");
+  const [filter, setFilter] = useState<"all" | "withPhotos" | "withComments">(
+    "all"
+  );
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [query, setQuery] = useState("");
 
@@ -137,7 +144,9 @@ export default function JobProgressPage() {
 
   // navigate prev/next in lightbox
   function prevLightbox() {
-    setLightboxIndex((s) => (s - 1 + lightboxImages.length) % lightboxImages.length);
+    setLightboxIndex(
+      (s) => (s - 1 + lightboxImages.length) % lightboxImages.length
+    );
   }
   function nextLightbox() {
     setLightboxIndex((s) => (s + 1) % lightboxImages.length);
@@ -204,7 +213,14 @@ export default function JobProgressPage() {
         u.id === updateId
           ? {
               ...u,
-              comments: [...(u.comments ?? []), { id: Date.now(), text: text.trim(), date: new Date().toISOString().split("T")[0] }],
+              comments: [
+                ...(u.comments ?? []),
+                {
+                  id: Date.now(),
+                  text: text.trim(),
+                  date: new Date().toISOString().split("T")[0],
+                },
+              ],
             }
           : u
       )
@@ -214,11 +230,15 @@ export default function JobProgressPage() {
   // cleanup created object URLs on unmount to avoid memory leaks
   useEffect(() => {
     return () => {
-      updates.forEach((u) => u.photos.forEach((p) => {
-        try { if (p.startsWith("blob:")) URL.revokeObjectURL(p); } catch {}
-      }));
+      updates.forEach((u) =>
+        u.photos.forEach((p) => {
+          try {
+            if (p.startsWith("blob:")) URL.revokeObjectURL(p);
+          } catch {}
+        })
+      );
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // keyboard handling for lightbox (Esc to close, arrows to nav)
@@ -237,31 +257,57 @@ export default function JobProgressPage() {
   const filtered = useMemo(() => {
     let arr = updates.slice();
     if (filter === "withPhotos") arr = arr.filter((u) => u.photos.length > 0);
-    if (filter === "withComments") arr = arr.filter((u) => (u.comments?.length ?? 0) > 0);
-    if (statusFilter !== "all") arr = arr.filter((u) => u.status === statusFilter);
-    if (query.trim()) arr = arr.filter((u) => (u.description + " " + u.status + " " + (u.comments?.map(c=>c.text).join(" ")||"")).toLowerCase().includes(query.toLowerCase()));
+    if (filter === "withComments")
+      arr = arr.filter((u) => (u.comments?.length ?? 0) > 0);
+    if (statusFilter !== "all")
+      arr = arr.filter((u) => u.status === statusFilter);
+    if (query.trim())
+      arr = arr.filter((u) =>
+        (
+          u.description +
+          " " +
+          u.status +
+          " " +
+          (u.comments?.map((c) => c.text).join(" ") || "")
+        )
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      );
     return arr;
   }, [updates, filter, statusFilter, query]);
 
   /* -------------------- Render -------------------- */
   return (
-   <CustomerDashboardLayout>
-      <motion.main initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="text-gray-900">
+    <CustomerDashboardLayout>
+      <motion.main
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-gray-900"
+      >
         {/* Header */}
-        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-5 px-6 md:px-12 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-              <Play className="text-white" /> Job Progress
+        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-5 px-4 sm:px-6 md:px-12 flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6">
+          {/* Left Section (Title + Project ID) */}
+          <div className="text-center md:text-left">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center justify-center md:justify-start gap-2 sm:gap-3">
+              <Play className="text-white w-5 h-5 sm:w-6 sm:h-6" /> Job Progress
             </h1>
-            <div className="text-sm text-green-100 mt-1">Project ID: <span className="font-medium">{id}</span></div>
+            <div className="text-xs sm:text-sm text-green-100 mt-1">
+              Project ID: <span className="font-medium">{id}</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <div className="text-xs text-green-100">Progress</div>
-              <div className="font-semibold text-xl">{progressPercent}%</div>
+          {/* Right Section (Progress Info + Bar) */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center md:justify-end gap-3 sm:gap-6 w-full md:w-auto">
+            {/* Progress Text */}
+            <div className="text-center sm:text-right">
+              <div className="text-xs sm:text-sm text-green-100">Progress</div>
+              <div className="font-semibold text-lg sm:text-xl">
+                {progressPercent}%
+              </div>
             </div>
-            <div className="w-56 bg-white/10 rounded-full h-3 overflow-hidden">
+
+            {/* Progress Bar */}
+            <div className="w-full sm:w-40 md:w-56 bg-white/10 rounded-full h-3 overflow-hidden mx-auto sm:mx-0">
               <div
                 className="h-3 bg-gradient-to-r from-blue-400 to-green-400 transition-all"
                 style={{ width: `${progressPercent}%` }}
@@ -271,7 +317,7 @@ export default function JobProgressPage() {
           </div>
         </header>
 
-        <section className=" my-10 max-w-6xl mx-auto space-y-8">
+        <section className=" my-10 space-y-8">
           {/* Controls: Search / Filter / Add Update CTA */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -288,7 +334,11 @@ export default function JobProgressPage() {
 
               <div className="flex items-center gap-2">
                 <Filter className="text-gray-500" />
-                <select value={filter} onChange={(e) => setFilter(e.target.value as any)} className="rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none px-3 py-2">
+                <select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value as any)}
+                  className="rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none px-3 py-2"
+                >
                   <option value="all">All updates</option>
                   <option value="withPhotos">With photos</option>
                   <option value="withComments">With comments</option>
@@ -296,9 +346,17 @@ export default function JobProgressPage() {
               </div>
 
               <div className="hidden md:flex items-center gap-2">
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none px-3 py-2">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none px-3 py-2"
+                >
                   <option value="all">All statuses</option>
-                  {STATUS_STEPS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {STATUS_STEPS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -308,7 +366,8 @@ export default function JobProgressPage() {
                 onClick={() => {
                   // scroll to add-update form
                   const el = document.getElementById("add-update-form");
-                  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  if (el)
+                    el.scrollIntoView({ behavior: "smooth", block: "center" });
                 }}
                 className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
               >
@@ -320,21 +379,38 @@ export default function JobProgressPage() {
           {/* Timeline + list */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left column: timeline summary */}
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-4 shadow">
-              <h3 className="font-semibold mb-3 flex items-center gap-2"><Clock /> Timeline</h3>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-white rounded-2xl p-4 shadow"
+            >
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Clock /> Timeline
+              </h3>
               <ol className="space-y-3">
                 {STATUS_STEPS.map((s, idx) => {
                   // check if any update with this status exists
                   const done = updates.some((u) => u.status === s);
-                  const stepPercent = Math.round((idx / (STATUS_STEPS.length - 1)) * 100);
+                  const stepPercent = Math.round(
+                    (idx / (STATUS_STEPS.length - 1)) * 100
+                  );
                   return (
                     <li key={s} className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${done ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          done
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
                         {idx + 1}
                       </div>
                       <div>
                         <div className="font-medium">{s}</div>
-                        <div className="text-xs text-gray-500">{done ? `${stepPercent}% reached` : "Not yet"}</div>
+                        <div className="text-xs text-gray-500">
+                          {done ? `${stepPercent}% reached` : "Not yet"}
+                        </div>
                       </div>
                     </li>
                   );
@@ -345,54 +421,93 @@ export default function JobProgressPage() {
             {/* Middle column: updates list */}
             <div className="lg:col-span-2 space-y-6">
               {filtered.length === 0 ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white p-6 rounded-2xl shadow text-center text-gray-600">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-white p-6 rounded-2xl shadow text-center text-gray-600"
+                >
                   No updates found. Add a new update or clear filters.
                 </motion.div>
               ) : (
                 filtered.map((u) => (
-                  <motion.article key={u.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }} className="bg-white rounded-2xl p-6 shadow">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
+                  <motion.article
+                    key={u.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="bg-white rounded-2xl p-6 shadow"
+                  >
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                      <div className="w-full sm:w-auto">
                         <div className="text-sm text-gray-500">{u.date}</div>
-                        <h4 className="text-lg font-semibold text-green-700">{u.status}</h4>
+                        <h4 className="text-lg font-semibold text-green-700">
+                          {u.status}
+                        </h4>
                         <p className="text-gray-700 mt-2">{u.description}</p>
 
                         {/* comments */}
                         <div className="mt-3 space-y-2">
                           {(u.comments ?? []).map((c) => (
-                            <div key={c.id} className="bg-gray-50 p-2 rounded-md text-sm">
-                              <div className="text-xs text-gray-500">{c.date}</div>
+                            <div
+                              key={c.id}
+                              className="bg-gray-50 p-2 rounded-md text-sm"
+                            >
+                              <div className="text-xs text-gray-500">
+                                {c.date}
+                              </div>
                               <div>{c.text}</div>
                             </div>
                           ))}
 
-                          <CommentBox onSubmit={(text) => addComment(u.id, text)} />
+                          <CommentBox
+                            onSubmit={(text) => addComment(u.id, text)}
+                          />
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end gap-3">
-                        <div className="flex items-center gap-2">
-                          <button title="Open gallery" onClick={() => openLightbox(u.photos, 0)} disabled={u.photos.length === 0} className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60">
+                      <div className="flex md:flex-row flex-col items-start md:items-end gap-3 w-full sm:w-auto justify-between">
+                        <div className="flex  items-center gap-2">
+                          <button
+                            title="Open gallery"
+                            onClick={() => openLightbox(u.photos, 0)}
+                            disabled={u.photos.length === 0}
+                            className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+                          >
                             <Image /> {u.photos.length}
                           </button>
 
-                          <button onClick={() => {
-                            // quick download all photos as separate downloads
-                            u.photos.forEach((p, idx) => downloadImage(p, `job-${id}-update-${u.id}-${idx+1}.jpg`));
-                          }} className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100" title="Download photos">
+                          <button
+                            onClick={() => {
+                              // quick download all photos as separate downloads
+                              u.photos.forEach((p, idx) =>
+                                downloadImage(
+                                  p,
+                                  `job-${id}-update-${u.id}-${idx + 1}.jpg`
+                                )
+                              );
+                            }}
+                            className="inline-flex cursor-pointer items-center gap-2 px-3 py-1 rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100"
+                            title="Download photos"
+                          >
                             <Download /> Save
                           </button>
                         </div>
 
-                        <div className="text-xs text-gray-400">Update ID: {u.id}</div>
+                        <div className="text-xs text-gray-400 sm:text-right text-left w-full sm:w-auto">
+                          Update ID: {u.id}
+                        </div>
                       </div>
                     </div>
 
                     {/* photos preview */}
                     {u.photos.length > 0 && (
-                      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="mt-4 grid grid-cols-1 md::grid-cols-3 gap-3">
                         {u.photos.map((p, i) => (
-                          <motion.div key={i} whileHover={{ scale: 1.03 }} className="rounded-lg overflow-hidden border border-gray-300">
+                          <motion.div
+                            key={i}
+                            whileHover={{ scale: 1.03 }}
+                            className="rounded-lg overflow-hidden border border-gray-300"
+                          >
                             <img
                               src={p}
                               alt={`Update photo ${i + 1}`}
@@ -410,25 +525,62 @@ export default function JobProgressPage() {
           </div>
 
           {/* Add update form */}
-          <motion.div id="add-update-form" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-6 shadow">
-            <h3 className="text-lg font-semibold flex items-center gap-2"><PlusCircle /> Add Update</h3>
+          <motion.div
+            id="add-update-form"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-white rounded-2xl p-6 shadow"
+          >
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <PlusCircle /> Add Update
+            </h3>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleSubmitUpdate(); }} className="mt-4 space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitUpdate();
+              }}
+              className="mt-4 space-y-4"
+            >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <select value={formStatus} onChange={(e) => setFormStatus(e.target.value)} className="md:col-span-2 border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2">
-                  {STATUS_STEPS.map((s) => <option key={s} value={s}>{s}</option>)}
+                <select
+                  value={formStatus}
+                  onChange={(e) => setFormStatus(e.target.value)}
+                  className="md:col-span-2 border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2"
+                >
+                  {STATUS_STEPS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
                 </select>
 
                 <div className="flex items-center gap-2">
-                  <label htmlFor="images" className="w-full inline-flex items-center gap-2 justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm cursor-pointer hover:bg-gray-50">
+                  <label
+                    htmlFor="images"
+                    className="w-full inline-flex items-center gap-2 justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm cursor-pointer hover:bg-gray-50"
+                  >
                     <Camera /> Upload Photos
                   </label>
-                  <input id="images" type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
+                  <input
+                    id="images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFiles}
+                    className="hidden"
+                  />
                 </div>
               </div>
 
               <div>
-                <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Short description of update..." className="w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 min-h-[100px]" />
+                <textarea
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  placeholder="Short description of update..."
+                  className="w-full border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 min-h-[100px]"
+                />
               </div>
 
               {formFiles.length > 0 && (
@@ -436,12 +588,28 @@ export default function JobProgressPage() {
                   {formFiles.map((f, idx) => {
                     const url = URL.createObjectURL(f);
                     return (
-                      <div key={idx} className="w-28 h-20 rounded overflow-hidden relative border border-gray-300">
-                        <img src={url} alt={f.name} className="w-full h-full object-cover" />
-                        <button type="button" title="Remove" onClick={() => {
-                          setFormFiles((prev) => prev.filter((_, i) => i !== idx));
-                          URL.revokeObjectURL(url);
-                        }} className="absolute cursor-pointer top-1 right-1 bg-white/80 rounded-full p-0.5 text-xs">✕</button>
+                      <div
+                        key={idx}
+                        className="w-28 h-20 rounded overflow-hidden relative border border-gray-300"
+                      >
+                        <img
+                          src={url}
+                          alt={f.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          title="Remove"
+                          onClick={() => {
+                            setFormFiles((prev) =>
+                              prev.filter((_, i) => i !== idx)
+                            );
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="absolute cursor-pointer top-1 right-1 bg-white/80 rounded-full p-0.5 text-xs"
+                        >
+                          ✕
+                        </button>
                       </div>
                     );
                   })}
@@ -449,11 +617,23 @@ export default function JobProgressPage() {
               )}
 
               <div className="flex items-center gap-3">
-                <button type="submit" disabled={isSubmitting} className="inline-flex cursor-pointer items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-60">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex cursor-pointer items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-60"
+                >
                   <PlusCircle /> {isSubmitting ? "Adding..." : "Add Update"}
                 </button>
 
-                <button type="button" onClick={() => { setFormDesc(""); setFormFiles([]); setFormStatus(STATUS_STEPS[0]); }} className="px-3 py-2 cursor-pointer rounded-lg border border-gray-300 hover:bg-gray-50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormDesc("");
+                    setFormFiles([]);
+                    setFormStatus(STATUS_STEPS[0]);
+                  }}
+                  className="px-3 py-2 cursor-pointer rounded-lg border border-gray-300 hover:bg-gray-50"
+                >
                   Reset
                 </button>
               </div>
@@ -464,19 +644,77 @@ export default function JobProgressPage() {
         {/* Lightbox modal */}
         <AnimatePresence>
           {lightboxOpen && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-              <div ref={lightboxRef} className="relative max-w-4xl w-full max-h-full">
-                <button aria-label="Close" onClick={closeLightbox} className="absolute top-2 right-2 p-2 bg-white cursor-pointer rounded-full"><X /></button>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            >
+              <div
+                ref={lightboxRef}
+                className="relative max-w-4xl w-full max-h-full"
+              >
+                <button
+                  aria-label="Close"
+                  onClick={closeLightbox}
+                  className="absolute top-2 right-2 p-2 bg-white cursor-pointer rounded-full"
+                >
+                  <X />
+                </button>
 
-                <motion.img key={lightboxImages[lightboxIndex]} initial={{ scale: 0.98 }} animate={{ scale: 1 }} exit={{ scale: 0.98 }} src={lightboxImages[lightboxIndex]} alt="Photo" className="max-h-[80vh] w-auto mx-auto rounded-md object-contain" />
+                <motion.img
+                  key={lightboxImages[lightboxIndex]}
+                  initial={{ scale: 0.98 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0.98 }}
+                  src={lightboxImages[lightboxIndex]}
+                  alt="Photo"
+                  className="max-h-[80vh] w-auto mx-auto rounded-md object-contain"
+                />
 
                 <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                  <button onClick={prevLightbox} className="p-2 bg-white/90 cursor-pointer rounded-full shadow"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
+                  <button
+                    onClick={prevLightbox}
+                    className="p-2 bg-white/90 cursor-pointer rounded-full shadow"
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M15 18l-6-6 6-6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
 
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
-                  <button onClick={nextLightbox} className="p-2 cursor-pointer bg-white/90 rounded-full shadow"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
-                  <button onClick={() => downloadImage(lightboxImages[lightboxIndex], `job-${id}-photo-${lightboxIndex+1}.jpg`)} className="p-2 cursor-pointer bg-white/90 rounded-full shadow mt-2"><Download /></button>
+                  <button
+                    onClick={nextLightbox}
+                    className="p-2 cursor-pointer bg-white/90 rounded-full shadow"
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M9 6l6 6-6 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      downloadImage(
+                        lightboxImages[lightboxIndex],
+                        `job-${id}-photo-${lightboxIndex + 1}.jpg`
+                      )
+                    }
+                    className="p-2 cursor-pointer bg-white/90 rounded-full shadow mt-2"
+                  >
+                    <Download />
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -487,7 +725,7 @@ export default function JobProgressPage() {
           © {new Date().getFullYear()} Roof Estimate CRM. All rights reserved.
         </footer>
       </motion.main>
-  </CustomerDashboardLayout>
+    </CustomerDashboardLayout>
   );
 }
 
@@ -495,9 +733,26 @@ export default function JobProgressPage() {
 function CommentBox({ onSubmit }: { onSubmit: (text: string) => void }) {
   const [text, setText] = useState("");
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(text); setText(""); }} className="mt-2 flex gap-2">
-      <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Add a comment..." className="flex-1 border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 text-sm" />
-      <button type="submit" className="px-3 cursor-pointer py-2 bg-blue-600 text-white rounded-lg text-sm"><MessageSquare /></button>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(text);
+        setText("");
+      }}
+      className="mt-2 flex gap-2"
+    >
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Add a comment..."
+        className="flex-1 border border-gray-300 focus:border focus:border-green-400 outline-none rounded-lg px-3 py-2 text-sm"
+      />
+      <button
+        type="submit"
+        className="px-3 cursor-pointer py-2 bg-blue-600 text-white rounded-lg text-sm"
+      >
+        <MessageSquare />
+      </button>
     </form>
   );
 }

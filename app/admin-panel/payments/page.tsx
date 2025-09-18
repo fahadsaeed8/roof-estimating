@@ -109,7 +109,7 @@ export default function AdminPaymentsPage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-3">
+        <h1 className=" md:text-2xl font-bold flex items-center gap-3">
             <CreditCardIcon /> Admin Payments Management
           </h1>
 
@@ -121,7 +121,7 @@ export default function AdminPaymentsPage() {
             </div>
           ) : (
             <motion.table
-              className="w-full border-collapse bg-white rounded-lg  overflow-hidden"
+              className="w-full border-collapse bg-white rounded-lg  overflow-hidden min-w-[1000px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >

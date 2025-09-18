@@ -465,17 +465,17 @@ export default function ProposalPage() {
         </header>
 
         {/* Content */}
-        <section className="flex-1 px-4 md:px-12 py-8 max-w-5xl w-full mx-auto space-y-6">
+        <section className="flex-1 my-10  w-full space-y-6">
           {/* Proposal Card */}
           <motion.div
-            className="bg-white shadow-lg rounded-2xl p-6 md:p-10"
+            className="bg-white shadow-lg rounded-2xl p-4 md:p-10"
             initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
             <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                <h2 className="md:text-3xl font-bold mb-2">
                   {proposalTitle}
                 </h2>
                 <p className="text-gray-600 leading-relaxed max-w-2xl">
@@ -499,7 +499,7 @@ export default function ProposalPage() {
             {/* Proposal Items */}
             <div className="mt-6 border border-gray-300 rounded-lg p-4 bg-gray-50">
               <h3 className="font-semibold mb-2">Scope & Line Items</h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
+              <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm md:text-base">
                 <li>Remove existing roof system and dispose.</li>
                 <li>
                   Install new architectural shingles (IKO/Atlas equivalent).
@@ -518,7 +518,7 @@ export default function ProposalPage() {
 
           {/* Signature / Acceptance Area */}
           <motion.div
-            className="bg-white rounded-2xl p-6 shadow-md"
+            className="bg-white rounded-2xl p-4 md:p-6 shadow-md"
             initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.3, delay: 0.06 }}
@@ -529,7 +529,7 @@ export default function ProposalPage() {
                   <FileSignatureIconPlaceholder /> Sign & Accept
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name
@@ -566,7 +566,7 @@ export default function ProposalPage() {
                       />
                     </div>
 
-                    <div className="mt-3 flex items-center gap-3">
+                    <div className="mt-3 flex items-center flex-col md:flex-row gap-3">
                       <button
                         onClick={async () => {
                           // read latest signature from canvas
@@ -575,7 +575,7 @@ export default function ProposalPage() {
                           await handleSign(url);
                         }}
                         disabled={isSigning}
-                        className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
+                        className="inline-flex w-full md:w-fit cursor-pointer items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
                         aria-label="Sign proposal"
                       >
                         <Check size={16} />{" "}
@@ -584,7 +584,7 @@ export default function ProposalPage() {
 
                       <button
                         onClick={handleDecline}
-                        className="inline-flex cursor-pointer items-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-md hover:bg-red-100"
+                        className="inline-flex w-full md:w-fit cursor-pointer items-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-md hover:bg-red-100"
                       >
                         <X size={14} /> Decline
                       </button>
@@ -609,7 +609,7 @@ export default function ProposalPage() {
                           };
                           generateSignedPdf(tempRec);
                         }}
-                        className="inline-flex cursor-pointer items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100"
+                        className="inline-flex w-full md:w-fit cursor-pointer items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100"
                       >
                         <Download size={14} /> Preview PDF
                       </button>

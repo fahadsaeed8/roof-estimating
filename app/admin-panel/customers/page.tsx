@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  User,
-  Edit,
-  Trash2,
-  Eye,
-  ToggleLeft,
-  ToggleRight,
-} from "lucide-react";
+import { User, Edit, Trash2, Eye, ToggleLeft, ToggleRight } from "lucide-react";
 import AdminDashboardLayout from "@/app/dashboard/admin/page";
 
 type Customer = {
@@ -113,17 +106,17 @@ export default function AdminCustomersPage() {
         className="text-gray-900"
       >
         {/* Header */}
-        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-5 px-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-5 px-2 md:px-6 flex items-center justify-between">
+          <h1 className=" text-sm md:text-2xl font-bold flex items-center gap-2">
             <User /> Admin – Customers
           </h1>
-          <span className="text-sm">{customers.length} Customers</span>
+          <span className="text-xs">{customers.length} Customers</span>
         </header>
 
         {/* Table */}
         <section className="my-8">
-          <div className="overflow-x-auto">
-            <table className="w-full border border-gray-300 rounded-lg shadow text-sm">
+          <div className="overflow-x-auto bg-white">
+            <table className="w-full border border-gray-300 rounded-lg shadow text-sm min-w-[1200px]">
               <thead className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
                 <tr>
                   <th className="p-3 text-left">Name</th>
@@ -138,7 +131,10 @@ export default function AdminCustomersPage() {
               </thead>
               <tbody>
                 {customers.map((c) => (
-                  <tr key={c.id} className="border-t border-gray-300 hover:bg-gray-50">
+                  <tr
+                    key={c.id}
+                    className="border-t border-gray-300 hover:bg-gray-50"
+                  >
                     <td className="p-3">{c.name}</td>
                     <td className="p-3">{c.email}</td>
                     <td className="p-3">{c.phone}</td>

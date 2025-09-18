@@ -146,13 +146,13 @@ export default function DashboardPage() {
           </motion.div>
 
           <motion.div
-            className="flex items-center gap-3"
+            className="flex md:flex-row flex-col items-start md:items-center gap-3"
             initial={{ x: 30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
           >
             <button
               onClick={openRequestEstimate}
-              className="inline-flex items-center cursor-pointer gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="inline-flex items-center cursor-pointer gap-1 xl:gap-2 bg-green-600 hover:bg-green-700 text-white px-2 xl:px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <PlusCircle size={18} /> Request New Estimate
             </button>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
 
         {/* Overview Cards */}
         <motion.section
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           </div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -247,7 +247,7 @@ export default function DashboardPage() {
                 whileHover={{ scale: 1.02 }}
               >
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <h3 className=" text-sm md:text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <Briefcase size={18} className="text-blue-600" />{" "}
                     {job.title}
                   </h3>
@@ -256,7 +256,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-4 flex md:flex-row flex-col items-start md:items-center justify-between gap-4 md:gap-0">
                   <div
                     className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${statusColor(
                       job.status
