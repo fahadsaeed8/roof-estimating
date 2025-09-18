@@ -110,7 +110,7 @@ export default function AdminProposalsPage() {
 
         {/* Table */}
         <div className="overflow-x-auto bg-white shadow rounded-lg">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
               <tr>
                 <th className="p-3">Proposal ID</th>

@@ -37,7 +37,7 @@ export default function AdminRequestEstimatePage() {
             address: "123 Main St",
             roofType: "Asphalt",
             areaSize: 1500,
-            fileName: "roof1.png",
+            fileName: "/roof.png",
             status: "Pending",
           },
           {
@@ -48,7 +48,7 @@ export default function AdminRequestEstimatePage() {
             address: "456 Park Ave",
             roofType: "Metal",
             areaSize: 2200,
-            fileName: "roof2.jpg",
+            fileName: "/roof.png",
             status: "Approved",
           },
           {
@@ -59,7 +59,7 @@ export default function AdminRequestEstimatePage() {
             address: "789 Hilltop Rd",
             roofType: "Tile",
             areaSize: 1800,
-            fileName: "roof3.jpeg",
+            fileName: "/roof.png",
             status: "Rejected",
           },
         ];
@@ -96,17 +96,17 @@ export default function AdminRequestEstimatePage() {
         className="text-gray-900"
       >
         {/* Header */}
-        <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-5 px-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+        <header className="bg-gradient-to-r flex-col md:flex-row from-green-600 to-teal-600 text-white py-5 px-2 md:px-6 flex md:items-center justify-between">
+          <h1 className=" md:text-2xl font-bold flex items-center  gap-2">
             <FileText /> Admin – Request Estimates
           </h1>
-          <span className="text-sm">{estimates.length} Requests</span>
+          <span className="text-xs text-end">{estimates.length} Requests</span>
         </header>
 
         {/* Table */}
-        <section className="max-w-6xl mx-auto my-8">
-          <div className="overflow-x-auto">
-            <table className="w-full border border-gray-300 rounded-lg shadow text-sm">
+        <section className="my-8">
+          <div className="overflow-x-auto bg-white">
+            <table className="w-full border border-gray-300 rounded-lg shadow text-sm min-w-[1200px]">
               <thead className="bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
                 <tr>
                   <th className="p-3 text-left">Name</th>
@@ -131,9 +131,15 @@ export default function AdminRequestEstimatePage() {
                     <td className="p-3">{e.areaSize} sq. ft.</td>
                     <td className="p-3">
                       {e.fileName ? (
-                        <span className="text-blue-600 underline cursor-pointer">
+                        <a
+                          href={e.fileName}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="text-blue-600 underline cursor-pointer"
+                        >
                           {e.fileName}
-                        </span>
+                        </a>
                       ) : (
                         "No File"
                       )}
@@ -151,7 +157,7 @@ export default function AdminRequestEstimatePage() {
                         {e.status}
                       </span>
                     </td>
-                    <td className="p-3 flex gap-2">
+                    <td className="p-3 flex gap-2 flex-wrap">
                       {e.status === "Pending" && (
                         <>
                           <button

@@ -214,7 +214,7 @@ export default function AdminJobProgressPage() {
         className="text-gray-900"
       >
         <header className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-5 px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+          <h1 className=" md:text-3xl font-bold flex items-center gap-2">
             <Play /> Admin – Job Progress
           </h1>
           <span>Project ID: {id}</span>
@@ -222,30 +222,36 @@ export default function AdminJobProgressPage() {
 
         <section className="my-8 max-w-6xl mx-auto space-y-8">
           {/* Controls */}
-          <div className="flex flex-col md:flex-row justify-between gap-3">
-            <div className="flex gap-2 flex-wrap">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className="flex flex-col md:flex-row justify-between gap-3 w-full">
+            {/* Filters + Search */}
+            <div className="flex flex-col sm:flex-row gap-2 flex-wrap w-full md:w-auto">
+              {/* Search Box */}
+              <div className="relative bg-white w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <input
                   placeholder="Search..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:border focus:border-green-400 outline-none"
+                  className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:border-green-400 outline-none text-sm sm:text-base"
                 />
               </div>
+
+              {/* Filter Select */}
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as any)}
-                className="rounded-lg border border-gray-300 px-3 py-2 focus:border focus:border-green-400 outline-none"
+                className="w-full sm:w-auto bg-white rounded-lg border border-gray-300 px-3 py-2 focus:border-green-400 outline-none text-sm sm:text-base"
               >
                 <option value="all">All</option>
                 <option value="withPhotos">With Photos</option>
                 <option value="withComments">With Comments</option>
               </select>
+
+              {/* Status Filter */}
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 focus:border focus:border-green-400 outline-none"
+                className="w-full sm:w-auto bg-white rounded-lg border border-gray-300 px-3 py-2 focus:border-green-400 outline-none text-sm sm:text-base"
               >
                 <option value="all">All Statuses</option>
                 {STATUS_STEPS.map((s) => (
@@ -258,8 +264,8 @@ export default function AdminJobProgressPage() {
           </div>
 
           {/* Updates Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border border-gray-300 text-sm">
+          <div className="overflow-x-auto bg-white">
+            <table className="w-full border border-gray-300 text-sm min-w-[1000px]">
               <thead className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
                 <tr>
                   <th className="p-3 text-left">Date</th>
@@ -319,15 +325,19 @@ export default function AdminJobProgressPage() {
           </div>
 
           {/* Add Update */}
-          <div className="bg-white shadow p-4 rounded-lg">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <PlusCircle /> Add Update
+          <div className="bg-white shadow p-4 sm:p-6 lg:p-8 rounded-lg w-full">
+            <h3 className="font-semibold mb-3 flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+              <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6" /> Add Update
             </h3>
-            <form onSubmit={handleSubmitUpdate} className="space-y-3">
+            <form
+              onSubmit={handleSubmitUpdate}
+              className="space-y-3 sm:space-y-4"
+            >
+              {/* Status Select */}
               <select
                 value={formStatus}
                 onChange={(e) => setFormStatus(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border focus:border-green-400 outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 focus:border-green-400 outline-none text-sm sm:text-base"
               >
                 {STATUS_STEPS.map((s) => (
                   <option key={s} value={s}>
@@ -335,23 +345,30 @@ export default function AdminJobProgressPage() {
                   </option>
                 ))}
               </select>
+
+              {/* Description */}
               <textarea
                 value={formDesc}
                 onChange={(e) => setFormDesc(e.target.value)}
                 placeholder="Description..."
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border focus:border-green-400 outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 focus:border-green-400 outline-none text-sm sm:text-base"
+                rows={3}
               />
+
+              {/* File Upload */}
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handleFiles}
-                className="focus:border focus:border-green-400 outline-none border border-gray-300 p-2 mr-2 rounded-md"
+                className="w-full border border-gray-300 p-2 sm:p-3 rounded-md focus:border-green-400 outline-none text-sm sm:text-base"
               />
+
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-indigo-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-indigo-700"
+                className="w-full sm:w-auto bg-indigo-600 cursor-pointer text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-md hover:bg-indigo-700 text-sm sm:text-base transition"
               >
                 {isSubmitting ? "Adding..." : "Add Update"}
               </button>

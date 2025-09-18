@@ -53,12 +53,12 @@ export default function RequestEstimatePage() {
 
   return (
     <CustomerDashboardLayout>
-      <main className=" flex justify-center">
+      <main className="flex justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-lg"
+          className="w-full max-w-4xl bg-white p-4 md:p-8 rounded-2xl shadow-lg mx-auto"
         >
           {!submitted ? (
             <>
@@ -72,9 +72,12 @@ export default function RequestEstimatePage() {
               </p>
 
               {/* Form */}
-              <form onSubmit={formik.handleSubmit} className="space-y-5">
+              <form
+                onSubmit={formik.handleSubmit}
+                className="space-y-5 min-w-0"
+              >
                 {/* Name */}
-                <div>
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
                   </label>
@@ -84,7 +87,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.name}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
+                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.name && formik.errors.name
                         ? "border-red-500"
                         : ""
@@ -99,7 +102,7 @@ export default function RequestEstimatePage() {
                 </div>
 
                 {/* Email */}
-                <div>
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email
                   </label>
@@ -109,7 +112,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
+                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.email && formik.errors.email
                         ? "border-red-500"
                         : ""
@@ -124,7 +127,7 @@ export default function RequestEstimatePage() {
                 </div>
 
                 {/* Phone */}
-                <div>
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone
                   </label>
@@ -134,7 +137,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.phone}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
+                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.phone && formik.errors.phone
                         ? "border-red-500"
                         : ""
@@ -149,7 +152,7 @@ export default function RequestEstimatePage() {
                 </div>
 
                 {/* Address */}
-                <div>
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Address
                   </label>
@@ -159,7 +162,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.address}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
+                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.address && formik.errors.address
                         ? "border-red-500"
                         : ""
@@ -174,7 +177,7 @@ export default function RequestEstimatePage() {
                 </div>
 
                 {/* Roof Type */}
-                <div>
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Roof Type
                   </label>
@@ -183,7 +186,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.roofType}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
+                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.roofType && formik.errors.roofType
                         ? "border-red-500"
                         : ""
@@ -203,7 +206,7 @@ export default function RequestEstimatePage() {
                 </div>
 
                 {/* Roof Area */}
-                <div>
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Roof Area (sq. ft.)
                   </label>
@@ -213,7 +216,7 @@ export default function RequestEstimatePage() {
                     value={formik.values.areaSize}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
+                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
                       formik.touched.areaSize && formik.errors.areaSize
                         ? "border-red-500"
                         : ""
@@ -228,23 +231,25 @@ export default function RequestEstimatePage() {
                 </div>
 
                 {/* File Upload */}
-                <div>
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Upload Roof Images
                   </label>
-                  <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 cursor-pointer hover:border-green-400 transition">
-                    <Upload className="w-5 h-5 text-gray-500 mr-2" />
+                  <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 cursor-pointer hover:border-green-400 transition min-w-0">
+                    <Upload className="w-5 h-5 text-gray-500 mr-2 flex-shrink-0" />
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="w-full text-sm"
+                      className="w-full text-sm truncate"
                     />
                   </div>
                   {file && (
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-gray-600 truncate">
                       Selected file:{" "}
-                      <span className="font-medium">{file.name}</span>
+                      <span className="font-medium truncate block max-w-full">
+                        {file.name}
+                      </span>
                     </p>
                   )}
                 </div>
@@ -254,7 +259,7 @@ export default function RequestEstimatePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-1/3 flex justify-center items-center bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 cursor-pointer rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-70"
+                    className="w-full md:w-1/3 flex justify-center items-center bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 cursor-pointer rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-70"
                   >
                     {loading ? (
                       <Loader2 className="animate-spin w-5 h-5 mr-2" />

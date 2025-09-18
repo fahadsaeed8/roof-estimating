@@ -557,9 +557,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Menu,
+  X,
   LogOut,
   LayoutDashboard,
   FileText,
@@ -577,6 +578,7 @@ const navItems = [
   { name: "Job Progress", href: "/admin-panel/job-progress", icon: Briefcase },
   { name: "Estimates", href: "/admin-panel/estimates", icon: ClipboardList },
   { name: "Customers", href: "/admin-panel/customers", icon: Users },
+  { name: "Assign Role", href: "/admin-panel/assign-role", icon: Settings },
 ];
 
 export default function AdminDashboardLayout({
@@ -586,67 +588,105 @@ export default function AdminDashboardLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
- 
+
+  // Close sidebar on Escape
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setSidebarOpen(false);
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
+  // Close sidebar when route changes (useful after clicking a link)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-900">
+    <div className="lg:flex min-h-screen bg-gray-100 text-gray-900">
+      {/* Overlay (shown on mobile when sidebar is open) */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-20 lg:hidden"
+          aria-hidden="true"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`fixed z-20 inset-y-0 left-0 transform bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out 
-        ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0`}
+        className={`fixed z-30 inset-y-0 left-0 transform bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out 
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        aria-label="Sidebar"
       >
-        <div className="h-16 flex items-center justify-center font-bold text-xl border-b bg-gradient-to-r from-green-600 to-teal-600 text-white">
-          Admin Panel
-        </div>
-        <nav className="p-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200
-                  ${
-                    isActive
-                      ? "bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md"
-                      : "text-gray-700 hover:bg-green-100"
-                  }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="absolute bottom-0 w-full p-4 border-t">
-          <button
-            className="flex items-center gap-2 w-full px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-            aria-label="Logout"
-          >
-            <LogOut className="h-5 w-5" />
-            Logout
-          </button>
+        {/* Sidebar content container with scroll */}
+        <div className="h-screen flex flex-col overflow-y-auto">
+          {/* Header */}
+          <div className="h-16 flex items-center justify-center font-bold text-xl bg-gradient-to-r from-green-600 to-teal-600 text-white">
+            Admin Panel
+          </div>
+
+          {/* Navigation items */}
+          <nav className="flex-1 p-4 space-y-1">
+            {navItems.map((item) => {
+              const isActive = pathname?.startsWith(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)} // close on mobile when a nav link is clicked
+                  className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200
+              ${
+                isActive
+                  ? "bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-md"
+                  : "text-gray-700 hover:bg-green-100"
+              }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Footer (Logout button stays fixed at bottom of scroll area) */}
+          <div className="p-4 border-t">
+            <button
+              className="flex items-center cursor-pointer gap-2 w-full px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+              aria-label="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+              Logout
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col md:ml-64">
+      <div className="flex-1 flex flex-col lg:ml-64 overflow-x-auto">
         {/* Navbar */}
-        <header className="h-16 bg-white shadow flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+        <header className="h-16 bg-white shadow flex items-center justify-between px-4 lg:px-6 sticky top-0 z-10">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="lg:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Open sidebar menu"
+            aria-expanded={sidebarOpen}
           >
-            <Menu className="h-6 w-6" />
+            {sidebarOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
-          <h1 className="font-semibold text-lg tracking-wide">
+          <h1 className="font-semibold text-lg tracking-wide truncate text-center lg:text-left">
             Roof Estimate CRM
           </h1>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600">Admin User</span>
+            <span className="hidden sm:inline text-sm text-gray-600">
+              Admin User
+            </span>
             <img
               src="https://i.pravatar.cc/40?img=5"
               alt="profile"
@@ -656,7 +696,7 @@ export default function AdminDashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50">
+        <main className="flex-1 p-4 overflow-y-auto lg:p-6 bg-gray-50 ">
           {children}
         </main>
       </div>

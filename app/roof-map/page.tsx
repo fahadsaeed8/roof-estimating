@@ -103,7 +103,7 @@ export default function RoofEstimator() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full flex flex-col">
       {/* Search Bar */}
       <div className="w-full mb-10">
         <label className="mb-1" htmlFor="">
@@ -118,7 +118,7 @@ export default function RoofEstimator() {
           }}
           onKeyDown={handleEnter}
           placeholder="Search for a place..."
-          className="w-full p-2 rounded-lg border bg-white outline-none border-gray-300 text-black"
+          className=" w-full max-w-full p-2 rounded-lg border bg-white outline-none border-gray-300 text-black"
         />
 
         {suggestions.length > 0 && (
@@ -136,12 +136,8 @@ export default function RoofEstimator() {
         )}
       </div>
 
-      {/* Map (hidden until location selected) */}
-      {showMap ? (
-        <div id="map" className="flex-1 w-full" />
-      ) : (
-        <div className="flex-1 flex items-center justify-center text-gray-500"></div>
-      )}
+      {/* Map (only render when location selected) */}
+      {showMap && <div id="map" className="h-[600px] w-full" />}
     </div>
   );
 }

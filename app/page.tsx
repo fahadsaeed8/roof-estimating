@@ -173,11 +173,11 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex text-gray-900 bg-gray-50">
-      <div className="flex-1 flex flex-col">
+    <div className="flex text-gray-900 bg-gray-50 ">
+      <div className="flex-1 flex flex-col w-full">
         <CustomerPanelNavbar />
-        <main className=" flex justify-center mb-10">
-          <div className=" w-6xl mx-auto my-10">
+        <main className=" min-h-screen flex justify-center mb-10 px-3 max-w-6xl mx-auto w-full">
+          <div className=" my-10  w-full">
             <div className="">
               <h1 className="text-2xl md:text-4xl font-bold text-center mb-8">
                 Order a roof report
@@ -190,10 +190,10 @@ export default function DashboardLayout() {
                 </label>
                 <div className="flex flex-wrap gap-4">
                   {/* Single Family */}
-                  <div className="relative">
+                  <div className="relative w-full">
                     <button
                       onClick={() => setPropertyType("single")}
-                      className={`flex items-center cursor-pointer gap-2 px-6 py-4 border-2 rounded-md w-50 justify-center relative
+                      className={`flex w-full md:w-50 items-center cursor-pointer gap-2 px-6 py-4 border-2 rounded-md justify-center relative
                          ${
                            propertyType === "single"
                              ? "border-red-500 bg-red-50 text-red-600"
@@ -213,10 +213,10 @@ export default function DashboardLayout() {
                   </div>
 
                   {/* Multi Family */}
-                  <div className="relative">
+                  <div className="relative w-full">
                     <button
                       onClick={() => setPropertyType("multi")}
-                      className={`flex items-center cursor-pointer gap-2 px-6 py-4 border-2 rounded-md w-50 justify-center relative
+                      className={`flex items-center w-full md:w-50 cursor-pointer gap-2 px-6 py-4 border-2 rounded-md justify-center relative
                          ${
                            propertyType === "multi"
                              ? "border-red-500 bg-red-50 text-red-600"
@@ -236,10 +236,10 @@ export default function DashboardLayout() {
                   </div>
 
                   {/* Commercial */}
-                  <div className="relative">
+                  <div className="relative w-full">
                     <button
                       onClick={() => setPropertyType("commercial")}
-                      className={`flex items-center cursor-pointer gap-2 px-6 py-4 border-2 rounded-md w-50 justify-center relative
+                      className={`flex items-center  w-full md:w-50 cursor-pointer gap-2 px-6 py-4 border-2 rounded-md  justify-center relative
                          ${
                            propertyType === "commercial"
                              ? "border-red-500 bg-red-50 text-red-600"
@@ -319,7 +319,7 @@ export default function DashboardLayout() {
             {(propertyType === "single" ||
               propertyType === "multi" ||
               propertyType === "commercial") && (
-              <>
+              <div className=" w-full">
                 {!isGafTakeoff && (
                   <div className="">
                     <p className="text-sm text-gray-700 mb-4">
@@ -406,7 +406,7 @@ export default function DashboardLayout() {
                         {/* Primary Only */}
                         <button
                           onClick={() => handleStructureSelect("primary")}
-                          className="flex bg-white items-center gap-2 cursor-pointer px-3 py-2 rounded-md border transition
+                          className="flex w-full md:w-fit bg-white items-center gap-2 cursor-pointer px-3 py-2 rounded-md border transition
                        border-gray-300 hover:border-red-400"
                         >
                           <span
@@ -423,7 +423,7 @@ export default function DashboardLayout() {
                         {/* All Structures */}
                         <button
                           onClick={() => handleStructureSelect("all")}
-                          className="flex bg-white items-center gap-2 cursor-pointer px-3 py-2 rounded-md border transition
+                          className="flex w-full md:w-fit bg-white items-center gap-2 cursor-pointer px-3 py-2 rounded-md border transition
                        border-gray-300 hover:border-red-400"
                         >
                           <span
@@ -442,7 +442,7 @@ export default function DashboardLayout() {
                           onClick={() =>
                             handleStructureSelect("exclude-primary")
                           }
-                          className="flex bg-white items-center gap-2 cursor-pointer px-3 py-2 rounded-md border transition
+                          className="flex w-full md:w-fit bg-white items-center gap-2 cursor-pointer px-3 py-2 rounded-md border transition
                        border-gray-300 hover:border-red-400"
                         >
                           <span
@@ -505,7 +505,7 @@ export default function DashboardLayout() {
                 )}
 
                 {isGafTakeoff && (
-                  <div className=" my-10 max-w-6xl mx-auto">
+                  <div className=" my-10">
                     {/* Upload Section */}
                     <div>
                       <label className="block mb-2 font-medium text-red-600">
@@ -517,7 +517,6 @@ export default function DashboardLayout() {
 
                       {/* Upload area */}
                       <div className="border bg-white border-gray-300 rounded-lg p-6 mb-6 text-center">
-                        {/* Hidden input */}
                         <input
                           type="file"
                           id="fileInput"
@@ -526,7 +525,6 @@ export default function DashboardLayout() {
                           onChange={handleFileChange}
                         />
 
-                        {/* Styled button */}
                         <label
                           htmlFor="fileInput"
                           className="bg-red-600 text-white px-4 py-2 rounded cursor-pointer inline-block"
@@ -536,7 +534,6 @@ export default function DashboardLayout() {
 
                         <p className="text-gray-500 mt-2">or Drop File</p>
 
-                        {/* Input field showing file name */}
                         <input
                           type="text"
                           value={fileName}
@@ -556,7 +553,7 @@ export default function DashboardLayout() {
                       What unit of measurement would you like in the roof
                       report?
                     </label>
-                    <div className="flex gap-4 mb-6">
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
                       <label>
                         <input type="radio" name="units" className="mr-2" />{" "}
                         Imperial Units (in, ft, yd)
@@ -652,19 +649,11 @@ export default function DashboardLayout() {
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </main>
-        <div className="w-full h-14 text-white bg-black/80 flex items-center justify-between px-3 text-xs">
-        <div>
-          <h1 className="text-[11px] text-gray-200">@ Copyright 2025 Roof Estimate</h1>
-        </div>
-        <div className="flex items-center justify-center gap-5">
-          <h1>Terms of Use</h1>
-          <h1>Privacy Policy</h1>
-        </div>
-        </div>
+      
       </div>
     </div>
   );

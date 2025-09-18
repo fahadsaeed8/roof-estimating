@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
         {/* 🔹 Quick Actions */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <Link
               href="/admin-panel/job-progress"
               className="flex flex-col items-center justify-center gap-2 bg-blue-50 border border-blue-100 rounded-xl p-4 hover:bg-blue-100 transition"
