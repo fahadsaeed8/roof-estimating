@@ -23,14 +23,16 @@ const Home = () => {
     },
   ];
   return (
-    <div>
-      <CustomerPanelNavbar/>
-      <div className="my-10 px-4 sm:px-6 md:px-0">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen flex flex-col">
+      <CustomerPanelNavbar />
+      {/* Main area: fills remaining height so inner columns can manage their own scrolling */}
+      <div className="flex-1 my-10 px-4 sm:px-6 md:px-3">
+        <div className="max-w-6xl mx-auto h-full">
           {/* Payment Information Section (Scrollable Left Side) */}
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col md:flex-row gap-6 h-full">
             {/* Left side (Scrollable Billing info) */}
-            <div className="flex-1 space-y-4 overflow-y-auto max-h-full">
+            {/* Make this column scrollable only */}
+            <div className="flex-1 space-y-4 overflow-y-auto pr-0 md:pr-6">
               <h2 className="text-xl font-semibold text-center md:text-left">
                 Payment information
               </h2>
@@ -130,7 +132,8 @@ const Home = () => {
             </div>
 
             {/* Right side (Fixed Payment Summary) */}
-            <div className="w-full md:w-[300px] sticky md:top-10 max-h-full md:max-h-[80vh] overflow-y-auto">
+            {/* Make this column non-scrolling: remove internal overflow and max-height */}
+            <div className="w-full md:w-[300px] flex-none md:sticky md:top-30 self-start">
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-center md:text-left">
                   Payment summary
@@ -171,6 +174,8 @@ const Home = () => {
           {/* Order Section */}
         </div>
       </div>
+
+      {/* Footer */}
       <div className="h-auto sm:h-14 text-white bg-black/80 flex flex-col sm:flex-row items-center justify-between px-3 py-2 sm:py-0 text-xs gap-2 sm:gap-0">
         <div>
           <h1 className="text-[10px] sm:text-[11px] text-gray-200 text-center sm:text-left">
