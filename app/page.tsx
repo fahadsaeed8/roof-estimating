@@ -188,9 +188,9 @@ export default function DashboardLayout() {
                 <label className="block text-lg font-medium mb-2">
                   Select property type
                 </label>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex  flex-wrap gap-4 w-full">
                   {/* Single Family */}
-                  <div className="relative w-full">
+                  <div className="relative w-full md:w-fit">
                     <button
                       onClick={() => setPropertyType("single")}
                       className={`flex w-full md:w-50 items-center cursor-pointer gap-2 px-6 py-4 border-2 rounded-md justify-center relative
@@ -213,7 +213,7 @@ export default function DashboardLayout() {
                   </div>
 
                   {/* Multi Family */}
-                  <div className="relative w-full">
+                  <div className="relative w-full md:w-fit">
                     <button
                       onClick={() => setPropertyType("multi")}
                       className={`flex items-center w-full md:w-50 cursor-pointer gap-2 px-6 py-4 border-2 rounded-md justify-center relative
@@ -236,7 +236,7 @@ export default function DashboardLayout() {
                   </div>
 
                   {/* Commercial */}
-                  <div className="relative w-full">
+                  <div className="relative w-full md:w-fit">
                     <button
                       onClick={() => setPropertyType("commercial")}
                       className={`flex items-center  w-full md:w-50 cursor-pointer gap-2 px-6 py-4 border-2 rounded-md  justify-center relative
