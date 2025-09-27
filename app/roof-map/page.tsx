@@ -261,7 +261,7 @@ export default function RoofEstimator({
       {/* Pitch Input */}
       <div className="flex gap-4">
         <div>
-          <label>Rise</label>
+          <label className="mr-1">Rise</label>
           <input
             type="number"
             value={rise}
@@ -270,7 +270,7 @@ export default function RoofEstimator({
           />
         </div>
         <div>
-          <label>Run</label>
+          <label className="mr-1">Run</label>
           <input
             type="number"
             value={run}
