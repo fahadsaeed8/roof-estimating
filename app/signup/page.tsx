@@ -22,6 +22,8 @@ const SignUp = () => {
     queryFn: roleListAPI,
   });
 
+  console.log("roles", roles);
+
   // ✅ Signup mutation
   const mutation = useMutation({
     mutationFn: signupAPI,

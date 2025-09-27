@@ -194,11 +194,11 @@ const RoofReportForm = () => {
         </div>
 
         {/* Conditional Rendering */}
-        {!isGafTakeoff && (
+        {/* {!isGafTakeoff && (
           <div className="my-10">
             <RoofEstimator />
           </div>
-        )}
+        )} */}
         {(propertyType === "single" ||
           propertyType === "multi" ||
           propertyType === "commercial") && (
@@ -499,7 +499,8 @@ const RoofReportForm = () => {
                       below:
                       <br />• You accept and hereby electronically sign the{" "}
                       <a href="#" className="text-red-600">
-                        GAF Roof Estimates and GAF Business Services Terms of Use
+                        GAF Roof Estimates and GAF Business Services Terms of
+                        Use
                       </a>
                       .
                       <br />• You consent to the{" "}

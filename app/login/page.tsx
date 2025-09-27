@@ -45,7 +45,7 @@ export default function LoginPage() {
       const roleName = data?.role?.name || "";
       switch (roleName) {
         case "Admin":
-          router.push("/dashboard/admin");
+          router.push("/admin-panel/dashboard");
           break;
         default:
           router.push("/");
