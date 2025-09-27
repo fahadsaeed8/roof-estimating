@@ -6,7 +6,21 @@ import * as Esri from "esri-leaflet";
 import "leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
 
-export default function RoofEstimator() {
+interface RoofEstimatorProps {
+  setPlanArea: (area: number | null) => void;
+  setRoofArea: (area: number | null) => void;
+  setEdges: (edges: { id: string; length: number; type: string }[]) => void;
+  setPolygonPoints: (
+    points: { lat: number; lon: number; seq: number }[]
+  ) => void;
+}
+
+export default function RoofEstimator({
+  setPlanArea,
+  setRoofArea,
+  setEdges,
+  setPolygonPoints,
+}: RoofEstimatorProps) {
   const mapRef = useRef<L.Map | null>(null);
   const drawnItemsRef = useRef<L.FeatureGroup | null>(null);
 
@@ -14,24 +28,47 @@ export default function RoofEstimator() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showMap, setShowMap] = useState(false);
 
-  // Areas
-  const [planArea, setPlanArea] = useState<number | null>(null);
-  const [roofArea, setRoofArea] = useState<number | null>(null);
+  // Local states (for display only)
+  const [localPlanArea, setLocalPlanArea] = useState<number | null>(null);
+  const [localRoofArea, setLocalRoofArea] = useState<number | null>(null);
+  const [localEdges, setLocalEdges] = useState<
+    { id: string; length: number; type: string }[]
+  >([]);
 
   // Pitch input
   const [rise, setRise] = useState<number>(4);
   const [run, setRun] = useState<number>(12);
-
-  // Edge classifications
-  const [edges, setEdges] = useState<
-    { id: string; length: number; type: string }[]
-  >([]);
 
   // slope multiplier
   const getSlopeMultiplier = () => {
     if (run === 0) return 1;
     const ratio = rise / run;
     return Math.sqrt(1 + ratio * ratio);
+  };
+
+  // 🔹 API call function
+  const sendDataToAPI = async (
+    plan: number,
+    roof: number,
+    edgeList: { id: string; length: number; type: string }[]
+  ) => {
+    try {
+      const res = await fetch("/api/roof-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planArea: plan,
+          roofArea: roof,
+          edges: edgeList,
+        }),
+      });
+
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      console.log("✅ Data saved successfully:", data);
+    } catch (err) {
+      console.error("❌ Failed to send data:", err);
+    }
   };
 
   useEffect(() => {
@@ -75,12 +112,21 @@ export default function RoofEstimator() {
           // --- Area ---
           const area = L.GeometryUtil.geodesicArea(latlngs);
           const planSqM = area;
-          const planSqFt = area * 10.7639;
           const multiplier = getSlopeMultiplier();
           const roofSqM = planSqM * multiplier;
-          const roofSqFt = planSqFt * multiplier;
+
+          setLocalPlanArea(planSqM);
+          setLocalRoofArea(roofSqM);
           setPlanArea(planSqM);
           setRoofArea(roofSqM);
+
+          // --- Polygon Points ---
+          const polygonPts = latlngs.map((p: any, idx: number) => ({
+            lat: p.lat,
+            lon: p.lng,
+            seq: idx + 1,
+          }));
+          setPolygonPoints(polygonPts);
 
           // --- Edges ---
           const edgeData: { id: string; length: number; type: string }[] = [];
@@ -116,8 +162,13 @@ export default function RoofEstimator() {
             });
 
             select.onchange = () => {
-              setEdges((prev) =>
+              setLocalEdges((prev) =>
                 prev.map((ed) =>
+                  ed.id === id ? { ...ed, type: select.value } : ed
+                )
+              );
+              setEdges(
+                edgeData.map((ed) =>
                   ed.id === id ? { ...ed, type: select.value } : ed
                 )
               );
@@ -127,7 +178,11 @@ export default function RoofEstimator() {
             edgeLine.bindPopup(popupDiv);
           }
 
+          setLocalEdges(edgeData);
           setEdges(edgeData);
+
+          // 🔹 Send data to API
+          sendDataToAPI(planSqM, roofSqM, edgeData);
         }
       });
     }
@@ -226,25 +281,25 @@ export default function RoofEstimator() {
       </div>
 
       {/* Results */}
-      {planArea && roofArea && (
+      {localPlanArea && localRoofArea && (
         <div className="p-4 border rounded bg-gray-50">
           <p>
-            <strong>Plan Area:</strong> {planArea.toFixed(2)} m² (
-            {(planArea * 10.7639).toFixed(2)} ft²)
+            <strong>Plan Area:</strong> {localPlanArea.toFixed(2)} m² (
+            {(localPlanArea * 10.7639).toFixed(2)} ft²)
           </p>
           <p>
-            <strong>Roof Area (with pitch):</strong> {roofArea.toFixed(2)} m² (
-            {(roofArea * 10.7639).toFixed(2)} ft²)
+            <strong>Roof Area (with pitch):</strong> {localRoofArea.toFixed(2)}{" "}
+            m² ({(localRoofArea * 10.7639).toFixed(2)} ft²)
           </p>
         </div>
       )}
 
       {/* Edges */}
-      {edges.length > 0 && (
+      {localEdges.length > 0 && (
         <div className="p-4 border rounded bg-gray-50">
           <h3 className="font-bold mb-2">Edges Classification</h3>
           <ul>
-            {edges.map((edge) => (
+            {localEdges.map((edge) => (
               <li key={edge.id}>
                 {edge.type} → {edge.length.toFixed(2)} m
               </li>
