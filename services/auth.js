@@ -1,5 +1,8 @@
 import { axiosInstance, handleAPIRequest } from "./axiosInstance";
 
+export const getProfileAPI = () =>
+  handleAPIRequest(axiosInstance.get, "api/profile");
+
 export const loginAPI = (data) =>
   handleAPIRequest(axiosInstance.post, "api/login", data);
 

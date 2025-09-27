@@ -22,6 +22,8 @@ const SignUp = () => {
     queryFn: roleListAPI,
   });
 
+  console.log("roles", roles);
+
   // ✅ Signup mutation
   const mutation = useMutation({
     mutationFn: signupAPI,
@@ -141,7 +143,7 @@ const SignUp = () => {
               </div>
 
               {/* Role Dropdown */}
-              {/* <div>
+              <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Select Role <span className="text-red-500">*</span>
                 </label>
@@ -166,7 +168,7 @@ const SignUp = () => {
                   component="div"
                   className="text-red-500 text-xs mt-1"
                 />
-              </div> */}
+              </div>
 
               {/* Email */}
               <div>

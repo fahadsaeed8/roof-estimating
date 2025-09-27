@@ -34,7 +34,7 @@ export default function LoginPage() {
       setCookie(null, "token", token, {
         maxAge: 30 * 24 * 60 * 60,
         path: "/",
-        domain: ".roof-estimating.vercel.app",
+        // domain: ".roof-estimating.vercel.app",
         secure: true,
         sameSite: "strict",
       });
@@ -45,7 +45,7 @@ export default function LoginPage() {
       const roleName = data?.role?.name || "";
       switch (roleName) {
         case "Admin":
-          router.push("/dashboard/admin");
+          router.push("/admin-panel/dashboard");
           break;
         default:
           router.push("/");

@@ -11,13 +11,28 @@ import {
   Briefcase,
   ClipboardPlus,
 } from "lucide-react";
+import { handleLogout } from "@/utils/authHelper";
+import { useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
 
 const navItems = [
-  { name: "Dashboard", href: "/customer-panel/dashboard", icon: LayoutDashboard },
+  {
+    name: "Dashboard",
+    href: "/customer-panel/dashboard",
+    icon: LayoutDashboard,
+  },
   { name: "Proposals", href: "/customer-panel/proposal", icon: FileText },
   { name: "Payments", href: "/customer-panel/payment", icon: CreditCard },
-  { name: "Job Progress", href: "/customer-panel/job-progress", icon: Briefcase },
-  { name: "Request Estimate", href: "/customer-panel/request-estimate", icon: ClipboardPlus },
+  {
+    name: "Job Progress",
+    href: "/customer-panel/job-progress",
+    icon: Briefcase,
+  },
+  {
+    name: "Request Estimate",
+    href: "/customer-panel/request-estimate",
+    icon: ClipboardPlus,
+  },
 ];
 
 export default function CustomerDashboardLayout({
@@ -28,12 +43,25 @@ export default function CustomerDashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
+  const queryClient = useQueryClient();
+
+  const userProfile: any = queryClient.getQueryData(["profile"]);
+
+  console.log("userProfile", userProfile);
+
+  const handleLogoutFunction = () => {
+    handleLogout();
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="flex bg-gray-100 text-gray-900">
       {/* Sidebar */}
       <aside
         className={`fixed z-30 inset-y-0 left-0 transform bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0`}
       >
         <div className="h-16 flex items-center justify-center font-bold text-xl border-b bg-gradient-to-r from-green-600 to-teal-600 text-white">
           Customer Panel
@@ -61,15 +89,14 @@ export default function CustomerDashboardLayout({
           })}
         </nav>
         <div className="absolute bottom-0 w-full p-4 border-t">
-          <Link href={"/login"} onClick={() => setSidebarOpen(false)}>
-            <button
-              className="flex cursor-pointer items-center gap-2 w-full px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-              aria-label="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-              Logout
-            </button>
-          </Link>
+          <button
+            onClick={handleLogoutFunction}
+            className="flex cursor-pointer items-center gap-2 w-full px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+            aria-label="Logout"
+          >
+            <LogOut className="h-5 w-5" />
+            Logout
+          </button>
         </div>
       </aside>
 
@@ -103,17 +130,37 @@ export default function CustomerDashboardLayout({
 
           {/* Right section (User info) */}
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <span className="text-sm text-gray-600 hidden sm:block">John Doe</span>
-            <img
-              src="https://i.pravatar.cc/40"
-              alt="profile"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border shadow-sm"
-            />
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-600">
+                {userProfile?.first_name}
+              </span>
+              <span className="text-sm text-gray-600">
+                {userProfile?.last_name}
+              </span>
+            </div>
+            {userProfile?.profile_image ? (
+              <Image
+                src={userProfile?.profile_image}
+                alt="profile"
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-full border shadow-sm"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full border shadow-sm bg-blue-500 flex items-center justify-center">
+                <span className="text-white font-semibold">
+                  {userProfile?.first_name?.charAt(0)}
+                  {userProfile?.last_name?.charAt(0)}
+                </span>
+              </div>
+            )}
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50">{children}</main>
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50">
+          {children}
+        </main>
       </div>
     </div>
   );
