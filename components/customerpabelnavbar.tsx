@@ -35,8 +35,12 @@ export default function CustomerPanelNavbar() {
       <Link href={"/customer-panel/dashboard"}>
         <div className="hidden md:flex flex-row-reverse items-center gap-3 cursor-pointer">
           <div className="flex flex-col">
-            <span className="text-sm text-gray-600">{data?.first_name}</span>
-            <span className="text-sm text-gray-600">{data?.last_name}</span>
+            <span className="text-sm text-gray-600">
+              {data?.first_name || "John"}
+            </span>
+            <span className="text-sm text-gray-600">
+              {data?.last_name || "Doe"}
+            </span>
           </div>
           {data?.profile_image ? (
             <Image
@@ -49,7 +53,7 @@ export default function CustomerPanelNavbar() {
           ) : (
             <div className="w-10 h-10 rounded-full border shadow-sm bg-blue-500 flex items-center justify-center">
               <span className="text-white font-semibold">
-                {data?.first_name?.charAt(0)}
+                {data?.first_name?.charAt(0) || "A"}
                 {data?.last_name?.charAt(0)}
               </span>
             </div>
