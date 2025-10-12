@@ -1,110 +1,120 @@
 "use client";
 
-import DashboardLayout from "@/app/page";
-import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
-import { Upload, CheckCircle, Loader2 } from "lucide-react";
+import { Loader2, CheckCircle } from "lucide-react";
+import { useState } from "react";
 import CustomerDashboardLayout from "@/app/dashboard/customer/page";
+import { useRouter } from "next/navigation";
 
-export default function RequestEstimatePage() {
-  const [file, setFile] = useState<File | null>(null);
+export default function CreateProjectForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  // ✅ Formik with Yup Validation
   const formik = useFormik({
     initialValues: {
-      name: "",
+      projectName: "",
       email: "",
       phone: "",
-      address: "",
-      roofType: "",
-      areaSize: "",
+      jobNumber: "",
+      jobOwner: "",
+      street: "",
+      city: "",
+      state: "",
+      zip: "",
     },
     validationSchema: Yup.object({
-      name: Yup.string().required("Full name is required"),
+      projectName: Yup.string().required("Project name is required"),
       email: Yup.string().email("Invalid email").required("Email is required"),
       phone: Yup.string().required("Phone number is required"),
-      address: Yup.string().required("Address is required"),
-      roofType: Yup.string().required("Please select a roof type"),
-      areaSize: Yup.number()
-        .typeError("Must be a number")
-        .positive("Must be greater than 0")
-        .required("Roof area size is required"),
+      jobNumber: Yup.string(),
+      jobOwner: Yup.string().required("Job owner is required"),
+      street: Yup.string().required("Street address is required"),
+      city: Yup.string().required("City is required"),
+      state: Yup.string().required("State is required"),
+      zip: Yup.string().required("Zip code is required"),
     }),
     onSubmit: (values) => {
       setLoading(true);
       setTimeout(() => {
-        console.log("Form Submitted ✅", values, file);
+        console.log("Form Submitted ✅", values);
         setLoading(false);
         setSubmitted(true);
-      }, 2000); // simulating API call
+      }, 2000);
     },
   });
 
-  // ✅ File Upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
-
   return (
     <CustomerDashboardLayout>
-      <main className="flex justify-center">
+      <main className="flex justify-center items-center px-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-4xl bg-white p-4 md:p-8 rounded-2xl shadow-lg mx-auto"
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-5xl bg-white rounded-xl shadow-xl p-6 md:p-10"
         >
           {!submitted ? (
             <>
-              {/* Title */}
-              <h2 className="text-3xl text-center font-bold mb-7 text-gray-900">
-                Request Roof Estimate
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Please fill out the form below and our team will get back to you
-                with a detailed roof estimate.
-              </p>
+              {/* Header */}
+              <div className="flex justify-between items-center pb-4 mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center w-full">
+                  Create New Project
+                </h2>
+              </div>
 
               {/* Form */}
               <form
                 onSubmit={formik.handleSubmit}
-                className="space-y-5 min-w-0"
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
               >
-                {/* Name */}
-                <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name
+                {/* Project Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Project Name *
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formik.values.name}
+                    name="projectName"
+                    value={formik.values.projectName}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
-                      formik.touched.name && formik.errors.name
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                    placeholder="John Doe"
+                    placeholder="Salas Mike"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
-                  {formik.touched.name && formik.errors.name && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formik.errors.name}
+                  {formik.touched.projectName && formik.errors.projectName && (
+                    <p className="text-red-500 text-sm">
+                      {formik.errors.projectName}
+                    </p>
+                  )}
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formik.values.phone}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Add a phone number..."
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  {formik.touched.phone && formik.errors.phone && (
+                    <p className="text-red-500 text-sm">
+                      {formik.errors.phone}
                     </p>
                   )}
                 </div>
 
                 {/* Email */}
-                <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    E-mail *
                   </label>
                   <input
                     type="email"
@@ -112,159 +122,163 @@ export default function RequestEstimatePage() {
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
-                      formik.touched.email && formik.errors.email
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                    placeholder="example@mail.com"
+                    placeholder="Add an email..."
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                   {formik.touched.email && formik.errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-sm">
                       {formik.errors.email}
                     </p>
                   )}
                 </div>
 
-                {/* Phone */}
-                <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formik.values.phone}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
-                      formik.touched.phone && formik.errors.phone
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                    placeholder="(123) 456-7890"
-                  />
-                  {formik.touched.phone && formik.errors.phone && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formik.errors.phone}
-                    </p>
-                  )}
-                </div>
-
-                {/* Address */}
-                <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address
+                {/* Job Number */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Job Number
                   </label>
                   <input
                     type="text"
-                    name="address"
-                    value={formik.values.address}
+                    name="jobNumber"
+                    value={formik.values.jobNumber}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
-                      formik.touched.address && formik.errors.address
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                    placeholder="123 Main St, City"
+                    placeholder="Add a job number..."
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
-                  {formik.touched.address && formik.errors.address && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formik.errors.address}
-                    </p>
-                  )}
                 </div>
 
-                {/* Roof Type */}
-                <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Roof Type
-                  </label>
-                  <select
-                    name="roofType"
-                    value={formik.values.roofType}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
-                      formik.touched.roofType && formik.errors.roofType
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                  >
-                    <option value="">Select roof type</option>
-                    <option value="asphalt">Asphalt Shingles</option>
-                    <option value="metal">Metal Roofing</option>
-                    <option value="tile">Tile Roofing</option>
-                    <option value="flat">Flat Roof</option>
-                  </select>
-                  {formik.touched.roofType && formik.errors.roofType && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formik.errors.roofType}
-                    </p>
-                  )}
-                </div>
-
-                {/* Roof Area */}
-                <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Roof Area (sq. ft.)
+                {/* Street */}
+                <div className="col-span-1 md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Property Address *
                   </label>
                   <input
-                    type="number"
-                    name="areaSize"
-                    value={formik.values.areaSize}
+                    type="text"
+                    name="street"
+                    value={formik.values.street}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`w-full min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:border focus:border-green-400 outline-none ${
-                      formik.touched.areaSize && formik.errors.areaSize
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                    placeholder="e.g., 1500"
+                    placeholder="1234 Cliffwood Ave"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
-                  {formik.touched.areaSize && formik.errors.areaSize && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formik.errors.areaSize}
+                  {formik.touched.street && formik.errors.street && (
+                    <p className="text-red-500 text-sm">
+                      {formik.errors.street}
                     </p>
                   )}
                 </div>
 
-                {/* File Upload */}
-                <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Upload Roof Images
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    City *
                   </label>
-                  <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 cursor-pointer hover:border-green-400 transition min-w-0">
-                    <Upload className="w-5 h-5 text-gray-500 mr-2 flex-shrink-0" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="w-full text-sm truncate"
-                    />
-                  </div>
-                  {file && (
-                    <p className="mt-2 text-sm text-gray-600 truncate">
-                      Selected file:{" "}
-                      <span className="font-medium truncate block max-w-full">
-                        {file.name}
-                      </span>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formik.values.city}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  {formik.touched.city && formik.errors.city && (
+                    <p className="text-red-500 text-sm">{formik.errors.city}</p>
+                  )}
+                </div>
+
+                {/* State */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    State *
+                  </label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={formik.values.state}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  {formik.touched.state && formik.errors.state && (
+                    <p className="text-red-500 text-sm">
+                      {formik.errors.state}
                     </p>
                   )}
                 </div>
 
-                {/* Submit Button */}
-                <div className="flex items-center justify-center">
+                {/* Zip */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Zip Code *
+                  </label>
+                  <input
+                    type="text"
+                    name="zip"
+                    value={formik.values.zip}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  {formik.touched.zip && formik.errors.zip && (
+                    <p className="text-red-500 text-sm">{formik.errors.zip}</p>
+                  )}
+                </div>
+
+                {/* Job Owner */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Job Owner *
+                  </label>
+                  <input
+                    type="text"
+                    name="jobOwner"
+                    value={formik.values.jobOwner}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Shafic Budron"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  {formik.touched.jobOwner && formik.errors.jobOwner && (
+                    <p className="text-red-500 text-sm">
+                      {formik.errors.jobOwner}
+                    </p>
+                  )}
+                </div>
+
+                {/* Buttons */}
+                <div className="col-span-1 md:col-span-2 flex flex-wrap justify-between gap-3 mt-6">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full md:w-1/3 flex justify-center items-center bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 cursor-pointer rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-70"
+                    className="flex-1 cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90 disabled:opacity-50"
                   >
                     {loading ? (
-                      <Loader2 className="animate-spin w-5 h-5 mr-2" />
+                      <Loader2 className="animate-spin w-5 h-5 inline mr-2" />
                     ) : null}
-                    {loading ? "Submitting..." : "Submit Request"}
+                    Create & Go to Project
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.setItem(
+                        "projectData",
+                        JSON.stringify(formik.values)
+                      );
+
+                      router.push("/property-map");
+                    }}
+                    className="flex-1 cursor-pointer bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90"
+                  >
+                    Create & Go to Measurement
+                  </button>
+
+                  <button
+                    type="button"
+                    className="flex-1 cursor-pointer bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90"
+                  >
+                    Create & Go to Roof Visualizer
                   </button>
                 </div>
               </form>
@@ -273,15 +287,16 @@ export default function RequestEstimatePage() {
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center"
+              transition={{ duration: 0.4 }}
+              className="text-center py-16"
             >
               <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-green-700 mb-2">
-                Request Submitted Successfully
+                Project Created Successfully
               </h2>
               <p className="text-gray-600">
-                Our team will contact you soon with your roof estimate details.
+                Your new project has been created. You can now continue to the
+                next step.
               </p>
             </motion.div>
           )}
