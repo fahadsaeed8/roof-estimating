@@ -98,22 +98,22 @@ export default function RightSidebar({
       <div className="h-px bg-gray-600 my-1"></div>
 
       {/* Additional Tools */}
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors opacity-50 cursor-not-allowed">
+      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors opacity-50 ">
         <RotateCcw className="w-5 h-5" />
         <span className="text-xs mt-1">Undo</span>
       </button>
 
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors opacity-50 cursor-not-allowed">
+      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors  opacity-50">
         <RotateCw className="w-5 h-5" />
         <span className="text-xs mt-1">Redo</span>
       </button>
 
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors opacity-50 cursor-not-allowed">
+      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors  opacity-50">
         <Scissors className="w-5 h-5" />
         <span className="text-xs mt-1">Split</span>
       </button>
 
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors opacity-50 cursor-not-allowed">
+      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors  opacity-50">
         <Layers className="w-5 h-5" />
         <span className="text-xs mt-1">Overhang</span>
       </button>

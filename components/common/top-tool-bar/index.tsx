@@ -185,12 +185,12 @@ export default function TopToolbar({
         </div>
 
         {/* Save Button */}
-        <button
+        {/* <button
           onClick={onSaveRoof}
           className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 text-sm rounded shadow"
         >
           Save Roof
-        </button>
+        </button> */}
       </div>
     </div>
   );
