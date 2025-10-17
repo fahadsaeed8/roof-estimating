@@ -2,310 +2,214 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { roleListAPI, signupAPI } from "@/services/auth";
-import Cookies from "js-cookie";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { signupAPI } from "@/services/auth";
+import { useMutation } from "@tanstack/react-query";
+import Link from "next/link";
 
-const SignUp = () => {
-  const [showPassword, setShowPassword] = useState(false);
+export default function SignUp() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Get roles using React Query
-  const { data: roles, isLoading: rolesLoading } = useQuery({
-    queryKey: ["roles"],
-    queryFn: roleListAPI,
-  });
-
-  console.log("roles", roles);
-
-  // ✅ Signup mutation
-  const mutation = useMutation({
-    mutationFn: signupAPI,
-    onSuccess: (data) => {
-      Cookies.set("signupemail", data?.email);
-      toast.success(data?.message);
-      router.push("/otp");
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.detail);
-    },
-  });
-
-  // ✅ Yup validation schema
   const validationSchema = Yup.object({
-    account_type: Yup.string().required("Account type is required"),
+    first_name: Yup.string().required("First name is required"),
+    middle_name: Yup.string(),
+    last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     verifyEmail: Yup.string()
       .oneOf([Yup.ref("email")], "Emails must match")
       .required("Please verify your email"),
-    first_name: Yup.string().required("First name is required"),
-    last_name: Yup.string().required("Last name is required"),
+    phone: Yup.string().required("Mobile number is required"),
+    password: Yup.string()
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
     company: Yup.string(),
     postal_code: Yup.string().required("Postal code is required"),
-    password: Yup.string().min(6, "Password must be at least 6 characters"),
-    role_id: Yup.string().required("Role is required"), // 👈 role validation
     agree: Yup.boolean().oneOf([true], "You must agree to continue"),
   });
 
-  // ✅ Initial values
-  const initialValues = {
-    account_type: "",
-    email: "",
-    verifyEmail: "",
-    first_name: "",
-    last_name: "",
-    company: "",
-    postal_code: "",
-    password: "",
-    role_id: "",
-    agree: false,
-  };
-
-  // ✅ Submit handler
-  const handleSubmit = (values: typeof initialValues) => {
-    const payload = {
-      account_type: values.account_type,
-      email: values.email,
-      first_name: values.first_name,
-      last_name: values.last_name,
-      company: values.company,
-      postal_code: values.postal_code,
-      password: values.password,
-      role_id: Number(values.role_id),
-    };
-    mutation.mutate(payload);
-  };
+  const { mutate, isPending } = useMutation({
+    mutationFn: signupAPI,
+    onSuccess: (data) => {
+      toast.success(data?.message || "Account created successfully");
+      router.push("/otp");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.detail || "Signup failed");
+    },
+  });
 
   return (
-    <div className=" py-20 flex items-center justify-center bg-[#0B2244] px-1">
-      <div className="bg-white rounded-xl shadow-md p-4 md:p-8 w-full max-w-md sm:max-w-lg lg:max-w-2xl text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0c2340] via-[#15385f] to-[#2a5869] px-3 py-12">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8">
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <Image
-            src="/Black-Logo-main.png"
-            alt="iRoofing Logo"
-            width={320}
-            height={40}
-            className=" md:-mt-8 w-[200px] sm:w-[250px] lg:w-[320px] h-auto"
+            src="/Superior Pro Roofing logo black.png"
+            alt="Superior Pro Roofing Logo"
+            width={280}
+            height={70}
+            className="w-[220px] sm:w-[260px] h-auto drop-shadow-md"
+            priority
           />
         </div>
 
-        {/* Title */}
-        <div className="-mt-6 sm:-mt-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2244] mb-2">
-            Create Account
-          </h2>
-          <p className="text-gray-600 text-xs sm:text-sm mb-6">
-            Register to quickly access past orders and check out faster in the
-            future.
-          </p>
-        </div>
+        <h2 className="text-center text-2xl font-bold text-[#0c2340] mb-2">
+          Create Your Account
+        </h2>
+        <p className="text-center text-gray-600 text-sm mb-6">
+          Register to manage your roof projects and reports easily.
+        </p>
 
-        {/* Formik Form */}
+        {/* Form */}
         <Formik
-          initialValues={initialValues}
+          initialValues={{
+            first_name: "",
+            middle_name: "",
+            last_name: "",
+            email: "",
+            verifyEmail: "",
+            phone: "",
+            password: "",
+            company: "",
+            postal_code: "",
+            agree: false,
+          }}
           validationSchema={validationSchema}
-          onSubmit={handleSubmit}
+          onSubmit={(values) => mutate(values)}
         >
-          {({ values }) => (
-            <Form className="space-y-4 text-left">
-              {/* Account Type */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Who are you? <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  as="select"
-                  name="account_type"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                >
-                  <option value="">Select an Account Type</option>
-                  <option value="Contractor">Contractor</option>
-                  <option value="Distributor">Distributor</option>
-                  <option value="Homeowner">Homeowner</option>
-                  <option value="Property_Owner">Property Owner</option>
-                  <option value="Specifier">Specifier</option>
-                  <option value="Architect">Architect</option>
-                  <option value="Insurance_Agent">Insurance Agent</option>
-                  <option value="Other">Other</option>
-                </Field>
-                <ErrorMessage
-                  name="account_type"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* Role Dropdown */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Select Role <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  as="select"
-                  name="role_id"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                >
-                  <option value="">Select a Role</option>
-                  {rolesLoading ? (
-                    <option>Loading...</option>
-                  ) : (
-                    roles?.map((role: any) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))
-                  )}
-                </Field>
-                <ErrorMessage
-                  name="role_id"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  type="email"
-                  name="email"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                />
-                <ErrorMessage
-                  name="email"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* Verify Email */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Verify Email Address <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  type="email"
-                  name="verifyEmail"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                />
-                <ErrorMessage
-                  name="verifyEmail"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* First Name */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  type="text"
-                  name="first_name"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                />
-                <ErrorMessage
-                  name="first_name"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  type="text"
-                  name="last_name"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                />
-                <ErrorMessage
-                  name="last_name"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* Company */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Company
-                </label>
-                <Field
-                  type="text"
-                  name="company"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                />
-              </div>
-
-              {/* Postal Code */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Postal Code <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  type="text"
-                  name="postal_code"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
-                />
-                <ErrorMessage
-                  name="postal_code"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
+          {() => (
+            <Form className="space-y-4">
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
                   <Field
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2244]"
+                    name="first_name"
+                    placeholder="First Name"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="cursor-pointer absolute right-2 top-2 text-gray-500"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
                   <ErrorMessage
-                    name="password"
+                    name="first_name"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
+                <div>
+                  <Field
+                    name="middle_name"
+                    placeholder="Middle Name"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  />
+                </div>
+                <div>
+                  <Field
+                    name="last_name"
+                    placeholder="Last Name"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  />
+                  <ErrorMessage
+                    name="last_name"
                     component="div"
                     className="text-red-500 text-xs mt-1"
                   />
                 </div>
               </div>
 
-              {/* Agreement */}
-              <div className="flex items-center space-x-2">
+              {/* Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-1 gap-6">
+                <div>
+                  <Field
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-6">
+                <div>
+                  <Field
+                    type="number"
+                    name="phone"
+                    placeholder="Mobile Number"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  />
+                  <ErrorMessage
+                    name="phone"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
+              {/* Password */}
+              <div className="relative">
                 <Field
-                  id="agree"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="cursor-pointer absolute right-3 top-2.5 text-gray-500"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
+              </div>
+
+              {/* Company */}
+              <div>
+                <Field
+                  type="text"
+                  name="company"
+                  placeholder="Company Name (optional)"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                />
+              </div>
+
+              {/* Postal Code */}
+              <div>
+                <Field
+                  type="text"
+                  name="postal_code"
+                  placeholder="Postal Code"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                />
+                <ErrorMessage
+                  name="postal_code"
+                  component="div"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
+
+              {/* Agreement */}
+              <div className="flex items-center gap-2">
+                <Field
                   type="checkbox"
                   name="agree"
-                  className="h-4 w-4 text-[#0B2244] border-gray-300 rounded focus:ring-[#0B2244]"
+                  className="h-4 w-4 text-[#25606a] border-gray-300 rounded focus:ring-[#25606a]"
                 />
-                <label
-                  htmlFor="agree"
-                  className="text-xs sm:text-sm cursor-pointer text-gray-700"
-                >
-                  I AGREE
+                <label className="text-sm text-gray-800">
+                  I agree to the Terms & Privacy Policy
                 </label>
               </div>
 
@@ -318,21 +222,29 @@ const SignUp = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={mutation.isPending}
-                className={`w-full cursor-pointer py-3 rounded-md text-white text-xs sm:text-sm font-medium transition ${
-                  mutation.isPending
+                disabled={isPending}
+                className={`w-full cursor-pointer py-3 rounded-md text-white text-sm font-semibold transition ${
+                  isPending
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-[#0B2244] hover:bg-[#132c57]"
+                    : "bg-gradient-to-r from-[#25606a] to-[#2ea97d] hover:opacity-90"
                 }`}
               >
-                {mutation.isPending ? "Creating Account..." : "CREATE ACCOUNT"}
+                {isPending ? "Creating Account..." : "Create Account"}
               </button>
+
+              <p className="text-center text-gray-700 text-sm mt-3">
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="text-blue-600 hover:underline text-black"
+                >
+                  Login here
+                </Link>
+              </p>
             </Form>
           )}
         </Formik>
       </div>
     </div>
   );
-};
-
-export default SignUp;
+}

@@ -15,46 +15,52 @@ interface RightSidebarProps {
   onStartDrawing?: () => void;
   onDeleteAll?: () => void;
   onSetDrawMode?: (mode: string) => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  onSplit?: () => void;
+  onOverhang?: () => void;
 }
 
 export default function RightSidebar({
   onStartDrawing,
   onDeleteAll,
   onSetDrawMode,
+  onUndo,
+  onRedo,
+  onSplit,
+  onOverhang,
 }: RightSidebarProps) {
+  // ✅ Polygon draw start
   const handleDrawPolygon = () => {
-    if (onStartDrawing) {
-      onStartDrawing();
-    }
-    if (onSetDrawMode) {
-      onSetDrawMode("draw_polygon");
-    }
+    onStartDrawing?.();
+    onSetDrawMode?.("draw_polygon");
   };
 
-  const handleDirectSelect = () => {
-    if (onSetDrawMode) {
-      onSetDrawMode("direct_select");
-    }
-  };
-
+  // ✅ Simple select
   const handleSimpleSelect = () => {
-    if (onSetDrawMode) {
-      onSetDrawMode("simple_select");
-    }
+    onSetDrawMode?.("simple_select");
   };
 
-  const handleDelete = () => {
-    if (onDeleteAll) {
-      onDeleteAll();
-    }
-    if (onSetDrawMode) {
-      onSetDrawMode("simple_select");
-    }
+  // ✅ Direct select / Edit
+  const handleDirectSelect = () => {
+    onSetDrawMode?.("direct_select");
   };
+
+  // ✅ Delete all
+  const handleDelete = () => {
+    onDeleteAll?.();
+    onSetDrawMode?.("simple_select");
+  };
+
+  // ✅ Undo/Redo/Split/Overhang
+  const handleUndo = () => onUndo?.();
+  const handleRedo = () => onRedo?.();
+  const handleSplit = () => onSplit?.();
+  const handleOverhang = () => onOverhang?.();
 
   return (
-    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 bg-[#0a1f44]/80 p-3 rounded-2xl shadow-lg z-20">
-      {/* Draw Polygon Button */}
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 bg-[#0a1f44]/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-white/10 z-30">
+      {/* Draw Polygon */}
       <button
         onClick={handleDrawPolygon}
         className="flex flex-col items-center text-white hover:text-blue-400 transition-colors"
@@ -64,7 +70,7 @@ export default function RightSidebar({
         <span className="text-xs mt-1">Draw</span>
       </button>
 
-      {/* Select Mode Button */}
+      {/* Select */}
       <button
         onClick={handleSimpleSelect}
         className="flex flex-col items-center text-white hover:text-green-400 transition-colors"
@@ -74,7 +80,7 @@ export default function RightSidebar({
         <span className="text-xs mt-1">Select</span>
       </button>
 
-      {/* Direct Select Button */}
+      {/* Edit */}
       <button
         onClick={handleDirectSelect}
         className="flex flex-col items-center text-white hover:text-yellow-400 transition-colors"
@@ -84,7 +90,7 @@ export default function RightSidebar({
         <span className="text-xs mt-1">Edit</span>
       </button>
 
-      {/* Delete Button */}
+      {/* Delete */}
       <button
         onClick={handleDelete}
         className="flex flex-col items-center text-white hover:text-red-400 transition-colors"
@@ -97,23 +103,42 @@ export default function RightSidebar({
       {/* Divider */}
       <div className="h-px bg-gray-600 my-1"></div>
 
-      {/* Additional Tools */}
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors opacity-50 ">
+      {/* Undo */}
+      <button
+        onClick={handleUndo}
+        className="flex flex-col items-center text-white hover:text-purple-400 transition-colors"
+        title="Undo"
+      >
         <RotateCcw className="w-5 h-5" />
         <span className="text-xs mt-1">Undo</span>
       </button>
 
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors  opacity-50">
+      {/* Redo */}
+      <button
+        onClick={handleRedo}
+        className="flex flex-col items-center text-white hover:text-purple-400 transition-colors"
+        title="Redo"
+      >
         <RotateCw className="w-5 h-5" />
         <span className="text-xs mt-1">Redo</span>
       </button>
 
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors  opacity-50">
+      {/* Split */}
+      <button
+        onClick={handleSplit}
+        className="flex flex-col items-center text-white hover:text-purple-400 transition-colors"
+        title="Split Polygon"
+      >
         <Scissors className="w-5 h-5" />
         <span className="text-xs mt-1">Split</span>
       </button>
 
-      <button className="flex flex-col items-center text-white hover:text-purple-400 transition-colors  opacity-50">
+      {/* Overhang */}
+      <button
+        onClick={handleOverhang}
+        className="flex flex-col items-center text-white hover:text-purple-400 transition-colors"
+        title="Overhang Tool"
+      >
         <Layers className="w-5 h-5" />
         <span className="text-xs mt-1">Overhang</span>
       </button>

@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+// import Image from "next/image";
+import logo from "../../../public/Superior Pro Roofing logo.png";
 import {
   Menu,
   LogOut,
@@ -29,10 +31,16 @@ const navItems = [
     icon: Briefcase,
   },
   {
+    name: "Project Details",
+    href: "/customer-panel/project-details",
+    icon: FileText,
+  }, // ✅ NEW
+  {
     name: "Request Estimate",
     href: "/customer-panel/request-estimate",
     icon: ClipboardPlus,
   },
+  
 ];
 
 export default function CustomerDashboardLayout({
@@ -63,9 +71,15 @@ export default function CustomerDashboardLayout({
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
-        <div className="h-16 flex items-center justify-center font-bold text-xl border-b bg-gradient-to-r from-green-600 to-teal-600 text-white">
-          Customer Panel
-        </div>
+        <div className="h-25 flex items-center justify-center border-b bg-gradient-to-r from-green-600 to-teal-600">
+          <Image
+            src={logo}
+            alt="Superior Pro Roofing Logo"
+            className="wh-70 object-contain drop-shadow-md mt-2"
+            priority
+          />
+        </div>  
+
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);

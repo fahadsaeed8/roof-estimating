@@ -3,38 +3,40 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
-import { Loader2, CheckCircle } from "lucide-react";
+import { Loader2, CheckCircle, MapPin } from "lucide-react";
 import { useState } from "react";
 import CustomerDashboardLayout from "@/app/dashboard/customer/page";
 import { useRouter } from "next/navigation";
+
+import MapModal from "./mapModel";
+import MapPopup from "./mapModel";
 
 export default function CreateProjectForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [showMap, setShowMap] = useState(false);
 
   const formik = useFormik({
     initialValues: {
-      projectName: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      mobile: "",
       email: "",
-      phone: "",
-      jobNumber: "",
-      jobOwner: "",
-      street: "",
-      city: "",
-      state: "",
-      zip: "",
+      address: "",
+      roofType: "",
+      propertyType: "",
     },
     validationSchema: Yup.object({
-      projectName: Yup.string().required("Project name is required"),
+      firstName: Yup.string().required("First name is required"),
+      middleName: Yup.string(),
+      lastName: Yup.string().required("Last name is required"),
+      mobile: Yup.string().required("Mobile number is required"),
       email: Yup.string().email("Invalid email").required("Email is required"),
-      phone: Yup.string().required("Phone number is required"),
-      jobNumber: Yup.string(),
-      jobOwner: Yup.string().required("Job owner is required"),
-      street: Yup.string().required("Street address is required"),
-      city: Yup.string().required("City is required"),
-      state: Yup.string().required("State is required"),
-      zip: Yup.string().required("Zip code is required"),
+      address: Yup.string().required("Address is required"),
+      roofType: Yup.string().required("Please select roof type"),
+      propertyType: Yup.string().required("Please select property type"),
     }),
     onSubmit: (values) => {
       setLoading(true);
@@ -46,75 +48,114 @@ export default function CreateProjectForm() {
     },
   });
 
+
+  const handleSubmit = () => {
+    // abhi fake save
+    router.push("/customer-panel/project-details");
+  };
+
+  
   return (
     <CustomerDashboardLayout>
-      <main className="flex justify-center items-center px-2">
+      <main className="min-h-screen flex flex-col mt-15 items-center bg-gray-50">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-5xl bg-white rounded-xl shadow-xl p-6 md:p-10"
+          className="w-full max-w-5xl bg-white rounded-xl shadow-xl p-6 md:p-12 relative"
         >
           {!submitted ? (
             <>
-              {/* Header */}
               <div className="flex justify-between items-center pb-4 mb-6">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center w-full">
                   Create New Project
                 </h2>
               </div>
-
-              {/* Form */}
+              {/* -------- UPDATED FORM FIELDS (GRID FIXED) -------- */}
               <form
                 onSubmit={formik.handleSubmit}
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                className="grid grid-cols-1 md:grid-cols-12 gap-4"
               >
-                {/* Project Name */}
-                <div>
+                {/* Full Name (3 fields in one line) */}
+                <div className="md:col-span-4">
                   <label className="block text-sm font-medium text-gray-700">
-                    Project Name *
+                    First Name *
                   </label>
                   <input
                     type="text"
-                    name="projectName"
-                    value={formik.values.projectName}
+                    name="firstName"
+                    value={formik.values.firstName}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    placeholder="Salas Mike"
+                    placeholder="John"
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
-                  {formik.touched.projectName && formik.errors.projectName && (
+                  {formik.touched.firstName && formik.errors.firstName && (
                     <p className="text-red-500 text-sm">
-                      {formik.errors.projectName}
+                      {formik.errors.firstName}
                     </p>
                   )}
                 </div>
 
-                {/* Phone */}
-                <div>
+                <div className="md:col-span-4">
                   <label className="block text-sm font-medium text-gray-700">
-                    Phone Number *
+                    Middle Name
                   </label>
                   <input
                     type="text"
-                    name="phone"
-                    value={formik.values.phone}
+                    name="middleName"
+                    value={formik.values.middleName}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    placeholder="Add a phone number..."
+                    placeholder="A."
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
-                  {formik.touched.phone && formik.errors.phone && (
+                </div>
+
+                <div className="md:col-span-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formik.values.lastName}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Doe"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  {formik.touched.lastName && formik.errors.lastName && (
                     <p className="text-red-500 text-sm">
-                      {formik.errors.phone}
+                      {formik.errors.lastName}
                     </p>
                   )}
                 </div>
 
-                {/* Email */}
-                <div>
+                {/* Mobile + Email (2 fields in one line) */}
+                <div className="md:col-span-6">
                   <label className="block text-sm font-medium text-gray-700">
-                    E-mail *
+                    Mobile Number *
+                  </label>
+                  <input
+                    type="text"
+                    name="mobile"
+                    value={formik.values.mobile}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="+1 234 567 890"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  {formik.touched.mobile && formik.errors.mobile && (
+                    <p className="text-red-500 text-sm">
+                      {formik.errors.mobile}
+                    </p>
+                  )}
+                </div>
+
+                <div className="md:col-span-6">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email *
                   </label>
                   <input
                     type="email"
@@ -122,7 +163,7 @@ export default function CreateProjectForm() {
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    placeholder="Add an email..."
+                    placeholder="example@email.com"
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                   {formik.touched.email && formik.errors.email && (
@@ -132,122 +173,99 @@ export default function CreateProjectForm() {
                   )}
                 </div>
 
-                {/* Job Number */}
-                <div>
+                <div className="md:col-span-12 relative">
                   <label className="block text-sm font-medium text-gray-700">
-                    Job Number
+                    Address *
                   </label>
-                  <input
-                    type="text"
-                    name="jobNumber"
-                    value={formik.values.jobNumber}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    placeholder="Add a job number..."
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="address"
+                      value={formik.values.address}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      placeholder="Start typing address..."
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                    {/* Map icon on right side */}
+                    <MapPin
+                      className="absolute right-3 top-2.5 text-blue-500 cursor-pointer hover:text-blue-600"
+                      size={20}
+                      onClick={() => setShowMap(true)}
+                    />
+                  </div>
+
+                  {formik.touched.address && formik.errors.address && (
+                    <p className="text-red-500 text-sm">
+                      {formik.errors.address}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">
+                    (Click map icon to select address)
+                  </p>
+
+                  {showMap && (
+                    <MapPopup
+                      onClose={() => setShowMap(false)}
+                      onSelect={(address: string, coords: { lat: number; lng: number }) => {
+                        formik.setFieldValue("address", address);
+                        setShowMap(false);
+                      }}
+                    />
+                  )}
                 </div>
 
-                {/* Street */}
-                <div className="col-span-1 md:col-span-2">
+                {/* Roof Type + Property Type */}
+                <div className="md:col-span-6">
                   <label className="block text-sm font-medium text-gray-700">
-                    Property Address *
+                    Roof Type / Material *
                   </label>
-                  <input
-                    type="text"
-                    name="street"
-                    value={formik.values.street}
+                  <select
+                    name="roofType"
+                    value={formik.values.roofType}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    placeholder="1234 Cliffwood Ave"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                  {formik.touched.street && formik.errors.street && (
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  >
+                    <option value="">Select Roof Type</option>
+                    <option value="shingle">Asphalt Shingle</option>
+                    <option value="metal">Metal Roof</option>
+                    <option value="tile">Tile Roof</option>
+                    <option value="flat">Flat Roof</option>
+                  </select>
+                  {formik.touched.roofType && formik.errors.roofType && (
                     <p className="text-red-500 text-sm">
-                      {formik.errors.street}
+                      {formik.errors.roofType}
                     </p>
                   )}
                 </div>
 
-                {/* City */}
-                <div>
+                <div className="md:col-span-6">
                   <label className="block text-sm font-medium text-gray-700">
-                    City *
+                    Property Type / Stories *
                   </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formik.values.city}
+                  <select
+                    name="propertyType"
+                    value={formik.values.propertyType}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                  {formik.touched.city && formik.errors.city && (
-                    <p className="text-red-500 text-sm">{formik.errors.city}</p>
-                  )}
-                </div>
-
-                {/* State */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    State *
-                  </label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formik.values.state}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                  {formik.touched.state && formik.errors.state && (
-                    <p className="text-red-500 text-sm">
-                      {formik.errors.state}
-                    </p>
-                  )}
-                </div>
-
-                {/* Zip */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Zip Code *
-                  </label>
-                  <input
-                    type="text"
-                    name="zip"
-                    value={formik.values.zip}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                  {formik.touched.zip && formik.errors.zip && (
-                    <p className="text-red-500 text-sm">{formik.errors.zip}</p>
-                  )}
-                </div>
-
-                {/* Job Owner */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Job Owner *
-                  </label>
-                  <input
-                    type="text"
-                    name="jobOwner"
-                    value={formik.values.jobOwner}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    placeholder="Shafic Budron"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                  {formik.touched.jobOwner && formik.errors.jobOwner && (
-                    <p className="text-red-500 text-sm">
-                      {formik.errors.jobOwner}
-                    </p>
-                  )}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  >
+                    <option value="">Select Property Type</option>
+                    <option value="single">Single Story</option>
+                    <option value="double">Double Story</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                  {formik.touched.propertyType &&
+                    formik.errors.propertyType && (
+                      <p className="text-red-500 text-sm">
+                        {formik.errors.propertyType}
+                      </p>
+                    )}
                 </div>
 
                 {/* Buttons */}
-                <div className="col-span-1 md:col-span-2 flex flex-wrap justify-between gap-3 mt-6">
+                <div className="md:col-span-12 flex flex-wrap justify-between gap-3 mt-6">
                   <button
                     type="submit"
                     disabled={loading}
@@ -256,7 +274,7 @@ export default function CreateProjectForm() {
                     {loading ? (
                       <Loader2 className="animate-spin w-5 h-5 inline mr-2" />
                     ) : null}
-                    Create & Go to Project
+                    Create & Save Project
                   </button>
 
                   <button
@@ -266,22 +284,19 @@ export default function CreateProjectForm() {
                         "projectData",
                         JSON.stringify(formik.values)
                       );
-
                       router.push("/property-map");
                     }}
                     className="flex-1 cursor-pointer bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90"
                   >
                     Create & Go to Measurement
                   </button>
-
-                  <button
-                    type="button"
-                    className="flex-1 cursor-pointer bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90"
-                  >
-                    Create & Go to Roof Visualizer
-                  </button>
                 </div>
               </form>
+              {/* -------- END UPDATED FORM FIELDS -------- */}
+
+              {/* -------- OLD FORM (commented for reference) --------
+                Previous fields have been commented out as per new requirements
+              ----------------------------------------------------- */}
             </>
           ) : (
             <motion.div

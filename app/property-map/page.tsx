@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import mapboxgl from "mapboxgl";
+// import mapboxgl from "mapboxgl";
 import RightSidebar from "@/components/common/right-sidebar";
 import TopToolbar from "@/components/common/top-tool-bar";
-import RoofMapSection from "@/components/sections/roof-map-section";
+import RoofMapSection, { MapSectionHandle } from "@/components/sections/roof-map-section";
 
 export default function RoofEstimatorPage() {
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
@@ -19,7 +19,7 @@ export default function RoofEstimatorPage() {
 
   // ✅ State for project data
   const [projectData, setProjectData] = useState<any>(null);
-
+  const mapRef = useRef<MapSectionHandle | null>(null);
   // ✅ Ref for MapSection functions
   const mapSectionRef = useRef<{
     confirmLocation: (coords: [number, number]) => void;
@@ -106,7 +106,7 @@ export default function RoofEstimatorPage() {
   };
 
   return (
-    <div className="relative w-full h-screen">
+   <div className="relative w-full h-screen pt-14">
       <TopToolbar
         map={map}
         onSaveRoof={handleSaveRoof}
@@ -114,24 +114,22 @@ export default function RoofEstimatorPage() {
         onSnapToggle={handleSnapToggle}
         onLocationConfirm={handleLocationConfirm}
       />
-
-      <RightSidebar
-        onStartDrawing={handleStartDrawing}
-        onDeleteAll={handleDeleteAll}
-        onSetDrawMode={handleSetDrawMode}
+       <RightSidebar
+        onStartDrawing={() => mapRef.current?.startDrawing()}
+        onDeleteAll={() => mapRef.current?.deleteAll()}
+        onSetDrawMode={(mode) => mapRef.current?.setDrawMode(mode)}
+        onUndo={() => mapRef.current?.undo()}
+        onRedo={() => mapRef.current?.redo()}
+        onSplit={() => mapRef.current?.startSplitMode()}
+        onOverhang={() => mapRef.current?.applyOverhang()}
       />
-
-      <div className="pt-16 h-full">
-        <RoofMapSection
-          ref={mapSectionRef}
-          setPlanArea={setPlanArea}
-          setRoofArea={setRoofArea}
-          setEdges={setEdges}
-          setPolygonPoints={setPolygonPoints}
-          onMapLoad={handleMapLoad}
-          projectData={projectData}
-        />
-      </div>
+      <RoofMapSection
+        ref={mapRef}
+        setPlanArea={() => {}}
+        setRoofArea={() => {}}
+        setEdges={() => {}}
+        setPolygonPoints={() => {}}
+      />
     </div>
   );
 }
