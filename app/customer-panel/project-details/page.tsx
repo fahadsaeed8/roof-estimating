@@ -1,132 +1,256 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import {
-  ClipboardList,
-  Home,
-  Ruler,
-  Layers,
-  MapPin,
-  CalendarDays,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { getUserProjectsAPI } from "@/services/auth";
 import CustomerDashboardLayout from "@/app/dashboard/customer/page";
+import { Search, Trash2 } from "lucide-react";
+import axios from "axios";
+
+interface Project {
+  _id: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  email: string;
+  mobile_number: string;
+  roof_type: string;
+  property_type: string;
+  address: {
+    street: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zip_code?: string;
+  };
+  createdAt: string;
+}
 
 export default function ProjectDetailsPage() {
-  const project = {
-    id: "AX-PR-1025",
-    clientName: "John Doe",
-    address: "123 Main Street, California, Unied States",
-    roofType: "Gable Roof",
-    propertyType: "Residential - 2 Story",
-    // totalArea: "2450 sq.ft",
-    // perimeter: "190 ft",
-    createdAt: "2025-10-15",
-  };
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roofFilter, setRoofFilter] = useState("");
+  const [propertyFilter, setPropertyFilter] = useState("");
+
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await getUserProjectsAPI();
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        setProjects(dataArray);
+        setFilteredProjects(dataArray);
+      } catch (err) {
+        console.error("Failed to fetch projects:", err);
+        alert("Failed to load projects. Try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    let filtered = projects;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (p) =>
+          p.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.mobile_number.includes(searchTerm)
+      );
+    }
+
+    if (roofFilter) {
+      filtered = filtered.filter((p) => p.roof_type === roofFilter);
+    }
+
+    if (propertyFilter) {
+      filtered = filtered.filter((p) => p.property_type === propertyFilter);
+    }
+
+    setFilteredProjects(filtered);
+  }, [searchTerm, roofFilter, propertyFilter, projects]);
+
+const deleteProject = async (id: string) => {
+  try {
+    const token = localStorage.getItem("token"); // agar auth token use ho raha hai
+    const res = await fetch(`http://88.99.241.139:5000/api/roof-estimate-projects/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // optional, agar API require kare
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Failed to delete project");
+      return;
+    }
+
+    // Remove project from state
+    setProjects((prev) => prev.filter((p) => p._id !== id));
+    setFilteredProjects((prev) => prev.filter((p) => p._id !== id));
+    alert("Project deleted successfully");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong");
+  }
+};
+
+
+  if (loading) {
+    return (
+      <CustomerDashboardLayout>
+        <div className="min-h-screen flex justify-center items-center">
+          <p className="text-gray-500 text-lg">Loading projects...</p>
+        </div>
+      </CustomerDashboardLayout>
+    );
+  }
+
+  if (!projects.length) {
+    return (
+      <CustomerDashboardLayout>
+        <div className="min-h-screen flex justify-center items-center">
+          <p className="text-gray-500 text-lg">No projects found.</p>
+        </div>
+      </CustomerDashboardLayout>
+    );
+  }
+
+  // Get unique roof types and property types for filter dropdowns
+  const roofTypes = Array.from(new Set(projects.map((p) => p.roof_type)));
+  const propertyTypes = Array.from(
+    new Set(projects.map((p) => p.property_type))
+  );
 
   return (
     <CustomerDashboardLayout>
-      <main className="min-h-screen flex justify-center items-start py-10 px-4 md:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-6xl bg-white shadow-2xl rounded-2xl p-8"
-        >
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-6 mb-6">
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-              <ClipboardList className="w-7 h-7 text-blue-600" />
-              Project Details
-            </h1>
-            <button
-              onClick={() => alert("PDF report coming soon!")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition-all duration-200"
-            >
-              Download Report
-            </button>
-          </div>
+      <main className="min-h-screen px-4 md:px-8 py-10 bg-gray-100">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">My Projects</h1>
 
-          {/* Project Info Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <InfoCard
-              icon={<Layers className="text-blue-500 w-5 h-5" />}
-              label="Project ID"
-              value={project.id}
-            />
-            <InfoCard
-              icon={<Home className="text-green-500 w-5 h-5" />}
-              label="Client Name"
-              value={project.clientName}
-            />
-            <InfoCard
-              icon={<MapPin className="text-red-500 w-5 h-5" />}
-              label="Address"
-              value={project.address}
-            />
-            <InfoCard
-              icon={<Ruler className="text-purple-500 w-5 h-5" />}
-              label="Roof Type"
-              value={project.roofType}
-            />
-            <InfoCard
-              icon={<Ruler className="text-orange-500 w-5 h-5" />}
-              label="Property Type"
-              value={project.propertyType}
-            />
-            {/* <InfoCard
-              icon={<Ruler className="text-indigo-500 w-5 h-5" />}
-              label="Total Area"
-              value={project.totalArea}
-            />
-            <InfoCard
-              icon={<Ruler className="text-teal-500 w-5 h-5" />}
-              label="Perimeter"
-              value={project.perimeter}
-            /> */}
-            <InfoCard
-              icon={<CalendarDays className="text-pink-500 w-5 h-5" />}
-              label="Project Created Date"
-              value={project.createdAt}
+        {/* Filters Card */}
+        <div className="bg-white shadow-lg rounded-xl p-6 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Search */}
+          <div className="flex items-center flex-1 max-w-md">
+            <Search className="w-5 h-5 text-gray-400 mr-2" />
+            <input
+              type="text"
+              placeholder="Search by name, email or phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 placeholder-gray-400"
             />
           </div>
 
-          {/* Summary Section */}
-          <div className="mt-10 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-blue-800 mb-3">
-              Summary
-            </h2>
-            <p className="text-gray-700 leading-relaxed">
-              This project represents a {project.propertyType.toLowerCase()}{" "}
-              located at{" "}
-              <span className="font-semibold">{project.address}</span>. The roof
-              type is <span className="font-semibold">{project.roofType}</span>{" "}
-              {/* with a total coverage area of{" "} */}
-              {/* <span className="font-semibold">{project.totalArea}</span> */}
-              {/* and perimeter of{" "} */}
-              {/* <span className="font-semibold">{project.perimeter}</span>. It was */}
-              initiated on{" "}
-              <span className="font-semibold">{project.createdAt}</span>.
-            </p>
-          </div>
-        </motion.div>
+          {/* Roof Type Filter */}
+          <select
+            value={roofFilter}
+            onChange={(e) => setRoofFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+          >
+            <option value="">All Roof Types</option>
+            {roofTypes.map((type) => (
+              <option key={type} value={type}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </option>
+            ))}
+          </select>
+
+          {/* Property Type Filter */}
+          <select
+            value={propertyFilter}
+            onChange={(e) => setPropertyFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+          >
+            <option value="">All Property Types</option>
+            {propertyTypes.map((type) => (
+              <option key={type} value={type}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Table Card */}
+        <div className="overflow-x-auto bg-white shadow-lg rounded-xl border border-gray-200">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Roof Type
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Property Type
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Address
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Created At
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredProjects.map((project) => (
+                <tr
+                  key={project._id}
+                  className="hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    {project.first_name} {project.middle_name || ""}{" "}
+                    {project.last_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    {project.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    {project.mobile_number}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    {project.roof_type}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    {project.property_type}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    {project.address.street || "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    {new Date(project.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                    <button onClick={() => deleteProject(project._id)}>
+                      <Trash2 className="w-5 h-5 text-red-500 hover:text-red-700" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </main>
     </CustomerDashboardLayout>
-  );
-}
-
-// ✅ Reusable Info Card Component
-function InfoCard({ icon, label, value }) {
-  return (
-    <motion.div
-      whileHover={{ scale: 1.03 }}
-      className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col gap-2 transition-all"
-    >
-      <div className="flex items-center gap-2 text-gray-700 font-semibold">
-        {icon}
-        {label}
-      </div>
-      <p className="text-gray-900 font-medium">{value}</p>
-    </motion.div>
   );
 }

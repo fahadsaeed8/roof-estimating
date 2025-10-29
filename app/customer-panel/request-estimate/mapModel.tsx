@@ -13,24 +13,24 @@ export default function MapPopup({ onClose, onSelect }) {
   const mapRef = useRef(null);
 
   useEffect(() => {
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: [lng, lat],
-      zoom,
-    });
+  if (!mapContainerRef.current) return;
 
-    mapRef.current = map;
+  const map = new mapboxgl.Map({
+    container: mapContainerRef.current,
+    style: "mapbox://styles/mapbox/satellite-streets-v12",
+    center: [lng, lat],
+    zoom: 18,
+  });
 
-    // Update coordinates when map stops moving
-    map.on("moveend", () => {
-      const center = map.getCenter();
-      setLng(center.lng);
-      setLat(center.lat);
-    });
+  // ✅ Automatically straighten map
+  map.on("load", () => {
+    map.easeTo({ bearing: 0, pitch: 0, duration: 1000 });
+  });
 
-    return () => map.remove();
-  }, []);
+  mapRef.current = map;
+
+  return () => map.remove();
+}, []);
 
   const handleSelect = async () => {
     const res = await fetch(

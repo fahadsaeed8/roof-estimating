@@ -12,6 +12,8 @@ interface TopToolbarProps {
   onThicknessChange?: (value: number) => void;
   onSnapToggle?: (enabled: boolean) => void;
   onLocationConfirm?: (coords: [number, number]) => void;
+  // ✅ new prop
+  onDownloadPDF?: () => void;
 }
 
 export default function TopToolbar({
@@ -20,6 +22,7 @@ export default function TopToolbar({
   onThicknessChange,
   onSnapToggle,
   onLocationConfirm,
+  onDownloadPDF,
 }: TopToolbarProps) {
   const [thickness, setThickness] = useState(1);
   const [snap, setSnap] = useState(false);
@@ -183,6 +186,14 @@ export default function TopToolbar({
           <Grid className="w-4 h-4" />
           <span className="text-sm">Snap: {snap ? "On" : "Off"}</span>
         </div>
+
+        {/* Download PDF Button */}
+        <button
+          onClick={onDownloadPDF}
+          className="bg-purple-600 hover:bg-purple-700 px-3 py-1.5 text-sm rounded shadow"
+        >
+          Download PDF
+        </button>
 
         {/* Save Button */}
         {/* <button

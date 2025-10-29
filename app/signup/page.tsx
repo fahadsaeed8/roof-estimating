@@ -11,32 +11,36 @@ import { Eye, EyeOff } from "lucide-react";
 import { signupAPI } from "@/services/auth";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
+import Cookies from "js-cookie";
 
 export default function SignUp() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
+  // ✅ Validation Schema Updated
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
     middle_name: Yup.string(),
     last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    verifyEmail: Yup.string()
-      .oneOf([Yup.ref("email")], "Emails must match")
-      .required("Please verify your email"),
-    phone: Yup.string().required("Mobile number is required"),
+    mobile_number: Yup.string()
+      .matches(/^\+?\d{10,15}$/, "Enter valid mobile number")
+      .required("Mobile number is required"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
-    company: Yup.string(),
+    company: Yup.string().required("Company is required"),
     postal_code: Yup.string().required("Postal code is required"),
-    agree: Yup.boolean().oneOf([true], "You must agree to continue"),
   });
 
   const { mutate, isPending } = useMutation({
     mutationFn: signupAPI,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       toast.success(data?.message || "Account created successfully");
+
+      // ✅ Set email cookie for OTP screen
+      Cookies.set("signupemail", variables.email, { expires: 1 });
+
       router.push("/otp");
     },
     onError: (error: any) => {
@@ -66,32 +70,45 @@ export default function SignUp() {
           Register to manage your roof projects and reports easily.
         </p>
 
-        {/* Form */}
         <Formik
           initialValues={{
             first_name: "",
             middle_name: "",
             last_name: "",
             email: "",
-            verifyEmail: "",
-            phone: "",
+            mobile_number: "",
             password: "",
             company: "",
             postal_code: "",
-            agree: false,
           }}
           validationSchema={validationSchema}
-          onSubmit={(values) => mutate(values)}
+          onSubmit={(values) => {
+            const payload = {
+              account_type: "Contractor",
+              first_name: values.first_name,
+              middle_name: values.middle_name,
+              last_name: values.last_name,
+              email: values.email,
+              password: values.password,
+              role_id: 1,
+              company: values.company,
+              postal_code: values.postal_code,
+              mobile_number: values.mobile_number,
+            };
+
+            console.log("📤 Sending signup payload:", payload);
+            mutate(payload);
+          }}
         >
           {() => (
             <Form className="space-y-4">
-              {/* Name Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
+              {/* Name fields */}
+              <div className="flex gap-2">
+                <div className="flex-1">
                   <Field
                     name="first_name"
                     placeholder="First Name"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
                   />
                   <ErrorMessage
                     name="first_name"
@@ -99,18 +116,25 @@ export default function SignUp() {
                     className="text-red-500 text-xs mt-1"
                   />
                 </div>
-                <div>
+
+                <div className="flex-1">
                   <Field
                     name="middle_name"
                     placeholder="Middle Name"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  />
+                  <ErrorMessage
+                    name="middle_name"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
                   />
                 </div>
-                <div>
+
+                <div className="flex-1">
                   <Field
                     name="last_name"
                     placeholder="Last Name"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
                   />
                   <ErrorMessage
                     name="last_name"
@@ -121,50 +145,46 @@ export default function SignUp() {
               </div>
 
               {/* Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-1 gap-6">
-                <div>
-                  <Field
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
-                  />
-                  <ErrorMessage
-                    name="email"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
+              <div>
+                <Field
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="text-red-500 text-xs mt-1"
+                />
               </div>
 
-              {/* Phone */}
+              {/* Mobile */}
+              <div>
+                <Field
+                  name="mobile_number"
+                  placeholder="Mobile Number (e.g. +923001234567)"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                />
+                <ErrorMessage
+                  name="mobile_number"
+                  component="div"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-6">
-                <div>
-                  <Field
-                    type="number"
-                    name="phone"
-                    placeholder="Mobile Number"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
-                  />
-                  <ErrorMessage
-                    name="phone"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
               {/* Password */}
               <div className="relative">
                 <Field
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Password"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="cursor-pointer absolute right-3 top-2.5 text-gray-500"
+                  className="absolute right-3 top-2.5 text-gray-500"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -174,25 +194,27 @@ export default function SignUp() {
                   className="text-red-500 text-xs mt-1"
                 />
               </div>
-              </div>
 
               {/* Company */}
               <div>
                 <Field
-                  type="text"
                   name="company"
-                  placeholder="Company Name (optional)"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  placeholder="Company Name"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                />
+                <ErrorMessage
+                  name="company"
+                  component="div"
+                  className="text-red-500 text-xs mt-1"
                 />
               </div>
 
               {/* Postal Code */}
               <div>
                 <Field
-                  type="text"
                   name="postal_code"
                   placeholder="Postal Code"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black placeholder-secondary focus:outline-none focus:ring-2 focus:ring-[#25606a]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#25606a]"
                 />
                 <ErrorMessage
                   name="postal_code"
@@ -201,29 +223,11 @@ export default function SignUp() {
                 />
               </div>
 
-              {/* Agreement */}
-              <div className="flex items-center gap-2">
-                <Field
-                  type="checkbox"
-                  name="agree"
-                  className="h-4 w-4 text-[#25606a] border-gray-300 rounded focus:ring-[#25606a]"
-                />
-                <label className="text-sm text-gray-800">
-                  I agree to the Terms & Privacy Policy
-                </label>
-              </div>
-
-              <ErrorMessage
-                name="agree"
-                component="div"
-                className="text-red-500 text-xs mt-1"
-              />
-
-              {/* Submit Button */}
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={isPending}
-                className={`w-full cursor-pointer py-3 rounded-md text-white text-sm font-semibold transition ${
+                className={`w-full py-3 rounded-md text-white text-sm font-semibold transition ${
                   isPending
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-[#25606a] to-[#2ea97d] hover:opacity-90"

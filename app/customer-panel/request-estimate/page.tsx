@@ -7,54 +7,171 @@ import { Loader2, CheckCircle, MapPin } from "lucide-react";
 import { useState } from "react";
 import CustomerDashboardLayout from "@/app/dashboard/customer/page";
 import { useRouter } from "next/navigation";
+import mbxGeocoding from "@mapbox/mapbox-sdk/services/geocoding";
+import { createProjectAPI } from "../../../services/auth";
 
-import MapModal from "./mapModel";
-import MapPopup from "./mapModel";
+const geocodingClient = mbxGeocoding({
+  accessToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN!,
+});
 
 export default function CreateProjectForm() {
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [showMap, setShowMap] = useState(false);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const formik = useFormik({
     initialValues: {
       firstName: "",
       middleName: "",
       lastName: "",
-      mobile: "",
       email: "",
+      mobile: "",
       address: "",
       roofType: "",
       propertyType: "",
     },
     validationSchema: Yup.object({
-      firstName: Yup.string().required("First name is required"),
-      middleName: Yup.string(),
-      lastName: Yup.string().required("Last name is required"),
-      mobile: Yup.string().required("Mobile number is required"),
-      email: Yup.string().email("Invalid email").required("Email is required"),
-      address: Yup.string().required("Address is required"),
-      roofType: Yup.string().required("Please select roof type"),
-      propertyType: Yup.string().required("Please select property type"),
+      firstName: Yup.string().required("Required"),
+      lastName: Yup.string().required("Required"),
+      email: Yup.string().email("Invalid email").required("Required"),
+      mobile: Yup.string().required("Required"),
+      address: Yup.string().required("Required"),
+      roofType: Yup.string().required("Required"),
+      propertyType: Yup.string().required("Required"),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       setLoading(true);
-      setTimeout(() => {
-        console.log("Form Submitted ✅", values);
+      try {
+        const geoRes = await geocodingClient
+          .forwardGeocode({ query: values.address, limit: 1 })
+          .send();
+        const feature = geoRes.body.features[0];
+        const lat = feature ? feature.center[1] : null;
+        const lng = feature ? feature.center[0] : null;
+
+        await createProjectAPI({
+          first_name: values.firstName,
+          middle_name: values.middleName,
+          last_name: values.lastName,
+          email: values.email,
+          mobile_number: values.mobile,
+          address: { street: values.address },
+          roof_type: values.roofType,
+          property_type: values.propertyType,
+          latitude: lat,
+          longitude: lng,
+        });
+
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 5000);
+        formik.resetForm();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to create project. Please try again.");
+      } finally {
         setLoading(false);
-        setSubmitted(true);
-      }, 2000);
+      }
     },
   });
 
+  const goToMap = async () => {
+    await formik.validateForm();
+    formik.setTouched({
+      firstName: true,
+      lastName: true,
+      mobile: true,
+      email: true,
+      address: true,
+      roofType: true,
+      propertyType: true,
+    });
 
-  const handleSubmit = () => {
-    // abhi fake save
-    router.push("/customer-panel/project-details");
+    if (!formik.isValid) return;
+
+    try {
+      const geoRes = await geocodingClient
+        .forwardGeocode({ query: formik.values.address, limit: 1 })
+        .send();
+      const feature = geoRes.body.features[0];
+      if (!feature) return alert("Please enter a valid address");
+
+      const [lng, lat] = feature.center ?? [null, null];
+      if (lat === null || lng === null)
+        return alert("Invalid coordinates from Mapbox");
+
+      // Save to localStorage
+      localStorage.setItem(
+        "projectLocation",
+        JSON.stringify({ address: formik.values.address, lat, lng })
+      );
+
+      router.push("/property-map");
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching coordinates");
+    }
   };
 
-  
+  const handleAddressChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value;
+    formik.setFieldValue("address", value);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await geocodingClient
+        .forwardGeocode({ query: value, limit: 6 })
+        .send();
+
+      const results = res.body.features.map((f: any) => f.place_name);
+      setSuggestions(results);
+
+      if (res.body.features[0]) {
+        const [lng, lat] = res.body.features[0].center;
+        setLatitude(lat);
+        setLongitude(lng);
+      }
+    } catch (err) {
+      console.error("Mapbox Geocoding error:", err);
+    }
+  };
+
+  const handlePickLocation = async () => {
+    if (!latitude || !longitude) {
+      try {
+        const geoRes = await geocodingClient
+          .forwardGeocode({ query: formik.values.address, limit: 1 })
+          .send();
+        const feature = geoRes.body.features[0];
+        if (!feature) throw new Error("Invalid address");
+        const [lng, lat] = feature.center;
+        setLatitude(lat);
+        setLongitude(lng);
+      } catch (err) {
+        alert("Error fetching coordinates. Try again!");
+        return;
+      }
+    }
+
+    localStorage.setItem(
+      "projectLocation",
+      JSON.stringify({
+        address: formik.values.address,
+        lat: latitude,
+        lng: longitude,
+      })
+    );
+    router.push("/property-map");
+  };
+
   return (
     <CustomerDashboardLayout>
       <main className="min-h-screen flex flex-col mt-15 items-center bg-gray-50">
@@ -64,19 +181,35 @@ export default function CreateProjectForm() {
           transition={{ duration: 0.4 }}
           className="w-full max-w-5xl bg-white rounded-xl shadow-xl p-6 md:p-12 relative"
         >
-          {!submitted ? (
+          {showSuccess ? (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className="text-center py-16"
+            >
+              <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-green-700 mb-2">
+                Project Created Successfully
+              </h2>
+              <p className="text-gray-600">
+                Your new project has been created successfully.
+              </p>
+            </motion.div>
+          ) : (
             <>
               <div className="flex justify-between items-center pb-4 mb-6">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center w-full">
                   Create New Project
                 </h2>
               </div>
-              {/* -------- UPDATED FORM FIELDS (GRID FIXED) -------- */}
+
               <form
                 onSubmit={formik.handleSubmit}
                 className="grid grid-cols-1 md:grid-cols-12 gap-4"
               >
-                {/* Full Name (3 fields in one line) */}
+                {/* Form fields */}
+                {/* First Name */}
                 <div className="md:col-span-4">
                   <label className="block text-sm font-medium text-gray-700">
                     First Name *
@@ -88,7 +221,7 @@ export default function CreateProjectForm() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="John"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                   {formik.touched.firstName && formik.errors.firstName && (
                     <p className="text-red-500 text-sm">
@@ -97,6 +230,7 @@ export default function CreateProjectForm() {
                   )}
                 </div>
 
+                {/* Middle Name */}
                 <div className="md:col-span-4">
                   <label className="block text-sm font-medium text-gray-700">
                     Middle Name
@@ -106,12 +240,12 @@ export default function CreateProjectForm() {
                     name="middleName"
                     value={formik.values.middleName}
                     onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
                     placeholder="A."
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
 
+                {/* Last Name */}
                 <div className="md:col-span-4">
                   <label className="block text-sm font-medium text-gray-700">
                     Last Name *
@@ -123,7 +257,7 @@ export default function CreateProjectForm() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="Doe"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                   {formik.touched.lastName && formik.errors.lastName && (
                     <p className="text-red-500 text-sm">
@@ -132,7 +266,7 @@ export default function CreateProjectForm() {
                   )}
                 </div>
 
-                {/* Mobile + Email (2 fields in one line) */}
+                {/* Mobile */}
                 <div className="md:col-span-6">
                   <label className="block text-sm font-medium text-gray-700">
                     Mobile Number *
@@ -144,7 +278,7 @@ export default function CreateProjectForm() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="+1 234 567 890"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                   {formik.touched.mobile && formik.errors.mobile && (
                     <p className="text-red-500 text-sm">
@@ -153,6 +287,7 @@ export default function CreateProjectForm() {
                   )}
                 </div>
 
+                {/* Email */}
                 <div className="md:col-span-6">
                   <label className="block text-sm font-medium text-gray-700">
                     Email *
@@ -164,7 +299,7 @@ export default function CreateProjectForm() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="example@email.com"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                   {formik.touched.email && formik.errors.email && (
                     <p className="text-red-500 text-sm">
@@ -181,51 +316,67 @@ export default function CreateProjectForm() {
                     <input
                       type="text"
                       name="address"
+                      placeholder="Enter address"
                       value={formik.values.address}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      placeholder="Start typing address..."
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      onChange={handleAddressChange}
+                      className="w-full border border-gray-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {/* Map icon on right side */}
-                    <MapPin
-                      className="absolute right-3 top-2.5 text-blue-500 cursor-pointer hover:text-blue-600"
-                      size={20}
-                      onClick={() => setShowMap(true)}
-                    />
+                    <button
+                      type="button"
+                      onClick={handlePickLocation}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-blue-600"
+                    >
+                      <MapPin className="w-5 h-5" />
+                    </button>
+
+                    {suggestions.length > 0 && (
+                      <ul className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-md w-full mt-1 max-h-48 overflow-y-auto">
+                        {suggestions.map((s, i) => (
+                          <li
+                            key={i}
+                            onClick={async () => {
+                              formik.setFieldValue("address", s);
+                              setSuggestions([]);
+
+                              try {
+                                const geoRes = await geocodingClient
+                                  .forwardGeocode({ query: s, limit: 1 })
+                                  .send();
+                                const feature = geoRes.body.features[0];
+                                if (feature) {
+                                  const [lng, lat] = feature.center;
+                                  localStorage.setItem(
+                                    "projectLocation",
+                                    JSON.stringify({ address: s, lat, lng })
+                                  );
+                                }
+                              } catch (err) {
+                                console.error(
+                                  "Error getting coordinates for suggestion",
+                                  err
+                                );
+                              }
+                            }}
+                            className="p-2 hover:bg-blue-100 cursor-pointer text-sm text-gray-700"
+                          >
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-
-                  {formik.touched.address && formik.errors.address && (
-                    <p className="text-red-500 text-sm">
-                      {formik.errors.address}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">
-                    (Click map icon to select address)
-                  </p>
-
-                  {showMap && (
-                    <MapPopup
-                      onClose={() => setShowMap(false)}
-                      onSelect={(address: string, coords: { lat: number; lng: number }) => {
-                        formik.setFieldValue("address", address);
-                        setShowMap(false);
-                      }}
-                    />
-                  )}
                 </div>
 
-                {/* Roof Type + Property Type */}
+                {/* Roof Type */}
                 <div className="md:col-span-6">
                   <label className="block text-sm font-medium text-gray-700">
-                    Roof Type / Material *
+                    Roof Type *
                   </label>
                   <select
                     name="roofType"
                     value={formik.values.roofType}
                     onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                   >
                     <option value="">Select Roof Type</option>
                     <option value="shingle">Asphalt Shingle</option>
@@ -233,35 +384,24 @@ export default function CreateProjectForm() {
                     <option value="tile">Tile Roof</option>
                     <option value="flat">Flat Roof</option>
                   </select>
-                  {formik.touched.roofType && formik.errors.roofType && (
-                    <p className="text-red-500 text-sm">
-                      {formik.errors.roofType}
-                    </p>
-                  )}
                 </div>
 
+                {/* Property Type */}
                 <div className="md:col-span-6">
                   <label className="block text-sm font-medium text-gray-700">
-                    Property Type / Stories *
+                    Property Type *
                   </label>
                   <select
                     name="propertyType"
                     value={formik.values.propertyType}
                     onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                   >
                     <option value="">Select Property Type</option>
                     <option value="single">Single Story</option>
                     <option value="double">Double Story</option>
                     <option value="commercial">Commercial</option>
                   </select>
-                  {formik.touched.propertyType &&
-                    formik.errors.propertyType && (
-                      <p className="text-red-500 text-sm">
-                        {formik.errors.propertyType}
-                      </p>
-                    )}
                 </div>
 
                 {/* Buttons */}
@@ -269,51 +409,33 @@ export default function CreateProjectForm() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90 disabled:opacity-50"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90 disabled:opacity-50"
                   >
-                    {loading ? (
+                    {loading && (
                       <Loader2 className="animate-spin w-5 h-5 inline mr-2" />
-                    ) : null}
+                    )}
                     Create & Save Project
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => {
-                      localStorage.setItem(
-                        "projectData",
-                        JSON.stringify(formik.values)
-                      );
-                      router.push("/property-map");
-                    }}
-                    className="flex-1 cursor-pointer bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90"
+                    onClick={goToMap}
+                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-md font-semibold shadow hover:opacity-90"
                   >
-                    Create & Go to Measurement
+                    <MapPin className="inline mr-2 w-5 h-5" />
+                    Go to Map Screen
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md font-semibold shadow cursor-not-allowed"
+                  >
+                    Coming Soon
                   </button>
                 </div>
               </form>
-              {/* -------- END UPDATED FORM FIELDS -------- */}
-
-              {/* -------- OLD FORM (commented for reference) --------
-                Previous fields have been commented out as per new requirements
-              ----------------------------------------------------- */}
             </>
-          ) : (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="text-center py-16"
-            >
-              <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-green-700 mb-2">
-                Project Created Successfully
-              </h2>
-              <p className="text-gray-600">
-                Your new project has been created. You can now continue to the
-                next step.
-              </p>
-            </motion.div>
           )}
         </motion.div>
       </main>
