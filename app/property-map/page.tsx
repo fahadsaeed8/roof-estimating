@@ -1,137 +1,78 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import mapboxgl from "mapboxgl";
-import RightSidebar from "@/components/common/right-sidebar";
+import React, { useRef, useState, useEffect } from "react";
+import mapboxgl from "mapbox-gl";
+import LeftSidebar from "@/components/common/left-sidebar";
 import TopToolbar from "@/components/common/top-tool-bar";
-import RoofMapSection from "@/components/sections/roof-map-section";
+import RightSidebar from "@/components/common/right-sidebar";
+import RoofMapSection, {
+  MapSectionHandle,
+} from "@/components/sections/roof-map-section";
 
 export default function RoofEstimatorPage() {
+  const roofMapRef = useRef<MapSectionHandle | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
+
   const [planArea, setPlanArea] = useState(0);
   const [roofArea, setRoofArea] = useState(0);
-  const [edges, setEdges] = useState<
-    { id: string; length: number; type: string }[]
-  >([]);
-  const [polygonPoints, setPolygonPoints] = useState<
-    { lat: number; lon: number; seq: number }[]
-  >([]);
+  const [edges, setEdges] = useState<any[]>([]);
+  const [polygonPoints, setPolygonPoints] = useState<any[]>([]);
 
-  // ✅ State for project data
-  const [projectData, setProjectData] = useState<any>(null);
+  // selectedLabel state mostly for UI / later use (optional)
+  const [selectedLabel, setSelectedLabel] = useState<{
+    name: string;
+    color: string;
+  } | null>(null);
 
-  // ✅ Ref for MapSection functions
-  const mapSectionRef = useRef<{
-    confirmLocation: (coords: [number, number]) => void;
-    startDrawing: () => void;
-    deleteAll: () => void;
-    setDrawMode: (mode: string) => void;
-    searchAddress: (address: string) => void;
-  }>(null);
-
-  // ✅ Load project data from localStorage on component mount
-  useEffect(() => {
-    const savedProjectData = localStorage.getItem("projectData");
-    if (savedProjectData) {
-      const data = JSON.parse(savedProjectData);
-      setProjectData(data);
-      console.log("Loaded project data:", data);
-    }
-  }, []);
-
-  // ✅ Auto-search address when map loads and project data exists
-  useEffect(() => {
-    if (map && projectData) {
-      // Wait a bit for map to fully initialize
-      const timer = setTimeout(() => {
-        const fullAddress = `${projectData.street}, ${projectData.city}, ${projectData.state} ${projectData.zip}`;
-        console.log("Auto-searching address:", fullAddress);
-
-        if (mapSectionRef.current) {
-          mapSectionRef.current.searchAddress(fullAddress);
-        }
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [map, projectData]);
-
-  // Handle map load
-  const handleMapLoad = (mapInstance: mapboxgl.Map) => {
-    setMap(mapInstance);
+  // called by LeftSidebar
+  const handleSelectLabel = (label: { name: string; color: string }) => {
+    setSelectedLabel(label);
+    // direct call to MapContainer method exposed through RoofMapSection
+    roofMapRef.current?.startDrawingWithLabel?.(label);
   };
-
-  // ✅ Handle location selection from search - FIXED
-  const handleLocationConfirm = (coords: [number, number]) => {
-    console.log("Location selected:", coords);
-
-    // Call MapSection's confirmLocation function
-    if (mapSectionRef.current) {
-      mapSectionRef.current.confirmLocation(coords);
-    }
-  };
-
-  // ✅ Handle drawing actions from sidebar
-  const handleStartDrawing = () => {
-    if (mapSectionRef.current) {
-      mapSectionRef.current.startDrawing();
-    }
-  };
-
-  const handleDeleteAll = () => {
-    if (mapSectionRef.current) {
-      mapSectionRef.current.deleteAll();
-    }
-  };
-
-  const handleSetDrawMode = (mode: string) => {
-    if (mapSectionRef.current) {
-      mapSectionRef.current.setDrawMode(mode);
-    }
-  };
-
-  // Handle save roof
-  const handleSaveRoof = () => {
-    console.log("Saving roof data...");
-  };
-
-  // Handle thickness change
-  const handleThicknessChange = (value: number) => {
-    console.log("Thickness changed to:", value);
-  };
-
-  // Handle snap toggle
-  const handleSnapToggle = (enabled: boolean) => {
-    console.log("Snap enabled:", enabled);
-  };
+const handleMapLoad = (map: any) => {
+  console.log("Map loaded ✅", map);
+};
+  // example callback from MapSection when map instance available
+  // const handleMapLoad = (mapInst: mapboxgl.Map) => setMap(mapInst);
 
   return (
-    <div className="relative w-full h-screen">
+    <div className="relative w-full h-screen pt-14">
+      <LeftSidebar onSelectLabel={handleSelectLabel} />
+
       <TopToolbar
         map={map}
-        onSaveRoof={handleSaveRoof}
-        onThicknessChange={handleThicknessChange}
-        onSnapToggle={handleSnapToggle}
-        onLocationConfirm={handleLocationConfirm}
+        onSaveRoof={() => console.log("save")}
+        onThicknessChange={() => {}}
+        onSnapToggle={() => {}}
+        onLocationConfirm={() => {}}
+        onDownloadPDF={() => roofMapRef.current?.downloadPDF?.()}
       />
 
-      <RightSidebar
-        onStartDrawing={handleStartDrawing}
-        onDeleteAll={handleDeleteAll}
-        onSetDrawMode={handleSetDrawMode}
-      />
-
-      <div className="pt-16 h-full">
+      <div className="absolute inset-0">
         <RoofMapSection
-          ref={mapSectionRef}
+          ref={roofMapRef}
+          onMapLoad={handleMapLoad}
           setPlanArea={setPlanArea}
           setRoofArea={setRoofArea}
           setEdges={setEdges}
           setPolygonPoints={setPolygonPoints}
-          onMapLoad={handleMapLoad}
-          projectData={projectData}
+          selectedLabel={selectedLabel} // ✅ add this
         />
       </div>
+
+      <RightSidebar
+        onSetDrawMode={(m) => roofMapRef.current?.setDrawMode?.(m)}
+        onStartDrawing={() => roofMapRef.current?.startDrawing?.()}
+        onDeleteAll={() => roofMapRef.current?.deleteAll?.()}
+        onUndo={() => roofMapRef.current?.undo?.()}
+        onRedo={() => roofMapRef.current?.redo?.()}
+        onSplit={() => roofMapRef.current?.startSplitMode?.()}
+        onOverhang={() => roofMapRef.current?.applyOverhang?.()}
+        onRotateLeft={() => roofMapRef.current?.rotateLeft?.()}
+        onRotateRight={() => roofMapRef.current?.rotateRight?.()}
+        onToggleStreetView={() => roofMapRef.current?.toggleStreetView?.()}
+      />
     </div>
   );
 }

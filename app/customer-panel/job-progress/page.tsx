@@ -75,7 +75,7 @@ export default function JobProgressPage() {
     ];
     // optional localStorage restore (keeps new updates after reload)
     try {
-      const saved = localStorage.getItem("jobprogress_demo_" + id);
+      const saved = localStorage.getItem("" + id);
       if (saved) {
         const parsed = JSON.parse(saved) as Update[];
         return parsed.concat(
@@ -89,7 +89,7 @@ export default function JobProgressPage() {
   // saving to localStorage automatically (toggle boolean to enable/disable)
   useEffect(() => {
     try {
-      localStorage.setItem("jobprogress_demo_" + id, JSON.stringify(updates));
+      // localStorage.setItem("jobprogress_demo_" + id, JSON.stringify(updates));
     } catch {}
   }, [updates, id]);
 

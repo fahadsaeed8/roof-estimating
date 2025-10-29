@@ -72,11 +72,11 @@ export default function AdminJobProgressPage() {
     return initial;
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem("jobprogress_admin_" + id, JSON.stringify(updates));
-    } catch {}
-  }, [updates, id]);
+  // useEffect(() => {
+  //   try {
+  //     localStorage.setItem("jobprogress_admin_" + id, JSON.stringify(updates));
+  //   } catch {}
+  // }, [updates, id]);
 
   /* -------------------- Lightbox -------------------- */
   const [lightboxOpen, setLightboxOpen] = useState(false);
