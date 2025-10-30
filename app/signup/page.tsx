@@ -33,20 +33,34 @@ export default function SignUp() {
     postal_code: Yup.string().required("Postal code is required"),
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: signupAPI,
-    onSuccess: (data, variables) => {
-      toast.success(data?.message || "Account created successfully");
+const { mutate, isPending } = useMutation({
+  mutationFn: signupAPI,
+  onSuccess: (response, variables) => {
+    // ✅ Backend message handle
+    const message =
+      response?.data?.message || response?.message || "Account created successfully";
 
-      // ✅ Set email cookie for OTP screen
-      Cookies.set("signupemail", variables.email, { expires: 1 });
+    toast.success(message);
 
-      router.push("/otp");
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.detail || "Signup failed");
-    },
-  });
+    // ✅ Save email for OTP screen
+    Cookies.set("signupemail", variables.email, { expires: 1 });
+
+    router.push("/otp");
+  },
+  onError: (error: any) => {
+    console.error("❌ Signup error:", error);
+
+    // ✅ Show backend message if email already registered or any other message
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.response?.data?.detail ||
+      error?.response?.data?.error ||
+      "Signup failed. Please try again.";
+
+    toast.error(errorMessage);
+  },
+});
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0c2340] via-[#15385f] to-[#2a5869] px-3 py-12">

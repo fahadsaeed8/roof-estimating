@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { getUserProjectsAPI } from "@/services/auth";
 import CustomerDashboardLayout from "@/app/dashboard/customer/page";
-import { Search, Trash2 } from "lucide-react";
+import { Search, Trash2, Eye, Router } from "lucide-react";
 import axios from "axios";
 
 interface Project {
@@ -78,34 +78,36 @@ export default function ProjectDetailsPage() {
     setFilteredProjects(filtered);
   }, [searchTerm, roofFilter, propertyFilter, projects]);
 
-const deleteProject = async (id: string) => {
-  try {
-    const token = localStorage.getItem("token"); // agar auth token use ho raha hai
-    const res = await fetch(`http://88.99.241.139:5000/api/roof-estimate-projects/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // optional, agar API require kare
-      },
-    });
+  const deleteProject = async (id: string) => {
+    try {
+      const token = localStorage.getItem("token"); // agar auth token use ho raha hai
+      const res = await fetch(
+        `http://88.99.241.139:5000/api/roof-estimate-projects/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // optional, agar API require kare
+          },
+        }
+      );
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.error || "Failed to delete project");
-      return;
+      if (!res.ok) {
+        alert(data.error || "Failed to delete project");
+        return;
+      }
+
+      // Remove project from state
+      setProjects((prev) => prev.filter((p) => p._id !== id));
+      setFilteredProjects((prev) => prev.filter((p) => p._id !== id));
+      alert("Project deleted successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
     }
-
-    // Remove project from state
-    setProjects((prev) => prev.filter((p) => p._id !== id));
-    setFilteredProjects((prev) => prev.filter((p) => p._id !== id));
-    alert("Project deleted successfully");
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong");
-  }
-};
-
+  };
 
   if (loading) {
     return (
@@ -182,73 +184,118 @@ const deleteProject = async (id: string) => {
         </div>
 
         {/* Table Card */}
-        <div className="overflow-x-auto bg-white shadow-lg rounded-xl border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Roof Type
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Property Type
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Address
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Created At
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProjects.map((project) => (
-                <tr
-                  key={project._id}
-                  className="hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {project.first_name} {project.middle_name || ""}{" "}
-                    {project.last_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {project.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {project.mobile_number}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {project.roof_type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {project.property_type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {project.address.street || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    <button onClick={() => deleteProject(project._id)}>
-                      <Trash2 className="w-5 h-5 text-red-500 hover:text-red-700" />
-                    </button>
-                  </td>
+        <div className="bg-white shadow-md rounded-xl border border-gray-300 overflow-hidden">
+          {/* Card Header */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-800">My Projects</h2>
+            <p className="text-sm text-gray-500">
+              {filteredProjects.length} total project(s)
+            </p>
+          </div>
+
+          {/* Table Container */}
+          <div className="table-responsive overflow-x-auto overflow-y-auto max-h-[500px]">
+            <table className="min-w-full table-auto text-sm md:text-base border-collapse">
+              {/* Table Head */}
+              <thead className="bg-gray-100 border-b border-gray-300 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">
+                    Roof Type
+                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">
+                    Property Type
+                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">
+                    Address
+                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-center font-semibold text-gray-700 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              {/* Table Body */}
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProjects.length > 0 ? (
+                  filteredProjects.map((p) => (
+                    <tr
+                      key={p._id}
+                      className="hover:bg-gray-50 transition-all duration-200"
+                    >
+                      <td className="px-6 py-4 text-gray-800 font-medium whitespace-nowrap">
+                        {p.first_name} {p.middle_name || ""} {p.last_name}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                        {p.email}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                        {p.mobile_number}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                        {p.roof_type}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                        {p.property_type}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                        {p.address?.street || "-"}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 whitespace-nowrap">
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-center whitespace-nowrap flex justify-center gap-3">
+                        {/* 👁️ View Button */}
+                        <button
+                          onClick={() =>
+                            router.push(`/customer-panel/map-view/${p._id}`)
+                          }
+                          className="p-2 rounded-full hover:bg-blue-100 transition"
+                          title="View on Map"
+                        >
+                          <Eye className="w-5 h-5 text-blue-500 hover:text-blue-700" />
+                        </button>
+
+                        {/* 🗑️ Delete Button */}
+                        <button
+                          onClick={() => deleteProject(p._id)}
+                          className="p-2 rounded-full hover:bg-red-100 transition"
+                          title="Delete Project"
+                        >
+                          <Trash2 className="w-5 h-5 text-red-500 hover:text-red-700" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="text-center py-6 text-gray-500 italic"
+                    >
+                      No projects found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Card Footer */}
+          <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 text-right text-sm text-gray-500">
+            Showing {filteredProjects.length} project(s)
+          </div>
         </div>
       </main>
     </CustomerDashboardLayout>

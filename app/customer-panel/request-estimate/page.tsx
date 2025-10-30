@@ -66,7 +66,7 @@ export default function CreateProjectForm() {
         });
 
         setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 5000);
+        setTimeout(() => setShowSuccess(false), 2000);
         formik.resetForm();
       } catch (err) {
         console.error(err);
