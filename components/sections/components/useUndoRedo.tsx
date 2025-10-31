@@ -342,6 +342,42 @@ const handleLineForSplit = (lineFeature: any) => {
   };
 
 
+
+    const confirmLocation = (coords: [number, number]) => {
+      if (!mapRef.current) return;
+      const [lat, lng] = coords;
+      mapRef.current.flyTo({ center: [lng, lat], zoom: 20 });
+      localStorage.setItem("selectedAddress", JSON.stringify({ lat, lng }));
+    };
+
+    const searchAddress = (address: string) => {
+      if (!mapRef.current) return;
+      fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          address
+        )}.json?access_token=${mapboxgl.accessToken}`
+      )
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.features?.length > 0) {
+            const coords = data.features[0].center as [number, number];
+            mapRef.current?.flyTo({ center: coords, zoom: 19 });
+          }
+        })
+        .catch((err) => console.warn("geocode error", err));
+    };
+
+    const getMapCanvasDataURL = () => {
+      try {
+        const canvas = mapRef.current?.getCanvas();
+        if (!canvas) return null;
+        return canvas.toDataURL("image/png");
+      } catch {
+        return null;
+      }
+    };
+
+
   return {
     updateMeasurements,
     undo,

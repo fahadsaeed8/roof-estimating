@@ -95,7 +95,11 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
     const [selectedPolygonId, setSelectedPolygonId] = useState<string | null>(
       null
     );
+    const [polygonColors, setPolygonColors] = useState<{
+      [key: string]: string;
+    }>({});
 
+    
     const edgeLabels: Record<string, string> = {
       Ridge: "#e74c3c",
       Hip: "#f39c12",
@@ -142,224 +146,303 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       onBearingChange,
       setCurrentBearing: () => {},
     });
+const applyPolygonColor = (
+  feature: any,
+  map: mapboxgl.Map,
+  color: string
+) => {
+  const lineSourceId = `custom-line-${feature.id}`;
+  const lineLayerId = `custom-line-layer-${feature.id}`;
+
+  // Remove old safely
+  if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
+  if (map.getSource(lineSourceId)) map.removeSource(lineSourceId);
+
+  const coords = feature.geometry.coordinates[0];
+
+  map.addSource(lineSourceId, {
+    type: "geojson",
+    data: {
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: coords,
+      },
+    },
+  });
+
+  map.addLayer({
+    id: lineLayerId,
+    type: "line",
+    source: lineSourceId,
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: { "line-color": color, "line-width": 3 },
+  });
+};
 
     // ====================== USEEFFECT =========================
     useEffect(() => {
-  if (!mapContainerRef.current) return;
+      if (!mapContainerRef.current) return;
 
-  // ✅ Default center fallback
-  let defaultCenter: [number, number] = [74.3587, 31.5204]; // Lahore
-  let defaultZoom = 15;
+      // ✅ Default center fallback
+      let defaultCenter: [number, number] = [74.3587, 31.5204]; // Lahore
+      let defaultZoom = 15;
 
-  // ✅ Check localStorage for saved project location
-  const savedProject = localStorage.getItem("projectLocation");
-  if (savedProject) {
-    try {
-      const parsed = JSON.parse(savedProject);
-      const { lat, lng } = parsed;
-      if (lat && lng) {
-        defaultCenter = [lng, lat];
-        defaultZoom = 18;
+      // ✅ Check localStorage for saved project location
+      const savedProject = localStorage.getItem("projectLocation");
+      if (savedProject) {
+        try {
+          const parsed = JSON.parse(savedProject);
+          const { lat, lng } = parsed;
+          if (lat && lng) {
+            defaultCenter = [lng, lat];
+            defaultZoom = 18;
+          }
+        } catch (err) {
+          console.error("Error parsing project location:", err);
+        }
       }
-    } catch (err) {
-      console.error("Error parsing project location:", err);
-    }
-  }
 
-  // ✅ Initialize Mapbox
-  const mapInstance = new mapboxgl.Map({
-    container: mapContainerRef.current,
-    style: "mapbox://styles/mapbox/satellite-streets-v12",
-    center: defaultCenter,
-    zoom: defaultZoom,
-    maxZoom: 22,
-    pitch: 0,
-    bearing: 0,
-  });
+      // ✅ Initialize Mapbox
+      const mapInstance = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: "mapbox://styles/mapbox/satellite-streets-v12",
+        center: defaultCenter,
+        zoom: defaultZoom,
+        maxZoom: 22,
+        pitch: 0,
+        bearing: 0,
+      });
 
-  mapRef.current = mapInstance;
+      mapRef.current = mapInstance;
 
-  // ✅ Optional: Add marker for saved project location
-  if (savedProject) {
-    try {
-      const parsed = JSON.parse(savedProject);
-      const { lat, lng } = parsed;
-      if (lat && lng) {
-        new mapboxgl.Marker({ color: "#FF0000" })
-          .setLngLat([lng, lat])
-          .addTo(mapInstance);
+      // ✅ Optional: Add marker for saved project location
+      if (savedProject) {
+        try {
+          const parsed = JSON.parse(savedProject);
+          const { lat, lng } = parsed;
+          if (lat && lng) {
+            new mapboxgl.Marker({ color: "#FF0000" })
+              .setLngLat([lng, lat])
+              .addTo(mapInstance);
+          }
+        } catch (err) {
+          console.error("Error adding marker:", err);
+        }
       }
-    } catch (err) {
-      console.error("Error adding marker:", err);
-    }
-  }
 
-  // ✅ Mapbox Draw setup
-  const drawInstance = new MapboxDraw({
-    displayControlsDefault: true,
-    controls: { polygon: true, trash: true, line_string: true },
-    styles: [
-      {
-        id: "gl-draw-polygon-stroke",
-        type: "line",
-        filter: [
-          "all",
-          ["==", "$type", "Polygon"],
-          ["!=", "mode", "static"],
-        ],
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "yellow", "line-width": 3 },
-      },
-      {
-        id: "gl-draw-line",
-        type: "line",
-        filter: [
-          "all",
-          ["==", "$type", "LineString"],
-          ["!=", "mode", "static"],
-        ],
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "yellow", "line-width": 3 },
-      },
-      {
-        id: "gl-draw-polygon-midpoint",
-        type: "circle",
-        filter: [
-          "all",
-          ["==", "$type", "Point"],
-          ["==", "meta", "midpoint"],
-        ],
-        paint: {
-          "circle-radius": 5,
-          "circle-color": "#FFD700",
-          "circle-opacity": 1,
-        },
-      },
-      {
-        id: "gl-draw-polygon-vertex-active",
-        type: "circle",
-        filter: ["all", ["==", "$type", "Point"], ["==", "meta", "vertex"]],
-        paint: {
-          "circle-radius": 5,
-          "circle-color": "#FFFFFF",
-          "circle-stroke-color": "#000000",
-          "circle-stroke-width": 1,
-        },
-      },
-    ],
-  });
-
-  drawRef.current = drawInstance;
-  mapInstance.addControl(drawInstance);
-
-  // ✅ Draw Create Event (track polygon edges)
-  mapInstance.on("draw.create", (e: any) => {
-    const feature = e.features[0];
-    if (!feature || feature.geometry.type !== "Polygon") return;
-
-    // ✅ Hide grid after drawing complete
-    onGridToggle?.(false);
-
-    const coords = feature.geometry.coordinates[0];
-    const edges: { id: string; coords: [number, number][] }[] = [];
-
-    for (let i = 0; i < coords.length - 1; i++) {
-      const id = `${feature.id}-edge-${i}`;
-      edges.push({ id, coords: [coords[i], coords[i + 1]] });
-
-      if (mapInstance.getLayer(id)) mapInstance.removeLayer(id);
-      if (mapInstance.getSource(id)) mapInstance.removeSource(id);
-
-      mapInstance.addSource(id, {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          geometry: {
-            type: "LineString",
-            coordinates: [coords[i], coords[i + 1]],
+      // ✅ Mapbox Draw setup
+      const drawInstance = new MapboxDraw({
+        displayControlsDefault: true,
+        controls: { polygon: true, trash: true, line_string: true },
+        styles: [
+          {
+            id: "gl-draw-polygon-stroke",
+            type: "line",
+            filter: [
+              "all",
+              ["==", "$type", "Polygon"],
+              ["!=", "mode", "static"],
+            ],
+            layout: { "line-cap": "round", "line-join": "round" },
+            paint: { "line-color": "yellow", "line-width": 3 },
           },
-        },
+          {
+            id: "gl-draw-line",
+            type: "line",
+            filter: [
+              "all",
+              ["==", "$type", "LineString"],
+              ["!=", "mode", "static"],
+            ],
+            layout: { "line-cap": "round", "line-join": "round" },
+            paint: { "line-color": "yellow", "line-width": 3 },
+          },
+          {
+            id: "gl-draw-polygon-midpoint",
+            type: "circle",
+            filter: [
+              "all",
+              ["==", "$type", "Point"],
+              ["==", "meta", "midpoint"],
+            ],
+            paint: {
+              "circle-radius": 5,
+              "circle-color": "#FFD700",
+              "circle-opacity": 1,
+            },
+          },
+          {
+            id: "gl-draw-polygon-vertex-active",
+            type: "circle",
+            filter: ["all", ["==", "$type", "Point"], ["==", "meta", "vertex"]],
+            paint: {
+              "circle-radius": 5,
+              "circle-color": "#FFFFFF",
+              "circle-stroke-color": "#000000",
+              "circle-stroke-width": 1,
+            },
+          },
+        ],
       });
 
-      mapInstance.addLayer({
-        id,
-        type: "line",
-        source: id,
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "yellow", "line-width": 3 },
+      drawRef.current = drawInstance;
+      mapInstance.addControl(drawInstance);
+
+      // ✅ Draw Create Event (track polygon edges)
+      mapInstance.on("draw.create", (e: any) => {
+        const feature = e.features[0];
+        if (!feature || feature.geometry.type !== "Polygon") return;
+
+        // ✅ Hide grid after drawing complete
+        onGridToggle?.(false);
+
+        const coords = feature.geometry.coordinates[0];
+        const edges: { id: string; coords: [number, number][] }[] = [];
+
+        for (let i = 0; i < coords.length - 1; i++) {
+          const id = `${feature.id}-edge-${i}`;
+          edges.push({ id, coords: [coords[i], coords[i + 1]] });
+
+          if (mapInstance.getLayer(id)) mapInstance.removeLayer(id);
+          if (mapInstance.getSource(id)) mapInstance.removeSource(id);
+
+          mapInstance.addSource(id, {
+            type: "geojson",
+            data: {
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: [coords[i], coords[i + 1]],
+              },
+            },
+          });
+        }
+
+        // ✅ Save edges in React state
+        setPolygonEdgesMap((prev) => ({
+          ...prev,
+          [feature.id as string]: edges,
+        }));
+
+        updateMeasurements(e);
       });
-    }
 
-    // ✅ Save edges in React state
-    setPolygonEdgesMap((prev) => ({
-      ...prev,
-      [feature.id as string]: edges,
-    }));
+      // ✅ Draw Delete Event (remove edges + state cleanup)
+      mapInstance.on("draw.delete", (e: any) => {
+        const deleted = e.features;
+        deleted.forEach((feature: any) => {
+          const featureId = feature.id;
+          const edges = polygonEdgesMap[featureId];
 
-    updateMeasurements(e);
-  });
+          if (edges) {
+            edges.forEach((edge: any) => {
+              if (mapInstance.getLayer(edge.id))
+                mapInstance.removeLayer(edge.id);
+              if (mapInstance.getSource(edge.id))
+                mapInstance.removeSource(edge.id);
+            });
 
-  // ✅ Draw Delete Event (remove edges + state cleanup)
-  mapInstance.on("draw.delete", (e: any) => {
-    const deleted = e.features;
-    deleted.forEach((feature: any) => {
-      const featureId = feature.id;
-      const edges = polygonEdgesMap[featureId];
-
-      if (edges) {
-        edges.forEach((edge: any) => {
-          if (mapInstance.getLayer(edge.id)) mapInstance.removeLayer(edge.id);
-          if (mapInstance.getSource(edge.id)) mapInstance.removeSource(edge.id);
+            // ✅ Remove from React state
+            setPolygonEdgesMap((prev) => {
+              const updated = { ...prev };
+              delete updated[featureId];
+              return updated;
+            });
+          }
         });
+      });
 
-        // ✅ Remove from React state
-        setPolygonEdgesMap((prev) => {
-          const updated = { ...prev };
-          delete updated[featureId];
-          return updated;
-        });
-      }
-    });
-  });
-
-  // ✅ Polygon Selection Change
-  mapInstance.on("draw.selectionchange", (e: any) => {
-    const selected = e?.features?.[0];
-    if (selected && selected.id) {
-      setSelectedPolygonId(selected.id as string);
-    } else {
-      setSelectedPolygonId(null);
-    }
-  });
-
-  mapInstance.on("draw.update", updateMeasurements);
-
-  mapInstance.on("rotate", () => {
-    onBearingChange?.(mapInstance.getBearing());
-  });
-
-  return () => {
-    mapInstance.remove();
-  };
-}, []);
-
-
-    // ====================== LABEL HANDLER =========================
-    const handleLabelSelect = (label: { name: string; color: string }) => {
-      if (!selectedPolygonId) return;
-
-      setSelectedLabel(label.name);
-
-      const edges = polygonEdgesMap[selectedPolygonId];
-      if (!edges) return;
-
-      edges.forEach((edge) => {
-        if (mapRef.current?.getLayer(edge.id)) {
-          // ✅ Apply selected label color to each polygon edge
-          mapRef.current.setPaintProperty(edge.id, "line-color", label.color);
+      // ✅ Polygon Selection Change
+      mapInstance.on("draw.selectionchange", (e: any) => {
+        const selected = e?.features?.[0];
+        if (selected && selected.id) {
+          setSelectedPolygonId(selected.id as string);
+        } else {
+          setSelectedPolygonId(null);
         }
       });
-    };
+
+    mapInstance.on("draw.update", (e: any) => {
+  const updatedFeature = e.features[0];
+  if (!updatedFeature || updatedFeature.geometry.type !== "Polygon") return;
+
+  const color = updatedFeature.properties?.color || "yellow";
+  const featureId = updatedFeature.id;
+
+  // 🧹 Clean up old custom layers/sources linked with this polygon
+  const existingLayers = mapInstance.getStyle().layers || [];
+  existingLayers.forEach((layer: any) => {
+    if (layer.id.includes(`custom-line-layer-${featureId}`)) {
+      if (mapInstance.getLayer(layer.id)) mapInstance.removeLayer(layer.id);
+    }
+  });
+
+  const existingSources = Object.keys(mapInstance.getStyle().sources);
+  existingSources.forEach((srcId) => {
+    if (srcId.includes(`custom-line-${featureId}`)) {
+      if (mapInstance.getSource(srcId)) mapInstance.removeSource(srcId);
+    }
+  });
+
+  // ✅ Reapply correct edges after move
+  const coords = updatedFeature.geometry.coordinates[0];
+  for (let i = 0; i < coords.length - 1; i++) {
+    const edgeId = `custom-line-${featureId}-${i}`;
+    mapInstance.addSource(edgeId, {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        geometry: { type: "LineString", coordinates: [coords[i], coords[i + 1]] },
+      },
+    });
+    mapInstance.addLayer({
+      id: `custom-line-layer-${featureId}-${i}`,
+      type: "line",
+      source: edgeId,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": color, "line-width": 3 },
+    });
+  }
+});
+
+
+      mapInstance.on("rotate", () => {
+        onBearingChange?.(mapInstance.getBearing());
+      });
+
+      return () => {
+        mapInstance.remove();
+      };
+    }, []);
+
+const handleLabelSelect = (label: { name: string; color: string }) => {
+  if (!selectedPolygonId || !mapRef.current) return;
+
+  const map = mapRef.current;
+  const draw = drawRef.current;
+  const feature = draw?.get(selectedPolygonId);
+  if (!feature) return;
+
+  // 🟢 Save color in feature + state
+  feature.properties = {
+    ...feature.properties,
+    color: label.color,
+    label: label.name,
+  };
+  setPolygonColors((prev) => ({ ...prev, [selectedPolygonId]: label.color }));
+
+
+
+  if (map.getLayer(`custom-line-layer-${selectedPolygonId}`)) {
+  map.removeLayer(`custom-line-layer-${selectedPolygonId}`);
+  map.removeSource(`custom-line-${selectedPolygonId}`);
+}
+  // 🟢 Reapply edge color cleanly
+  applyPolygonColor(feature, map, label.color); // ✅ correct function
+};
+
+
 
     // ====================== HELPERS =========================
     const confirmLocation = (coords: [number, number]) => {
