@@ -30,11 +30,10 @@ export default function RoofEstimatorPage() {
     // direct call to MapContainer method exposed through RoofMapSection
     roofMapRef.current?.startDrawingWithLabel?.(label);
   };
-const handleMapLoad = (map: any) => {
-  console.log("Map loaded ✅", map);
+const handleMapLoad = (mapInstance: mapboxgl.Map) => {
+  console.log("Map loaded ✅", mapInstance);
+  setMap(mapInstance);
 };
-  // example callback from MapSection when map instance available
-  // const handleMapLoad = (mapInst: mapboxgl.Map) => setMap(mapInst);
 
   return (
     <div className="relative w-full h-screen pt-14">
@@ -43,8 +42,23 @@ const handleMapLoad = (map: any) => {
       <TopToolbar
         map={map}
         onSaveRoof={() => console.log("save")}
-        onThicknessChange={() => {}}
-        onSnapToggle={() => {}}
+        onThicknessChange={(value) => {
+          // ✅ Update line thickness on map draw layers
+          if (map) {
+            const layers = ["gl-draw-polygon-stroke", "gl-draw-line"];
+            layers.forEach((layerId) => {
+              try {
+                if (map.getLayer(layerId)) {
+                  map.setPaintProperty(layerId, "line-width", value);
+                }
+              } catch {}
+            });
+          }
+        }}
+        onSnapToggle={(enabled) => {
+          // ✅ Toggle snap mode (can be implemented with grid snapping)
+          console.log("Snap:", enabled);
+        }}
         onLocationConfirm={() => {}}
         onDownloadPDF={() => roofMapRef.current?.downloadPDF?.()}
       />
@@ -65,6 +79,7 @@ const handleMapLoad = (map: any) => {
         onSetDrawMode={(m) => roofMapRef.current?.setDrawMode?.(m)}
         onStartDrawing={() => roofMapRef.current?.startDrawing?.()}
         onDeleteAll={() => roofMapRef.current?.deleteAll?.()}
+        onDeleteSelected={() => roofMapRef.current?.deleteSelected?.()}
         onUndo={() => roofMapRef.current?.undo?.()}
         onRedo={() => roofMapRef.current?.redo?.()}
         onSplit={() => roofMapRef.current?.startSplitMode?.()}

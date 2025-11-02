@@ -58,13 +58,29 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
       const handleEdgeClick = (
         e: mapboxgl.MapMouseEvent & mapboxgl.EventData
       ) => {
+        // ✅ Check which layers exist in the map before querying
+        const availableLayers: string[] = [];
+        const layerNames = [
+          "gl-draw-line-inactive",
+          "gl-draw-line-active",
+          "gl-draw-polygon-stroke-inactive",
+          "gl-draw-polygon-stroke-active",
+        ];
+
+        layerNames.forEach((layerName) => {
+          try {
+            if (map.getLayer(layerName)) {
+              availableLayers.push(layerName);
+            }
+          } catch (err) {
+            // Layer doesn't exist, skip it
+          }
+        });
+
+        if (availableLayers.length === 0) return;
+
         const features = map.queryRenderedFeatures(e.point, {
-          layers: [
-            "gl-draw-line-inactive",
-            "gl-draw-line-active",
-            "gl-draw-polygon-stroke-inactive",
-            "gl-draw-polygon-stroke-active",
-          ],
+          layers: availableLayers,
         });
 
         if (!features.length) return;
@@ -88,23 +104,29 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
 
         // ✅ Update color for only this edge
         try {
-          [
+          const layerNames = [
             "gl-draw-line-inactive",
             "gl-draw-line-active",
             "gl-draw-polygon-stroke-inactive",
             "gl-draw-polygon-stroke-active",
-          ].forEach((layer) => {
-            if (map.getLayer(layer)) {
-              map.setPaintProperty(layer, "line-color", [
-                "case",
-                [
-                  "all",
-                  ["==", ["get", "id"], edgeId],
-                  ["==", ["get", "polygonId"], polygonId],
-                ],
-                selectedLabel.color,
-                "#FFD500",
-              ]);
+          ];
+          
+          layerNames.forEach((layer) => {
+            try {
+              if (map.getLayer(layer)) {
+                map.setPaintProperty(layer, "line-color", [
+                  "case",
+                  [
+                    "all",
+                    ["==", ["get", "id"], edgeId],
+                    ["==", ["get", "polygonId"], polygonId],
+                  ],
+                  selectedLabel.color,
+                  "#FFD500",
+                ]);
+              }
+            } catch (layerErr) {
+              // Layer doesn't exist or error setting property, skip it
             }
           });
         } catch (err) {
@@ -269,9 +291,15 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
 
     return (
       <div className="relative w-full h-full">
+        <MapContainer
+          ref={mapRef}
+          onMeasurementsChange={handleMeasurementsChange}
+          onGridToggle={(visible) => setShowGrid(visible)}
+          selectedLabel={selectedLabel || undefined}
+        />
         {showGrid && (
           <div
-            className="absolute inset-0 z-50 pointer-events-none"
+            className="absolute inset-0 z-40 pointer-events-none"
             style={{
               backgroundImage:
                 "linear-gradient(to right, rgba(255,255,255,0.29) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.22) 1px, transparent 1px)",
@@ -280,13 +308,6 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
             }}
           />
         )}
-
-        <MapContainer
-          ref={mapRef}
-          onMeasurementsChange={handleMeasurementsChange}
-          onGridToggle={(visible) => setShowGrid(visible)}
-          selectedLabel={selectedLabel || undefined}
-        />
       </div>
     );
   }

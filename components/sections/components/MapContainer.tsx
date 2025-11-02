@@ -11,6 +11,7 @@ import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import * as turf from "@turf/turf";
 import { useUndoRedo } from "../components/useUndoRedo";
 import LeftSidebar from "@/components/common/left-sidebar";
 
@@ -18,7 +19,9 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
 export interface MapSectionHandle {
   startDrawing: () => void;
+  startDrawingWithLabel?: (label: { name: string; color: string }) => void;
   deleteAll: () => void;
+  deleteSelected: () => void;
   setDrawMode: (mode: string) => void;
   undo: () => void;
   redo: () => void;
@@ -31,6 +34,7 @@ export interface MapSectionHandle {
   rotateRight: () => void;
   toggleStreetView: () => void;
   getCenter?: () => [number, number] | null;
+  getMap?: () => mapboxgl.Map | null;
 }
 
 interface EdgeItem {
@@ -58,6 +62,7 @@ interface MapContainerProps {
   onBearingChange?: (bearing: number) => void;
   onMapLoad?: (map: mapboxgl.Map) => void;
   className?: string;
+  selectedLabel?: { name: string; color: string };
 }
 
 const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
@@ -69,6 +74,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       onMapLoad,
       onGridToggle,
       onBearingChange,
+      selectedLabel,
     },
     ref
   ) => {
@@ -86,7 +92,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
     const [polygonEdges, setPolygonEdges] = useState<
       { id: string; coords: [number, number][] }[]
     >([]);
-    const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+    const [selectedLabelName, setSelectedLabelName] = useState<string | null>(null);
 
     const [polygonEdgesMap, setPolygonEdgesMap] = useState<
       Record<string, { id: string; coords: [number, number][] }[]>
@@ -98,6 +104,8 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
     const [polygonColors, setPolygonColors] = useState<{
       [key: string]: string;
     }>({});
+    
+    const [isDrawMode, setIsDrawMode] = useState(false);
 
     
     const edgeLabels: Record<string, string> = {
@@ -122,7 +130,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       redo,
       startSplitMode,
       applyOverhang,
-      startDrawing,
+      startDrawing: startDrawingFn,
       deleteAll,
       setDrawMode,
       rotateLeft,
@@ -145,39 +153,69 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       onMeasurementsChange,
       onBearingChange,
       setCurrentBearing: () => {},
+      setPolygonEdgesMap,
     });
+
+    // ✅ Wrapper for startDrawing to handle grid toggle (on/off)
+    const startDrawing = () => {
+      const currentMode = drawRef.current?.getMode();
+      if (currentMode === "draw_polygon") {
+        // If already in draw mode, toggle off - hide grid and go to select mode
+        setIsDrawMode(false);
+        onGridToggle?.(false);
+        drawRef.current?.changeMode("simple_select");
+      } else {
+        // Toggle on - show grid and start drawing
+        setIsDrawMode(true);
+        onGridToggle?.(true);
+        startDrawingFn();
+      }
+    };
 const applyPolygonColor = (
   feature: any,
   map: mapboxgl.Map,
   color: string
 ) => {
-  const lineSourceId = `custom-line-${feature.id}`;
-  const lineLayerId = `custom-line-layer-${feature.id}`;
-
-  // Remove old safely
-  if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
-  if (map.getSource(lineSourceId)) map.removeSource(lineSourceId);
-
+  const featureId = feature.id;
   const coords = feature.geometry.coordinates[0];
 
-  map.addSource(lineSourceId, {
-    type: "geojson",
-    data: {
-      type: "Feature",
-      geometry: {
-        type: "LineString",
-        coordinates: coords,
-      },
-    },
+  // 🧹 Clean up old custom layers/sources for this polygon
+  const existingLayers = map.getStyle().layers || [];
+  existingLayers.forEach((layer: any) => {
+    if (layer.id.includes(`custom-line-layer-${featureId}`)) {
+      if (map.getLayer(layer.id)) map.removeLayer(layer.id);
+    }
   });
 
-  map.addLayer({
-    id: lineLayerId,
-    type: "line",
-    source: lineSourceId,
-    layout: { "line-cap": "round", "line-join": "round" },
-    paint: { "line-color": color, "line-width": 3 },
+  const existingSources = Object.keys(map.getStyle().sources);
+  existingSources.forEach((srcId) => {
+    if (srcId.includes(`custom-line-${featureId}`)) {
+      if (map.getSource(srcId)) map.removeSource(srcId);
+    }
   });
+
+  // ✅ Apply color to all edges of polygon
+  for (let i = 0; i < coords.length - 1; i++) {
+    const edgeId = `custom-line-${featureId}-${i}`;
+    map.addSource(edgeId, {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates: [coords[i], coords[i + 1]],
+        },
+      },
+    });
+    map.addLayer({
+      id: `custom-line-layer-${featureId}-${i}`,
+      type: "line",
+      source: edgeId,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": color, "line-width": 5 },
+    });
+  }
 };
 
     // ====================== USEEFFECT =========================
@@ -215,6 +253,9 @@ const applyPolygonColor = (
       });
 
       mapRef.current = mapInstance;
+      
+      // ✅ Call onMapLoad callback with map instance
+      onMapLoad?.(mapInstance);
 
       // ✅ Optional: Add marker for saved project location
       if (savedProject) {
@@ -231,10 +272,10 @@ const applyPolygonColor = (
         }
       }
 
-      // ✅ Mapbox Draw setup
+      // ✅ Mapbox Draw setup (hide default controls to avoid duplicate sidebar)
       const drawInstance = new MapboxDraw({
-        displayControlsDefault: true,
-        controls: { polygon: true, trash: true, line_string: true },
+        displayControlsDefault: false,
+        controls: { polygon: false, trash: false, line_string: false, point: false },
         styles: [
           {
             id: "gl-draw-polygon-stroke",
@@ -245,7 +286,7 @@ const applyPolygonColor = (
               ["!=", "mode", "static"],
             ],
             layout: { "line-cap": "round", "line-join": "round" },
-            paint: { "line-color": "yellow", "line-width": 3 },
+            paint: { "line-color": "yellow", "line-width": 4 },
           },
           {
             id: "gl-draw-line",
@@ -256,7 +297,7 @@ const applyPolygonColor = (
               ["!=", "mode", "static"],
             ],
             layout: { "line-cap": "round", "line-join": "round" },
-            paint: { "line-color": "yellow", "line-width": 3 },
+            paint: { "line-color": "yellow", "line-width": 4 },
           },
           {
             id: "gl-draw-polygon-midpoint",
@@ -289,10 +330,48 @@ const applyPolygonColor = (
       drawRef.current = drawInstance;
       mapInstance.addControl(drawInstance);
 
-      // ✅ Draw Create Event (track polygon edges)
+      // ✅ Draw Create Event (track polygon edges + handle split)
       mapInstance.on("draw.create", (e: any) => {
         const feature = e.features[0];
-        if (!feature || feature.geometry.type !== "Polygon") return;
+        if (!feature) return;
+
+        // ✅ Handle split mode - line created for splitting
+        if (awaitingSplitRef.current && feature.geometry.type === "LineString") {
+          awaitingSplitRef.current = false;
+          const allFeatures = drawInstance.getAll();
+          const selected = allFeatures.features.find(
+            (f: any) => f.id === selectedPolygonId
+          );
+          
+          if (selected && selected.geometry.type === "Polygon" && feature.geometry.type === "LineString") {
+            try {
+              const splitResult = turf.lineSplit(selected as any, feature as any);
+              if (splitResult.features.length > 1) {
+                if (selected.id) {
+                  drawInstance.delete(selected.id as string);
+                }
+                splitResult.features.forEach((f: any) => {
+                  drawInstance.add(f);
+                });
+                if (feature.id) {
+                  drawInstance.delete(feature.id as string); // Remove the split line
+                }
+                updateMeasurements();
+                return;
+              }
+            } catch (err) {
+              console.warn("Split error:", err);
+            }
+          }
+          // If split failed, just remove the line
+          if (feature.id) {
+            drawInstance.delete(feature.id as string);
+          }
+          return;
+        }
+
+        // ✅ Handle polygon creation
+        if (feature.geometry.type !== "Polygon") return;
 
         // ✅ Hide grid after drawing complete
         onGridToggle?.(false);
@@ -311,6 +390,7 @@ const applyPolygonColor = (
             type: "geojson",
             data: {
               type: "Feature",
+              properties: {},
               geometry: {
                 type: "LineString",
                 coordinates: [coords[i], coords[i + 1]],
@@ -325,7 +405,16 @@ const applyPolygonColor = (
           [feature.id as string]: edges,
         }));
 
-        updateMeasurements(e);
+        // ✅ Save snapshot to undo stack for undo/redo
+        try {
+          const currentSnapshot = drawInstance.getAll();
+          undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+          redoStackRef.current = []; // Clear redo stack on new action
+        } catch (err) {
+          console.warn("Error saving snapshot:", err);
+        }
+
+        updateMeasurements();
       });
 
       // ✅ Draw Delete Event (remove edges + state cleanup)
@@ -333,78 +422,168 @@ const applyPolygonColor = (
         const deleted = e.features;
         deleted.forEach((feature: any) => {
           const featureId = feature.id;
-          const edges = polygonEdgesMap[featureId];
-
-          if (edges) {
-            edges.forEach((edge: any) => {
-              if (mapInstance.getLayer(edge.id))
-                mapInstance.removeLayer(edge.id);
-              if (mapInstance.getSource(edge.id))
-                mapInstance.removeSource(edge.id);
-            });
+          
+          // ✅ Get edges from current state (not from stale closure)
+          setPolygonEdgesMap((prev) => {
+            const edges = prev[featureId];
+            
+            if (edges) {
+              edges.forEach((edge: any) => {
+                if (mapInstance.getLayer(edge.id))
+                  mapInstance.removeLayer(edge.id);
+                if (mapInstance.getSource(edge.id))
+                  mapInstance.removeSource(edge.id);
+              });
+            }
 
             // ✅ Remove from React state
-            setPolygonEdgesMap((prev) => {
-              const updated = { ...prev };
-              delete updated[featureId];
-              return updated;
-            });
-          }
+            const updated = { ...prev };
+            delete updated[featureId];
+            return updated;
+          });
+
+          // ✅ Clean up custom color layers for this polygon
+          const existingLayers = mapInstance.getStyle().layers || [];
+          existingLayers.forEach((layer: any) => {
+            if (layer.id.includes(`custom-line-layer-${featureId}`)) {
+              if (mapInstance.getLayer(layer.id)) mapInstance.removeLayer(layer.id);
+            }
+          });
+
+          const existingSources = Object.keys(mapInstance.getStyle().sources);
+          existingSources.forEach((srcId) => {
+            if (srcId.includes(`custom-line-${featureId}`)) {
+              if (mapInstance.getSource(srcId)) mapInstance.removeSource(srcId);
+            }
+          });
         });
+
+        // ✅ Clear labels and update measurements after delete
+        clearLabels();
+        updateMeasurements();
       });
 
-      // ✅ Polygon Selection Change
+      // ✅ Polygon Selection Change - Track selected polygon for delete functionality
       mapInstance.on("draw.selectionchange", (e: any) => {
         const selected = e?.features?.[0];
-        if (selected && selected.id) {
-          setSelectedPolygonId(selected.id as string);
+        if (selected && selected.id && selected.geometry?.type === "Polygon") {
+          const featureId = selected.id as string;
+          setSelectedPolygonId(featureId);
         } else {
           setSelectedPolygonId(null);
         }
       });
 
+
+      // ✅ Draw Mode Change - handle edit mode properly
+      mapInstance.on("draw.modechange", (e: any) => {
+        // When switching to simple_select, ensure we can still move polygons
+        if (e.mode === "simple_select") {
+          // Allow moving in simple_select mode
+        }
+        
+        // Handle draw mode changes for grid toggle
+        if (e.mode === "draw_polygon") {
+          setIsDrawMode(true);
+          onGridToggle?.(true);
+        } else if (e.mode !== "draw_polygon") {
+          setIsDrawMode(false);
+          onGridToggle?.(false);
+        }
+      });
+
+    // ✅ Debounce update snapshot saving for undo/redo
+    // ✅ This ensures step-by-step undo/redo: saves snapshot before first edit, pushes after user finishes
+    let updateSnapshotTimeout: NodeJS.Timeout | null = null;
+    let lastUpdateSnapshot: any = null;
+    let hasSavedInitialSnapshot = false;
+
     mapInstance.on("draw.update", (e: any) => {
-  const updatedFeature = e.features[0];
-  if (!updatedFeature || updatedFeature.geometry.type !== "Polygon") return;
+      const updatedFeature = e.features[0];
+      if (!updatedFeature || updatedFeature.geometry.type !== "Polygon") return;
 
-  const color = updatedFeature.properties?.color || "yellow";
-  const featureId = updatedFeature.id;
+      const color = updatedFeature.properties?.color || "yellow";
+      const featureId = updatedFeature.id;
 
-  // 🧹 Clean up old custom layers/sources linked with this polygon
-  const existingLayers = mapInstance.getStyle().layers || [];
-  existingLayers.forEach((layer: any) => {
-    if (layer.id.includes(`custom-line-layer-${featureId}`)) {
-      if (mapInstance.getLayer(layer.id)) mapInstance.removeLayer(layer.id);
-    }
-  });
+      // ✅ Save snapshot before first update for undo/redo (step-by-step)
+      if (!hasSavedInitialSnapshot) {
+        try {
+          const currentSnapshot = drawInstance.getAll();
+          lastUpdateSnapshot = JSON.parse(JSON.stringify(currentSnapshot));
+          hasSavedInitialSnapshot = true; // Mark that we've saved the initial state
+        } catch (err) {
+          console.warn("Error saving snapshot:", err);
+        }
+      }
 
-  const existingSources = Object.keys(mapInstance.getStyle().sources);
-  existingSources.forEach((srcId) => {
-    if (srcId.includes(`custom-line-${featureId}`)) {
-      if (mapInstance.getSource(srcId)) mapInstance.removeSource(srcId);
-    }
-  });
+      // Clear previous timeout
+      if (updateSnapshotTimeout) clearTimeout(updateSnapshotTimeout);
 
-  // ✅ Reapply correct edges after move
-  const coords = updatedFeature.geometry.coordinates[0];
-  for (let i = 0; i < coords.length - 1; i++) {
-    const edgeId = `custom-line-${featureId}-${i}`;
-    mapInstance.addSource(edgeId, {
-      type: "geojson",
-      data: {
-        type: "Feature",
-        geometry: { type: "LineString", coordinates: [coords[i], coords[i + 1]] },
-      },
+      // ✅ Save snapshot after delay when user finishes editing (step-by-step undo/redo)
+      updateSnapshotTimeout = setTimeout(() => {
+        if (lastUpdateSnapshot) {
+          try {
+            // Push the snapshot taken before editing started (allows step-by-step undo)
+            undoStackRef.current.push(lastUpdateSnapshot);
+            redoStackRef.current = []; // Clear redo stack on new action
+            lastUpdateSnapshot = null;
+            hasSavedInitialSnapshot = false; // Reset for next edit session
+          } catch (err) {
+            console.warn("Error pushing snapshot:", err);
+          }
+        }
+      }, 500); // 500ms delay after last update (when user finishes dragging)
+
+      // 🧹 Clean up old custom layers/sources linked with this polygon
+      const existingLayers = mapInstance.getStyle().layers || [];
+      existingLayers.forEach((layer: any) => {
+        if (layer.id.includes(`custom-line-layer-${featureId}`)) {
+          if (mapInstance.getLayer(layer.id)) mapInstance.removeLayer(layer.id);
+        }
+      });
+
+      const existingSources = Object.keys(mapInstance.getStyle().sources);
+      existingSources.forEach((srcId) => {
+        if (srcId.includes(`custom-line-${featureId}`)) {
+          if (mapInstance.getSource(srcId)) mapInstance.removeSource(srcId);
+        }
+      });
+
+      // ✅ Reapply correct edges after move
+      const coords = updatedFeature.geometry.coordinates[0];
+      for (let i = 0; i < coords.length - 1; i++) {
+        const edgeId = `custom-line-${featureId}-${i}`;
+        mapInstance.addSource(edgeId, {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: { type: "LineString", coordinates: [coords[i], coords[i + 1]] },
+          },
+        });
+        mapInstance.addLayer({
+          id: `custom-line-layer-${featureId}-${i}`,
+          type: "line",
+          source: edgeId,
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": color, "line-width": 5 },
+        });
+      }
+
+      // ✅ Update edges in state
+      const edges: { id: string; coords: [number, number][] }[] = [];
+      for (let i = 0; i < coords.length - 1; i++) {
+        const id = `${featureId}-edge-${i}`;
+        edges.push({ id, coords: [coords[i], coords[i + 1]] });
+      }
+      setPolygonEdgesMap((prev) => ({
+        ...prev,
+        [featureId]: edges,
+      }));
+
+      // ✅ Update measurements to move labels with polygon
+      updateMeasurements();
     });
-    mapInstance.addLayer({
-      id: `custom-line-layer-${featureId}-${i}`,
-      type: "line",
-      source: edgeId,
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: { "line-color": color, "line-width": 3 },
-    });
-  }
-});
 
 
       mapInstance.on("rotate", () => {
@@ -414,33 +593,133 @@ const applyPolygonColor = (
       return () => {
         mapInstance.remove();
       };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 const handleLabelSelect = (label: { name: string; color: string }) => {
-  if (!selectedPolygonId || !mapRef.current) return;
+  if (!selectedPolygonId || !mapRef.current || !drawRef.current) return;
 
   const map = mapRef.current;
   const draw = drawRef.current;
-  const feature = draw?.get(selectedPolygonId);
+  const feature = draw.get(selectedPolygonId);
   if (!feature) return;
 
-  // 🟢 Save color in feature + state
-  feature.properties = {
-    ...feature.properties,
-    color: label.color,
-    label: label.name,
+  // ✅ Save snapshot BEFORE label change for undo/redo
+  try {
+    const currentSnapshot = draw.getAll();
+    undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+    redoStackRef.current = []; // Clear redo stack on new action
+  } catch (err) {
+    console.warn("Error saving snapshot:", err);
+  }
+
+  // 🟢 Update feature properties and re-add to draw instance to ensure properties are saved
+  // ✅ Get current feature data
+  const featureData = {
+    ...feature,
+    properties: {
+      ...feature.properties,
+      color: label.color,
+      label: label.name,
+    },
   };
+
+  // ✅ Remove and re-add feature with updated properties to ensure they're saved properly
+  try {
+    const featureId = feature.id as string;
+    draw.delete(featureId);
+    
+    // ✅ Add feature back with updated properties
+    draw.add(featureData);
+    
+    // ✅ Re-select the feature after re-adding
+    setTimeout(() => {
+      try {
+        draw.changeMode("simple_select");
+        // Note: Feature will be automatically selected after re-adding if it was selected before
+      } catch {}
+    }, 10);
+  } catch (err) {
+    console.warn("Error updating feature in draw instance:", err);
+    // Fallback: Just update properties directly
+    feature.properties = {
+      ...feature.properties,
+      color: label.color,
+      label: label.name,
+    };
+  }
+  
   setPolygonColors((prev) => ({ ...prev, [selectedPolygonId]: label.color }));
 
+  // ✅ Clean up old layers and reapply color after a short delay (after feature is re-added)
+  setTimeout(() => {
+    const updatedFeature = draw.get(selectedPolygonId);
+    if (!updatedFeature) return;
 
+    // ✅ Clean up old custom layers
+    const existingLayers = map.getStyle().layers || [];
+    existingLayers.forEach((layer: any) => {
+      if (layer.id.includes(`custom-line-layer-${selectedPolygonId}`)) {
+        try {
+          if (map.getLayer(layer.id)) map.removeLayer(layer.id);
+        } catch {}
+      }
+    });
 
-  if (map.getLayer(`custom-line-layer-${selectedPolygonId}`)) {
-  map.removeLayer(`custom-line-layer-${selectedPolygonId}`);
-  map.removeSource(`custom-line-${selectedPolygonId}`);
-}
-  // 🟢 Reapply edge color cleanly
-  applyPolygonColor(feature, map, label.color); // ✅ correct function
+    const existingSources = Object.keys(map.getStyle().sources);
+    existingSources.forEach((srcId) => {
+      if (srcId.includes(`custom-line-${selectedPolygonId}`)) {
+        try {
+          if (map.getSource(srcId)) map.removeSource(srcId);
+        } catch {}
+      }
+    });
+
+    // 🟢 Reapply edge color cleanly
+    // ✅ If color is yellow, don't add custom layers (default yellow)
+    // ✅ If color is not yellow, apply custom color layers
+    if (label.color && label.color !== "yellow") {
+      applyPolygonColor(updatedFeature, map, label.color);
+    }
+
+    // ✅ Update polygonEdgesMap to ensure delete works properly
+    if (updatedFeature.geometry.type === "Polygon") {
+      const coords = updatedFeature.geometry.coordinates[0];
+      const edges: { id: string; coords: [number, number][] }[] = [];
+      for (let i = 0; i < coords.length - 1; i++) {
+        const id = `${selectedPolygonId}-edge-${i}`;
+        edges.push({ 
+          id, 
+          coords: [
+            [coords[i][0], coords[i][1]] as [number, number], 
+            [coords[i + 1][0], coords[i + 1][1]] as [number, number]
+          ] 
+        });
+      }
+      setPolygonEdgesMap((prev) => ({
+        ...prev,
+        [selectedPolygonId]: edges,
+      }));
+    }
+  }, 50);
+
+  // ✅ Ensure we stay in simple_select mode to allow moving
+  try {
+    if (draw) {
+      draw.changeMode("simple_select");
+    }
+  } catch (err) {
+    // Mode change might fail if already in that mode, ignore
+  }
 };
+
+  // ✅ Start drawing with label selected
+  const startDrawingWithLabel = (label: { name: string; color: string }) => {
+    setSelectedLabelName(label.name);
+    setIsDrawMode(true);
+    onGridToggle?.(true);
+    startDrawingFn();
+  };
 
 
 
@@ -472,17 +751,118 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
     const getMapCanvasDataURL = () => {
       try {
         const canvas = mapRef.current?.getCanvas();
-        if (!canvas) return null;
+        if (!canvas) return undefined;
         return canvas.toDataURL("image/png");
       } catch {
-        return null;
+        return undefined;
+      }
+    };
+
+    // ✅ Delete Selected Polygon function
+    const deleteSelected = () => {
+      if (!drawRef.current || !mapRef.current) {
+        if (drawRef.current) deleteAll();
+        return;
+      }
+      
+      try {
+        let polygonToDelete: string | null = null;
+        
+        // ✅ First priority: Check draw instance selected features
+        try {
+          const selectedFeatures = drawRef.current.getSelected();
+          if (selectedFeatures?.features?.length > 0) {
+            const selected = selectedFeatures.features[0];
+            if (selected && selected.id && selected.geometry?.type === "Polygon") {
+              polygonToDelete = selected.id as string;
+            }
+          }
+        } catch (err) {
+          // getSelected() might fail, continue to next check
+        }
+        
+        // ✅ Second priority: Check state if draw instance doesn't have selection
+        if (!polygonToDelete && selectedPolygonId) {
+          try {
+            // ✅ Verify the polygon still exists
+            const feature = drawRef.current.get(selectedPolygonId);
+            if (feature && feature.geometry?.type === "Polygon") {
+              polygonToDelete = selectedPolygonId;
+            }
+          } catch (err) {
+            // get() might fail if polygon doesn't exist
+          }
+        }
+        
+        // ✅ Third priority: Check if there's only one polygon (auto-select it)
+        if (!polygonToDelete) {
+          try {
+            const allFeatures = drawRef.current.getAll();
+            const polygons = allFeatures?.features?.filter(
+              (f: any) => f.geometry?.type === "Polygon"
+            ) || [];
+            if (polygons.length === 1 && polygons[0].id) {
+              polygonToDelete = polygons[0].id as string;
+            }
+          } catch (err) {
+            // getAll() might fail
+          }
+        }
+        
+        // If still no selection found, delete all as fallback
+        if (!polygonToDelete) {
+          deleteAll();
+          return;
+        }
+        
+        // ✅ Save snapshot before delete for undo/redo
+        try {
+          const currentSnapshot = drawRef.current.getAll();
+          undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+          redoStackRef.current = [];
+        } catch (err) {
+          console.warn("Error saving snapshot:", err);
+        }
+        
+        // ✅ Delete only the selected polygon using MapboxDraw's delete method
+        try {
+          const featureIds = [polygonToDelete];
+          drawRef.current.delete(featureIds);
+          
+          // ✅ Reset selected polygon state
+          setSelectedPolygonId(null);
+        } catch (err) {
+          console.error("Error calling draw.delete:", err);
+          // Try fallback: manually remove the feature
+          try {
+            drawRef.current.deleteAll();
+            const allFeatures = drawRef.current.getAll();
+            const remainingFeatures = allFeatures.features.filter(
+              (f: any) => f.id !== polygonToDelete
+            );
+            drawRef.current.deleteAll();
+            remainingFeatures.forEach((f: any) => {
+              drawRef.current?.add(f);
+            });
+            setSelectedPolygonId(null);
+          } catch (fallbackErr) {
+            console.error("Fallback delete failed:", fallbackErr);
+            deleteAll();
+          }
+        }
+      } catch (err) {
+        console.error("Error deleting selected polygon:", err);
+        // Fallback to deleteAll if delete fails
+        deleteAll();
       }
     };
 
     useImperativeHandle(ref, () => ({
       confirmLocation,
       startDrawing,
+      startDrawingWithLabel,
       deleteAll,
+      deleteSelected,
       setDrawMode,
       searchAddress,
       undo,
@@ -493,7 +873,12 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
       rotateLeft,
       rotateRight,
       toggleStreetView,
-      getCenter,
+      getCenter: () => {
+        if (!mapRef.current) return null;
+        const c = mapRef.current.getCenter();
+        return [c.lng, c.lat] as [number, number];
+      },
+      getMap: () => mapRef.current,
     }));
 
     return (

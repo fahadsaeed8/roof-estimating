@@ -39,5 +39,6 @@ export const useMapInitialization = ({
     });
 
     return () => mapInstance.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
