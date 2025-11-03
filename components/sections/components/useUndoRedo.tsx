@@ -4,7 +4,7 @@ import mapboxgl from "mapbox-gl";
 import * as turf from "@turf/turf";
 // import { toFeetInches } from "../components/MapContainer"; // agar helper alag file me hai
 import { EdgeItem, PolygonPoint } from "./MapContainer";
-import { clearLabels, toFeetInches, normalizeBearing } from "./mapHelper";
+import { clearLabels as clearLabelsHelper, toFeetInches, normalizeBearing } from "./mapHelper";
 
 interface UndoRedoHookProps {
   drawRef: any;
@@ -69,7 +69,23 @@ export const useUndoRedo = ({
     });
     
     // ✅ Clear labels
-    clearLabels(labelsRef);
+    clearLabelsHelper(labelsRef);
+    
+    // ✅ Build edge types map from current features' properties
+    const edgeTypesMap = new Map<string, string>();
+    data.features.forEach((feature: any) => {
+      if (feature.geometry?.type === "Polygon" && feature.id) {
+        const featureId = feature.id;
+        const edgeTypes = feature.properties?.edgeTypes || {};
+        Object.keys(edgeTypes).forEach((edgeIndex) => {
+          const edgeId = `${featureId}-edge-${edgeIndex}`;
+          edgeTypesMap.set(edgeId, edgeTypes[edgeIndex]);
+        });
+      }
+    });
+
+    // ✅ Track midpoints created during this pass to avoid duplicate labels when polygons share edges
+    const createdMidpointKeys = new Set<string>();
 
     if (!data || !data.features || data.features.length === 0) {
       setPlanAreaLocal(0);
@@ -100,6 +116,7 @@ export const useUndoRedo = ({
     data.features.forEach((feature: any, fIndex: number) => {
       if (!feature.geometry) return;
       if (feature.geometry.type === "Polygon") {
+        const featureId = feature.id || `polygon-${fIndex}`;
         const coords: number[][] = feature.geometry.coordinates[0];
         let areaSqMeters = 0;
         try {
@@ -117,10 +134,22 @@ export const useUndoRedo = ({
             const lengthFeet = turf.distance(from, to, { units: "feet" });
             perimeterFeet += lengthFeet;
 
+            // ✅ Use consistent edge ID format: ${featureId}-edge-${i}
+            // ✅ Preserve edge type from stored edge types or feature properties
+            const edgeId = `${featureId}-edge-${i}`;
+            const storedEdgeType = edgeTypesMap.get(edgeId);
+            // ✅ Check edgeTypes object in properties (format: { "0": "Ridge", "1": "Hip", ... })
+            const edgeTypeFromProps = feature.properties?.edgeTypes?.[i] || 
+                                     feature.properties?.edgeTypes?.[String(i)] ||
+                                     feature.properties?.edgeLabels?.[i] ||
+                                     feature.properties?.edgeLabels?.[String(i)];
+            const edgeType = storedEdgeType || edgeTypeFromProps || "Unlabeled";
+
             allEdges.push({
-              id: `side-${fIndex}-${i}`,
+              id: edgeId,
               length: lengthFeet,
-              type: "edge",
+              type: edgeType,
+              polygonId: featureId,
             });
 
             try {
@@ -176,8 +205,16 @@ export const useUndoRedo = ({
                 } catch {}
               }
 
+              // ✅ Dedupe within this update pass (shared edges)
+              const passKey = `${adjustedMidpoint[0].toFixed(6)},${adjustedMidpoint[1].toFixed(6)}`;
+              if (createdMidpointKeys.has(passKey)) {
+                // Skip creating duplicate marker for shared edge
+                return;
+              }
+              createdMidpointKeys.add(passKey);
+
               // ✅ Check if label existed at this position before (prevent blinking)
-              const labelKey = `${adjustedMidpoint[0].toFixed(6)},${adjustedMidpoint[1].toFixed(6)}`;
+              const labelKey = passKey;
               const existingLabel = existingLabelMap.get(labelKey);
               
               if (existingLabel) {
@@ -269,6 +306,39 @@ export const useUndoRedo = ({
           }
         } catch {}
       }
+      // ✅ Also render measurement labels for LineString features
+      if (feature.geometry.type === "LineString") {
+        try {
+          const coords: number[][] = feature.geometry.coordinates;
+          if (coords.length < 2) return;
+          // Sum length over segments
+          let totalFeet = 0;
+          for (let i = 0; i < coords.length - 1; i++) {
+            const from = turf.point(coords[i]);
+            const to = turf.point(coords[i + 1]);
+            totalFeet += turf.distance(from, to, { units: "feet" });
+          }
+          // Midpoint of overall line for label
+          const midIndex = Math.floor((coords.length - 1) / 2);
+          const mid = turf.midpoint(turf.point(coords[midIndex]), turf.point(coords[midIndex + 1])).geometry.coordinates as [number, number];
+          const div = document.createElement("div");
+          div.innerText = `${toFeetInches(totalFeet)}`;
+          Object.assign(div.style, {
+            background: "white",
+            color: "black",
+            padding: "2px 4px",
+            fontSize: "12px",
+            borderRadius: "8px",
+            boxShadow: "0 0 3px rgba(0,0,0,0.3)",
+            fontWeight: "700",
+            whiteSpace: "nowrap",
+          });
+          const marker = new mapboxgl.Marker({ element: div, anchor: "center" })
+            .setLngLat(mid)
+            .addTo(mapRef.current!);
+          labelsRef.current.push(marker);
+        } catch {}
+      }
     });
 
     const totalAreaSqFt = totalAreaMeters * 10.7639;
@@ -303,7 +373,7 @@ export const useUndoRedo = ({
       drawRef.current.deleteAll();
       
       // Clear all labels
-      clearLabels(labelsRef);
+      clearLabelsHelper(labelsRef);
       
       // Clear all custom layers and sources from map
       const map = mapRef.current;
@@ -334,13 +404,15 @@ export const useUndoRedo = ({
         return;
       }
       
-      // ✅ Restore features from snapshot (preserve all properties including labels/colors)
+      // ✅ Restore features from snapshot (preserve all properties including labels/colors/edgeTypes)
       snapshot.features.forEach((f: any) => {
-        // ✅ Ensure properties are preserved when restoring
+        // ✅ Ensure properties are preserved when restoring (including edgeTypes)
         const featureToAdd = {
           ...f,
           properties: {
-            ...f.properties, // Preserve all properties (color, label, etc.)
+            ...f.properties, // Preserve all properties (color, label, edgeTypes, etc.)
+            // ✅ Ensure edgeTypes object is properly structured
+            edgeTypes: f.properties?.edgeTypes || {},
           },
         };
         drawRef.current?.add(featureToAdd);
@@ -520,7 +592,7 @@ const handleLineForSplit = (lineFeature: any) => {
       const overhangDistance = 0.5; // Default 0.5 feet (6 inches)
       
       try {
-        const buffered = turf.buffer(polygonToBuffer, overhangDistance, {
+        const buffered: any = turf.buffer(polygonToBuffer as any, overhangDistance, {
           units: "feet",
         });
         
@@ -562,12 +634,24 @@ const handleLineForSplit = (lineFeature: any) => {
 
   const deleteAll = () => {
     try {
+      // ✅ Save snapshot before delete for undo/redo
       const snap = drawRef.current?.getAll();
-      if (snap) undoStackRef.current.push(JSON.parse(JSON.stringify(snap)));
+      if (snap && snap.features && snap.features.length > 0) {
+        undoStackRef.current.push(JSON.parse(JSON.stringify(snap)));
+        redoStackRef.current = []; // Clear redo stack on new action
+      }
+      
+      // ✅ Clear polygon edges map if available
+      if (setPolygonEdgesMap) {
+        setPolygonEdgesMap(() => ({}));
+      }
+      
       drawRef.current?.deleteAll();
       clearLabels();
       updateMeasurements();
-    } catch {}
+    } catch (err) {
+      console.warn("Error in deleteAll:", err);
+    }
   };
 
   const setDrawMode = (mode: string) => {
@@ -603,23 +687,13 @@ const handleLineForSplit = (lineFeature: any) => {
 
   const toggleStreetView = () => {
     if (!mapRef.current) return;
-    const map = mapRef.current;
-    const currentPitch = map.getPitch();
-    if (currentPitch === 0) {
-      map.easeTo({
-        pitch: 65,
-        bearing: 180,
-        duration: 1000,
-        zoom: map.getZoom() + 1,
-      });
-    } else {
-      map.easeTo({
-        pitch: 0,
-        bearing: 0,
-        duration: 1000,
-        zoom: map.getZoom() - 1,
-      });
-    }
+    const c = mapRef.current.getCenter();
+    const lat = c.lat;
+    const lng = c.lng;
+    const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
+    try {
+      window.open(url, "_blank");
+    } catch {}
   };
 
   const getCenter = () => {

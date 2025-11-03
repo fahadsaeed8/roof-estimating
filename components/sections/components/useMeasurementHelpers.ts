@@ -1,7 +1,17 @@
 import * as turf from "@turf/turf";
 import mapboxgl from "mapbox-gl";
+import type { MutableRefObject, RefObject } from "react";
 
-export const useMeasurementHelpers = (mapRef, labelsRef, onMeasurementsChange) => {
+export const useMeasurementHelpers = (
+  mapRef: RefObject<mapboxgl.Map | null>,
+  labelsRef: MutableRefObject<mapboxgl.Marker[]>,
+  onMeasurementsChange: (payload: {
+    edges: any[];
+    planArea: number;
+    roofArea: number;
+    polygonPoints: any[];
+  }) => void
+) => {
   const clearLabels = () => {
     labelsRef.current.forEach((m) => m.remove());
     labelsRef.current = [];
@@ -13,7 +23,7 @@ export const useMeasurementHelpers = (mapRef, labelsRef, onMeasurementsChange) =
     return `${feet}'${inches}"`;
   };
 
-  const updateMeasurements = (drawRef) => {
+  const updateMeasurements = (drawRef: RefObject<any>) => {
     if (!drawRef.current) return;
     const data = drawRef.current.getAll();
     clearLabels();

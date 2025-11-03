@@ -7,6 +7,7 @@ import React, {
   useEffect,
 } from "react";
 import jsPDF from "jspdf";
+import mapboxgl from "mapbox-gl";
 import MapContainer, {
   MapSectionHandle,
 } from "../sections/components/MapContainer";
@@ -21,11 +22,17 @@ interface RoofMapSectionProps {
     points: { lat: number; lon: number; seq: number }[]
   ) => void;
   selectedLabel?: { name: string; color: string } | null;
+  onMapLoad?: (map: mapboxgl.Map) => void;
 }
 
-const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
+export type RoofMapSectionHandle = MapSectionHandle & {
+  downloadPDF: () => void;
+  downloadPNG?: () => void;
+};
+
+const RoofMapSection = forwardRef<RoofMapSectionHandle, RoofMapSectionProps>(
   (
-    { setPlanArea, setRoofArea, setEdges, setPolygonPoints, selectedLabel },
+    { setPlanArea, setRoofArea, setEdges, setPolygonPoints, selectedLabel, onMapLoad },
     ref
   ) => {
     const mapRef = useRef<MapSectionHandle | null>(null);
@@ -33,6 +40,11 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
     const [planAreaState, setPlanAreaState] = useState<number>(0);
     const [roofAreaState, setRoofAreaState] = useState<number>(0);
     const [showGrid, setShowGrid] = useState(false);
+
+    const [snapEnabled, setSnapEnabled] = useState(false);
+    const [snapPx, setSnapPx] = useState(10);
+    const [overhangFeet, setOverhangFeet] = useState(0.5);
+    const [previewOverhang, setPreviewOverhang] = useState(false);
 
     // ✅ Handle measurements from MapContainer
     const handleMeasurementsChange = (payload: {
@@ -55,9 +67,7 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
       const map = mapRef.current?.getMap?.();
       if (!map) return;
 
-      const handleEdgeClick = (
-        e: mapboxgl.MapMouseEvent & mapboxgl.EventData
-      ) => {
+      const handleEdgeClick = (e: any) => {
         // ✅ Check which layers exist in the map before querying
         const availableLayers: string[] = [];
         const layerNames = [
@@ -92,9 +102,26 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
 
         if (!edgeId || !selectedLabel) return;
 
+        // ✅ Parse edge index from edgeId (format: ${polygonId}-edge-${index})
+        // ✅ If edgeId doesn't match expected format, try to extract from polygonId
+        let actualEdgeId = edgeId;
+        let actualPolygonId = polygonId;
+        
+        // Check if edgeId is in format: ${polygonId}-edge-${index}
+        if (edgeId.includes("-edge-")) {
+          const parts = edgeId.split("-edge-");
+          if (parts.length === 2) {
+            actualPolygonId = parts[0];
+            actualEdgeId = edgeId; // Keep full edgeId
+          }
+        }
+
+        // ✅ Update edge type in feature properties for persistence
+        mapRef.current?.setEdgeType?.(actualEdgeId, actualPolygonId, selectedLabel.name);
+
         // ✅ Update only the clicked edge of the specific polygon
         const updatedEdges = edgesState.map((edgeItem) =>
-          edgeItem.id === edgeId && edgeItem.polygonId === polygonId
+          edgeItem.id === actualEdgeId && edgeItem.polygonId === actualPolygonId
             ? { ...edgeItem, type: selectedLabel.name }
             : edgeItem
         );
@@ -118,8 +145,8 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
                   "case",
                   [
                     "all",
-                    ["==", ["get", "id"], edgeId],
-                    ["==", ["get", "polygonId"], polygonId],
+                    ["==", ["get", "id"], actualEdgeId],
+                    ["==", ["get", "polygonId"], actualPolygonId],
                   ],
                   selectedLabel.color,
                   "#FFD500",
@@ -139,6 +166,43 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
         map.off("click", handleEdgeClick);
       };
     }, [selectedLabel, edgesState]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+      const handler = (e: KeyboardEvent) => {
+        if (e.target && (e.target as HTMLElement).tagName === "INPUT") return;
+        switch (e.key.toLowerCase()) {
+          case "d":
+            mapRef.current?.startDrawing?.();
+            break;
+          case "s":
+            mapRef.current?.setDrawMode?.("simple_select");
+            break;
+          case "m":
+            // Measurement line mode
+            mapRef.current?.setDrawMode?.("draw_line_string");
+            break;
+          case "delete":
+          case "backspace":
+            mapRef.current?.deleteSelected?.();
+            break;
+          case "z":
+            if (e.ctrlKey) mapRef.current?.undo?.();
+            break;
+          case "y":
+            if (e.ctrlKey) mapRef.current?.redo?.();
+            break;
+          case "arrowleft":
+            mapRef.current?.rotateLeft?.();
+            break;
+          case "arrowright":
+            mapRef.current?.rotateRight?.();
+            break;
+        }
+      };
+      window.addEventListener("keydown", handler);
+      return () => window.removeEventListener("keydown", handler);
+    }, []);
 
     // ✅ PDF generation
     const downloadPDF = async () => {
@@ -272,6 +336,7 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
     // ✅ Expose methods to parent
     useImperativeHandle(ref, () => ({
       startDrawing: () => mapRef.current?.startDrawing(),
+      deleteSelected: () => mapRef.current?.deleteSelected(),
       deleteAll: () => mapRef.current?.deleteAll(),
       setDrawMode: (mode: string) => mapRef.current?.setDrawMode(mode),
       undo: () => mapRef.current?.undo(),
@@ -287,6 +352,14 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
       rotateRight: () => mapRef.current?.rotateRight(),
       toggleStreetView: () => mapRef.current?.toggleStreetView(),
       downloadPDF,
+      downloadPNG: () => {
+        const url = mapRef.current?.getMapCanvasDataURL?.();
+        if (!url) return;
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "roof-map.png";
+        a.click();
+      },
     }));
 
     return (
@@ -295,8 +368,31 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
           ref={mapRef}
           onMeasurementsChange={handleMeasurementsChange}
           onGridToggle={(visible) => setShowGrid(visible)}
+          onMapLoad={onMapLoad}
           selectedLabel={selectedLabel || undefined}
+          snapEnabled={snapEnabled}
+          snapPx={snapPx}
+          overhangFeet={overhangFeet}
+          previewOverhang={previewOverhang}
         />
+
+        {/* Legend / Status */}
+        <div className="absolute top-16 right-4 bg-white/90 text-black text-xs rounded shadow p-2 z-40">
+          <div className="font-semibold mb-1">Label</div>
+          <div>
+            {selectedLabel ? (
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block w-3 h-3 rounded"
+                  style={{ backgroundColor: selectedLabel.color }}
+                />
+                <span>{selectedLabel.name}</span>
+              </div>
+            ) : (
+              <span>None</span>
+            )}
+          </div>
+        </div>
         {showGrid && (
           <div
             className="absolute inset-0 z-40 pointer-events-none"
@@ -315,3 +411,4 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
 
 RoofMapSection.displayName = "RoofMapSection";
 export default RoofMapSection;
+export type { MapSectionHandle };

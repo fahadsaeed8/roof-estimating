@@ -35,15 +35,17 @@ export interface MapSectionHandle {
   toggleStreetView: () => void;
   getCenter?: () => [number, number] | null;
   getMap?: () => mapboxgl.Map | null;
+  setEdgeType?: (edgeId: string, polygonId: string, edgeType: string) => void;
 }
 
-interface EdgeItem {
+export interface EdgeItem {
   id: string;
   length: number;
   type: string;
+  polygonId: string;
 }
 
-interface PolygonPoint {
+export interface PolygonPoint {
   lat: number;
   lon: number;
   seq: number;
@@ -63,6 +65,11 @@ interface MapContainerProps {
   onMapLoad?: (map: mapboxgl.Map) => void;
   className?: string;
   selectedLabel?: { name: string; color: string };
+  snapEnabled?: boolean;
+  snapPx?: number; // pixel grid size
+  overhangFeet?: number;
+  previewOverhang?: boolean;
+  lineThicknessPx?: number;
 }
 
 const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
@@ -75,6 +82,11 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       onGridToggle,
       onBearingChange,
       selectedLabel,
+      snapEnabled = false,
+      snapPx = 10,
+      overhangFeet = 0.5,
+      previewOverhang = false,
+      lineThicknessPx = 1,
     },
     ref
   ) => {
@@ -171,10 +183,10 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         startDrawingFn();
       }
     };
-const applyPolygonColor = (
+    const applyPolygonColor = (
   feature: any,
   map: mapboxgl.Map,
-  color: string
+      color: string
 ) => {
   const featureId = feature.id;
   const coords = feature.geometry.coordinates[0];
@@ -213,10 +225,33 @@ const applyPolygonColor = (
       type: "line",
       source: edgeId,
       layout: { "line-cap": "round", "line-join": "round" },
-      paint: { "line-color": color, "line-width": 5 },
+      paint: { "line-color": color, "line-width": lineThicknessPx },
     });
   }
 };
+
+    const applySnapToFeature = (feature: any, map: mapboxgl.Map) => {
+      if (!snapEnabled || !feature?.geometry) return feature;
+      try {
+        const roundPoint = (lng: number, lat: number) => {
+          const pt = map.project({ lng, lat });
+          const rx = Math.round(pt.x / snapPx) * snapPx;
+          const ry = Math.round(pt.y / snapPx) * snapPx;
+          const lngLat = map.unproject({ x: rx, y: ry });
+          return [lngLat.lng, lngLat.lat] as [number, number];
+        };
+        if (feature.geometry.type === "Polygon") {
+          const ring = feature.geometry.coordinates[0];
+          const snapped = ring.map(([lng, lat]: [number, number]) => roundPoint(lng, lat));
+          feature.geometry.coordinates[0] = snapped;
+        } else if (feature.geometry.type === "LineString") {
+          const coords = feature.geometry.coordinates;
+          const snapped = coords.map(([lng, lat]: [number, number]) => roundPoint(lng, lat));
+          feature.geometry.coordinates = snapped;
+        }
+      } catch {}
+      return feature;
+    };
 
     // ====================== USEEFFECT =========================
     useEffect(() => {
@@ -286,7 +321,7 @@ const applyPolygonColor = (
               ["!=", "mode", "static"],
             ],
             layout: { "line-cap": "round", "line-join": "round" },
-            paint: { "line-color": "yellow", "line-width": 4 },
+            paint: { "line-color": "yellow", "line-width": lineThicknessPx },
           },
           {
             id: "gl-draw-line",
@@ -297,7 +332,7 @@ const applyPolygonColor = (
               ["!=", "mode", "static"],
             ],
             layout: { "line-cap": "round", "line-join": "round" },
-            paint: { "line-color": "yellow", "line-width": 4 },
+            paint: { "line-color": "yellow", "line-width": lineThicknessPx },
           },
           {
             id: "gl-draw-polygon-midpoint",
@@ -330,13 +365,30 @@ const applyPolygonColor = (
       drawRef.current = drawInstance;
       mapInstance.addControl(drawInstance);
 
-      // ✅ Draw Create Event (track polygon edges + handle split)
+      // ✅ Draw Create Event (track polygon edges + handle split + measurement lines)
       mapInstance.on("draw.create", (e: any) => {
         const feature = e.features[0];
         if (!feature) return;
 
+        // Snap new feature if enabled
+        applySnapToFeature(feature, mapInstance);
+        if (feature.id) {
+          try {
+            drawInstance.delete(feature.id as string);
+          } catch {}
+          try {
+            drawInstance.add(feature);
+          } catch {}
+        }
+
         // ✅ Handle split mode - line created for splitting
         if (awaitingSplitRef.current && feature.geometry.type === "LineString") {
+          // Snapshot BEFORE mutation for undo/redo
+          try {
+            const currentSnapshot = drawInstance.getAll();
+            undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+            redoStackRef.current = [];
+          } catch {}
           awaitingSplitRef.current = false;
           const allFeatures = drawInstance.getAll();
           const selected = allFeatures.features.find(
@@ -345,6 +397,27 @@ const applyPolygonColor = (
           
           if (selected && selected.geometry.type === "Polygon" && feature.geometry.type === "LineString") {
             try {
+              // ✅ Snap both ends of split line to nearest vertices of selected polygon
+              const ring = selected.geometry.coordinates?.[0] || [];
+              const lineCoords = feature.geometry.coordinates as [number, number][];
+              const snapEndpoint = (pt: [number, number]) => {
+                const ptPx = mapInstance.project({ lng: pt[0], lat: pt[1] });
+                let best: { lng: number; lat: number; pxDist: number } | null = null;
+                for (let i = 0; i < ring.length - 1; i++) {
+                  const v = ring[i];
+                  const vPx = mapInstance.project({ lng: v[0], lat: v[1] });
+                  const dx = vPx.x - ptPx.x;
+                  const dy = vPx.y - ptPx.y;
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  if (!best || dist < best.pxDist) best = { lng: v[0], lat: v[1], pxDist: dist };
+                }
+                return best && best.pxDist <= 10 ? [best.lng, best.lat] : pt;
+              };
+              if (lineCoords.length >= 2) {
+                lineCoords[0] = snapEndpoint(lineCoords[0]) as [number, number];
+                lineCoords[lineCoords.length - 1] = snapEndpoint(lineCoords[lineCoords.length - 1]) as [number, number];
+              }
+              const snappedLine = { ...feature, geometry: { ...feature.geometry, coordinates: lineCoords } };
               const splitResult = turf.lineSplit(selected as any, feature as any);
               if (splitResult.features.length > 1) {
                 if (selected.id) {
@@ -367,6 +440,51 @@ const applyPolygonColor = (
           if (feature.id) {
             drawInstance.delete(feature.id as string);
           }
+          return;
+        }
+
+        // ✅ Measurement Lines (iRoofing-style): if a LineString is drawn (and not split),
+        // snap start to nearest polygon vertex and add a length label.
+        if (feature.geometry.type === "LineString") {
+          try {
+            // Snapshot BEFORE mutation for undo/redo
+            const currentSnapshot = drawInstance.getAll();
+            undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+            redoStackRef.current = [];
+          } catch {}
+
+          try {
+            // Find nearest polygon vertex to first point within ~10px
+            const all = drawInstance.getAll();
+            const polygons = all.features.filter((f: any) => f.geometry?.type === "Polygon");
+            const coords = feature.geometry.coordinates as [number, number][];
+            if (coords.length > 0 && polygons.length > 0) {
+              const first = coords[0];
+              let best: { lng: number; lat: number; pxDist: number } | null = null;
+              const firstPx = mapInstance.project({ lng: first[0], lat: first[1] });
+              polygons.forEach((poly: any) => {
+                const ring = poly.geometry.coordinates?.[0] || [];
+                for (let i = 0; i < ring.length - 1; i++) {
+                  const v = ring[i];
+                  const vPx = mapInstance.project({ lng: v[0], lat: v[1] });
+                  const dx = vPx.x - firstPx.x;
+                  const dy = vPx.y - firstPx.y;
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  if (!best || dist < best.pxDist) best = { lng: v[0], lat: v[1], pxDist: dist };
+                }
+              });
+              if (best && best.pxDist <= 10) {
+                // Replace first coordinate with exact vertex
+                coords[0] = [best.lng, best.lat];
+                // Re-add with snapped start
+                if (feature.id) drawInstance.delete(feature.id as string);
+                drawInstance.add({ ...feature, geometry: { ...feature.geometry, coordinates: coords } });
+              }
+            }
+          } catch {}
+
+          // Update measurements to render length label for the line
+          updateMeasurements();
           return;
         }
 
@@ -498,9 +616,12 @@ const applyPolygonColor = (
     let lastUpdateSnapshot: any = null;
     let hasSavedInitialSnapshot = false;
 
-    mapInstance.on("draw.update", (e: any) => {
+      mapInstance.on("draw.update", (e: any) => {
       const updatedFeature = e.features[0];
       if (!updatedFeature || updatedFeature.geometry.type !== "Polygon") return;
+
+      // Snap on update if enabled
+      applySnapToFeature(updatedFeature, mapInstance);
 
       const color = updatedFeature.properties?.color || "yellow";
       const featureId = updatedFeature.id;
@@ -566,7 +687,7 @@ const applyPolygonColor = (
           type: "line",
           source: edgeId,
           layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": color, "line-width": 5 },
+          paint: { "line-color": color, "line-width": lineThicknessPx },
         });
       }
 
@@ -595,6 +716,63 @@ const applyPolygonColor = (
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+      if (!mapRef.current || !drawRef.current) return;
+      const map = mapRef.current;
+
+      // Overhang preview layer rebuild
+      const rebuildPreview = () => {
+        // Cleanup previous preview
+        try {
+          const existingLayers = map.getStyle().layers || [];
+          existingLayers.forEach((l: any) => {
+            if (l.id.startsWith("overhang-preview-")) {
+              if (map.getLayer(l.id)) map.removeLayer(l.id);
+            }
+          });
+          Object.keys(map.getStyle().sources || {}).forEach((sid) => {
+            if (sid.startsWith("overhang-preview-")) {
+              if (map.getSource(sid)) map.removeSource(sid);
+            }
+          });
+        } catch {}
+
+        if (!previewOverhang || overhangFeet <= 0) return;
+        // Get first or selected polygon from draw
+        let feature: any | null = null;
+        try {
+          const selected = drawRef.current?.getSelected();
+          if (selected?.features?.[0]?.geometry?.type === "Polygon") {
+            feature = selected.features[0];
+          } else {
+            const all = drawRef.current?.getAll();
+            feature = all?.features?.find((f: any) => f.geometry?.type === "Polygon") || null;
+          }
+        } catch {}
+        if (!feature) return;
+        try {
+          const buffered: any = (turf as any).buffer(feature, overhangFeet, { units: "feet" });
+          const srcId = `overhang-preview-${feature.id || "0"}`;
+          map.addSource(srcId, { type: "geojson", data: buffered });
+          map.addLayer({
+            id: `overhang-preview-fill-${feature.id || "0"}`,
+            type: "fill",
+            source: srcId,
+            paint: { "fill-color": "#7c3aed", "fill-opacity": 0.2 },
+          });
+          map.addLayer({
+            id: `overhang-preview-line-${feature.id || "0"}`,
+            type: "line",
+            source: srcId,
+            paint: { "line-color": "#7c3aed", "line-width": 2 },
+          });
+        } catch {}
+      };
+
+      rebuildPreview();
+      // Rebuild when dependencies change
+    }, [previewOverhang, overhangFeet]);
 
 const handleLabelSelect = (label: { name: string; color: string }) => {
   if (!selectedPolygonId || !mapRef.current || !drawRef.current) return;
@@ -629,16 +807,10 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
     const featureId = feature.id as string;
     draw.delete(featureId);
     
-    // ✅ Add feature back with updated properties
-    draw.add(featureData);
-    
-    // ✅ Re-select the feature after re-adding
-    setTimeout(() => {
-      try {
-        draw.changeMode("simple_select");
-        // Note: Feature will be automatically selected after re-adding if it was selected before
-      } catch {}
-    }, 10);
+    // ✅ Add feature back with updated properties and capture new ID
+    const addedIds = draw.add(featureData) as unknown as string[];
+    const newId = Array.isArray(addedIds) && addedIds.length ? addedIds[0] : (featureId as string);
+    setSelectedPolygonId(newId);
   } catch (err) {
     console.warn("Error updating feature in draw instance:", err);
     // Fallback: Just update properties directly
@@ -653,7 +825,7 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
 
   // ✅ Clean up old layers and reapply color after a short delay (after feature is re-added)
   setTimeout(() => {
-    const updatedFeature = draw.get(selectedPolygonId);
+    const updatedFeature = draw.get(selectedPolygonId!);
     if (!updatedFeature) return;
 
     // ✅ Clean up old custom layers
@@ -698,7 +870,7 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
       }
       setPolygonEdgesMap((prev) => ({
         ...prev,
-        [selectedPolygonId]: edges,
+        [selectedPolygonId!]: edges,
       }));
     }
   }, 50);
@@ -758,6 +930,58 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
       }
     };
 
+    // ✅ Set edge type in feature properties for persistence
+    const setEdgeType = (edgeId: string, polygonId: string, edgeType: string) => {
+      if (!drawRef.current || !polygonId || !edgeId) return;
+      
+      try {
+        // Extract edge index from edgeId (format: ${polygonId}-edge-${index})
+        const edgeIndexMatch = edgeId.match(/-edge-(\d+)$/);
+        if (!edgeIndexMatch) return;
+        
+        const edgeIndex = parseInt(edgeIndexMatch[1], 10);
+        const feature = drawRef.current.get(polygonId);
+        
+        if (!feature || feature.geometry?.type !== "Polygon") return;
+        
+        // ✅ Save snapshot before edge type change for undo/redo
+        try {
+          const currentSnapshot = drawRef.current.getAll();
+          undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+          redoStackRef.current = []; // Clear redo stack on new action
+        } catch (err) {
+          console.warn("Error saving snapshot:", err);
+        }
+        
+        // ✅ Update feature properties to store edge type (use numeric key for consistency)
+        const edgeTypes = feature.properties?.edgeTypes || {};
+        // Ensure numeric key for consistency
+        edgeTypes[edgeIndex] = edgeType;
+        // Also store as string key for compatibility
+        edgeTypes[String(edgeIndex)] = edgeType;
+        
+        // Update feature with new properties
+        const updatedFeature = {
+          ...feature,
+          properties: {
+            ...feature.properties,
+            edgeTypes,
+          },
+        };
+        
+        // Remove and re-add feature to persist properties
+        drawRef.current.delete(polygonId);
+        drawRef.current.add(updatedFeature);
+        
+        // ✅ Update measurements after edge type change
+        setTimeout(() => {
+          updateMeasurements();
+        }, 50);
+      } catch (err) {
+        console.warn("Error setting edge type:", err);
+      }
+    };
+
     // ✅ Delete Selected Polygon function
     const deleteSelected = () => {
       if (!drawRef.current || !mapRef.current) {
@@ -768,14 +992,17 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
       try {
         let polygonToDelete: string | null = null;
         
-        // ✅ First priority: Check draw instance selected features
+        // ✅ First priority: Check draw instance selected features (delete all selected polygons/lines)
+        let selectedIds: string[] = [];
         try {
           const selectedFeatures = drawRef.current.getSelected();
           if (selectedFeatures?.features?.length > 0) {
-            const selected = selectedFeatures.features[0];
-            if (selected && selected.id && selected.geometry?.type === "Polygon") {
-              polygonToDelete = selected.id as string;
-            }
+            selectedIds = selectedFeatures.features
+              .filter((f: any) => f && f.id && (f.geometry?.type === "Polygon" || f.geometry?.type === "LineString"))
+              .map((f: any) => f.id as string);
+            // If we got any polygon IDs, we will prefer deleting these
+            const selectedPolygon = selectedFeatures.features.find((f: any) => f.id && f.geometry?.type === "Polygon");
+            if (selectedPolygon) polygonToDelete = selectedPolygon.id as string;
           }
         } catch (err) {
           // getSelected() might fail, continue to next check
@@ -809,9 +1036,30 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
           }
         }
         
-        // If still no selection found, delete all as fallback
+        // If still no selection found but multiple features selected (lines), delete those
+        if (!polygonToDelete && selectedIds.length > 0) {
+          // Save snapshot before delete
+          try {
+            const currentSnapshot = drawRef.current.getAll();
+            undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+            redoStackRef.current = [];
+          } catch {}
+          try {
+            drawRef.current.delete(selectedIds);
+            clearLabels();
+            updateMeasurements();
+            return;
+          } catch (err) {
+            console.error("Error deleting selected lines:", err);
+          }
+        }
+
+        // If nothing is selected, do NOT delete. Require explicit selection.
         if (!polygonToDelete) {
-          deleteAll();
+          try {
+            // Optional lightweight notice; keep non-blocking
+            console.warn("Select a polygon to delete.");
+          } catch {}
           return;
         }
         
@@ -831,6 +1079,9 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
           
           // ✅ Reset selected polygon state
           setSelectedPolygonId(null);
+          // ✅ Ensure labels rebuild correctly after delete
+          clearLabels();
+          updateMeasurements();
         } catch (err) {
           console.error("Error calling draw.delete:", err);
           // Try fallback: manually remove the feature
@@ -845,6 +1096,8 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
               drawRef.current?.add(f);
             });
             setSelectedPolygonId(null);
+            clearLabels();
+            updateMeasurements();
           } catch (fallbackErr) {
             console.error("Fallback delete failed:", fallbackErr);
             deleteAll();
@@ -879,6 +1132,7 @@ const handleLabelSelect = (label: { name: string; color: string }) => {
         return [c.lng, c.lat] as [number, number];
       },
       getMap: () => mapRef.current,
+      setEdgeType,
     }));
 
     return (

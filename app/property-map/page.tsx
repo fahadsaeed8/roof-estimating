@@ -6,11 +6,11 @@ import LeftSidebar from "@/components/common/left-sidebar";
 import TopToolbar from "@/components/common/top-tool-bar";
 import RightSidebar from "@/components/common/right-sidebar";
 import RoofMapSection, {
-  MapSectionHandle,
+  RoofMapSectionHandle,
 } from "@/components/sections/roof-map-section";
 
 export default function RoofEstimatorPage() {
-  const roofMapRef = useRef<MapSectionHandle | null>(null);
+  const roofMapRef = useRef<RoofMapSectionHandle | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
 
   const [planArea, setPlanArea] = useState(0);
@@ -56,11 +56,20 @@ const handleMapLoad = (mapInstance: mapboxgl.Map) => {
           }
         }}
         onSnapToggle={(enabled) => {
-          // ✅ Toggle snap mode (can be implemented with grid snapping)
-          console.log("Snap:", enabled);
+          // handled internally by RoofMapSection via state binding through props
         }}
         onLocationConfirm={() => {}}
         onDownloadPDF={() => roofMapRef.current?.downloadPDF?.()}
+        onSnapSizeChange={(px) => {
+          // we don't hold snap state here; RoofMapSection manages via props.
+        }}
+        onOverhangChange={(feet) => {
+          // handled by RoofMapSection via props
+        }}
+        onOverhangPreviewToggle={(enabled) => {
+          // handled by RoofMapSection via props
+        }}
+        onApplyOverhang={() => roofMapRef.current?.applyOverhang?.()}
       />
 
       <div className="absolute inset-0">

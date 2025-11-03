@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Sliders, Grid } from "lucide-react";
-import mapboxgl from "mapbox-gl";
+import * as mapboxgl from "mapbox-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
@@ -23,9 +23,21 @@ export default function TopToolbar({
   onSnapToggle,
   onLocationConfirm,
   onDownloadPDF,
-}: TopToolbarProps) {
+  onSnapSizeChange,
+  onOverhangChange,
+  onOverhangPreviewToggle,
+  onApplyOverhang,
+}: TopToolbarProps & {
+  onSnapSizeChange?: (px: number) => void;
+  onOverhangChange?: (feet: number) => void;
+  onOverhangPreviewToggle?: (enabled: boolean) => void;
+  onApplyOverhang?: () => void;
+}) {
   const [thickness, setThickness] = useState(1);
   const [snap, setSnap] = useState(false);
+  const [snapPx, setSnapPx] = useState(10);
+  const [overhangFeet, setOverhangFeet] = useState(0.5);
+  const [previewOverhang, setPreviewOverhang] = useState(false);
   const geocoderContainerRef = useRef<HTMLDivElement>(null);
   const geocoderRef = useRef<MapboxGeocoder | null>(null);
 
@@ -33,7 +45,7 @@ export default function TopToolbar({
   useEffect(() => {
     if (map && geocoderContainerRef.current && !geocoderRef.current) {
       const geocoder = new MapboxGeocoder({
-        accessToken: mapboxgl.accessToken ?? "",
+        accessToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "",
         mapboxgl,
         marker: false,
         zoom: 19,
@@ -178,13 +190,72 @@ export default function TopToolbar({
 
         {/* Snap Toggle */}
         <div
-          onClick={handleSnapToggle}
+          onClick={() => {
+            const newSnap = !snap;
+            setSnap(newSnap);
+            onSnapToggle && onSnapToggle(newSnap);
+          }}
           className={`flex items-center gap-2 cursor-pointer ${
             snap ? "text-green-400" : "text-gray-300"
           }`}
         >
           <Grid className="w-4 h-4" />
           <span className="text-sm">Snap: {snap ? "On" : "Off"}</span>
+        </div>
+
+        {/* Snap Size (px) */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Snap Size:</label>
+          <input
+            type="number"
+            min={4}
+            max={40}
+            step={2}
+            value={snapPx}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setSnapPx(val);
+              onSnapSizeChange && onSnapSizeChange(val);
+            }}
+            className="w-20 bg-gray-800 text-white rounded px-2 py-1 text-sm focus:outline-none"
+          />
+          <span className="text-xs text-gray-300">px</span>
+        </div>
+
+        {/* Overhang controls */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Overhang:</label>
+          <input
+            type="number"
+            min={0}
+            max={3}
+            step={0.1}
+            value={overhangFeet}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setOverhangFeet(val);
+              onOverhangChange && onOverhangChange(val);
+            }}
+            className="w-20 bg-gray-800 text-white rounded px-2 py-1 text-sm focus:outline-none"
+          />
+          <span className="text-xs text-gray-300">ft</span>
+          <label className="flex items-center gap-1 cursor-pointer text-sm">
+            <input
+              type="checkbox"
+              checked={previewOverhang}
+              onChange={(e) => {
+                setPreviewOverhang(e.target.checked);
+                onOverhangPreviewToggle && onOverhangPreviewToggle(e.target.checked);
+              }}
+            />
+            Preview
+          </label>
+          <button
+            onClick={onApplyOverhang}
+            className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 text-sm rounded shadow"
+          >
+            Apply
+          </button>
         </div>
 
         {/* Download PDF Button */}
