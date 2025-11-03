@@ -13,10 +13,8 @@ export const loginAPI = (data) =>
 export const roleListAPI = () =>
   handleAPIRequest(axiosInstance.get, "/api/role_list");
 
-// ✅ Signup (Create Account)
 export const signupAPI = (data) =>
-  handleAPIRequest(axiosInstance.post, "/api/signup", data);
-
+  handleAPIRequest(axiosInstance.post, "/api/signup/", data);
 // ✅ Verify OTP after signup
 export const verifyOTPAPI = (data) =>
   handleAPIRequest(axiosInstance.post, "/api/verify-otp", data);
@@ -37,3 +35,6 @@ export const createProjectAPI = (data) =>
 
 export const getUserProjectsAPI = () =>
   handleAPIRequest(axiosInstance.get, "/api/roof-estimate-projects/user");
+
+export const deleteUserProjectsAPI = (id) =>
+  handleAPIRequest(axiosInstance.delete, `/api/roof-estimate-projects/${id}`);

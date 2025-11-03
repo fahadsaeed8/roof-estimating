@@ -16,6 +16,7 @@ import {
 interface RightSidebarProps {
   onStartDrawing?: () => void;
   onDeleteAll?: () => void;
+  onDeleteSelected?: () => void;
   onSetDrawMode?: (mode: string) => void;
   onUndo?: () => void;
   onRedo?: () => void;
@@ -29,6 +30,7 @@ interface RightSidebarProps {
 export default function RightSidebar({
   onStartDrawing,
   onDeleteAll,
+  onDeleteSelected,
   onSetDrawMode,
   onUndo,
   onRedo,
@@ -51,9 +53,21 @@ export default function RightSidebar({
   // ✅ Direct select / Edit
   const handleDirectSelect = () => onSetDrawMode?.("direct_select");
 
-  // ✅ Delete all
-  const handleDelete = () => {
-    onDeleteAll?.();
+  // ✅ Delete selected polygon (not all)
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // ✅ Always try delete selected first, then fallback to delete all
+    if (onDeleteSelected) {
+      // ✅ Call deleteSelected - it will handle selection and fallback to deleteAll if needed
+      onDeleteSelected();
+    } else if (onDeleteAll) {
+      // ✅ Fallback: delete all if deleteSelected not available
+      onDeleteAll();
+    }
+    
+    // ✅ Ensure we're in select mode after delete
     onSetDrawMode?.("simple_select");
   };
 

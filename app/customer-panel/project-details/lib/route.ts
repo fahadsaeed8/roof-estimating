@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectToDB } from ".db";
+import { connectToDB } from "./db";
 // import Project from "@/models/Project";
 import Project from "../models/Project";
 import { verifyToken } from "./auth";
