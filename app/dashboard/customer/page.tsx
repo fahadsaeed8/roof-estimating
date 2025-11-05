@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 // import Image from "next/image";
-import logo from "../../../public/Superior Pro Roofing logo.png";
+import logo from "../../../public/logo-latest.png";
 import {
   Menu,
   LogOut,
@@ -40,7 +40,6 @@ const navItems = [
     href: "/customer-panel/request-estimate",
     icon: ClipboardPlus,
   },
-  
 ];
 
 export default function CustomerDashboardLayout({
@@ -71,14 +70,16 @@ export default function CustomerDashboardLayout({
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
-        <div className="h-25 flex items-center justify-center border-b bg-gradient-to-r from-green-600 to-teal-600">
+        <div className="h-35 flex items-center justify-center border-b bg-gradient-to-r from-green-600 to-teal-600">
           <Image
             src={logo}
             alt="Superior Pro Roofing Logo"
-            className="wh-70 object-contain drop-shadow-md mt-2"
+            width={180} // 👈 adjust width (was missing)
+            height={60} // 👈 adjust height (was missing)
+            className="object-contain drop-shadow-md mt-2"
             priority
           />
-        </div>  
+        </div>
 
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
