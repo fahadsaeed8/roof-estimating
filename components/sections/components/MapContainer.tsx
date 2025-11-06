@@ -12,7 +12,7 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import * as turf from "@turf/turf";
-import { useUndoRedo } from "../components/useUndoRedo";
+import { useUndoRedo } from "./useUndoRedo";
 import LeftSidebar from "@/components/common/left-sidebar";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
@@ -20,6 +20,7 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 export interface MapSectionHandle {
   startDrawing: () => void;
   startDrawingWithLabel?: (label: { name: string; color: string }) => void;
+  startDrawingLine: () => void;
   deleteAll: () => void;
   deleteSelected: () => void;
   setDrawMode: (mode: string) => void;
@@ -110,13 +111,11 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       [key: string]: string;
     }>({});
 
+    const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
+
     const [isDrawMode, setIsDrawMode] = useState(false);
     const [labelsVisible, setLabelsVisible] = useState(true);
-
-    // ✅ Effect to handle labels visibility changes
-    useEffect(() => {
-      updateMeasurements();
-    }, [labelsVisible]);
+    const [isDrawingLine, setIsDrawingLine] = useState(false);
 
     const edgeLabels: Record<string, string> = {
       Ridge: "#e74c3c",
@@ -182,6 +181,19 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         startDrawingFn();
       }
     };
+
+    const startDrawingLine = () => {
+      const currentMode = drawRef.current?.getMode();
+      if (currentMode === "draw_line_string") {
+        setIsDrawingLine(false);
+        drawRef.current?.changeMode("simple_select");
+      } else {
+        setIsDrawingLine(true);
+        // Use draw_line_string for single line drawing
+        drawRef.current?.changeMode("draw_line_string");
+      }
+    };
+
     const applyPolygonColor = (
       feature: any,
       map: mapboxgl.Map,
@@ -385,6 +397,50 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         const feature = e.features[0];
         if (!feature) return;
 
+        // ✅ Handle creating a "single-line polygon" from a line
+        if (isDrawingLine && feature.geometry.type === "LineString") {
+          setIsDrawingLine(false); // Reset the mode
+          const draw = drawRef.current;
+          if (!draw) return;
+
+          const lineCoords = feature.geometry.coordinates;
+          if (lineCoords.length >= 2) {
+            // Create a polygon with 3 points: start, end, start
+            const polygonCoords = [[lineCoords[0], lineCoords[1], lineCoords[0]]];
+
+            // Create a new polygon feature
+            const polygonFeature = {
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "Polygon",
+                coordinates: polygonCoords,
+              },
+            };
+
+            // Delete the temporary line and add the new polygon
+            draw.delete([feature.id as string]);
+            const newFeatureIds = draw.add(polygonFeature);
+            const newFeatureId = newFeatureIds[0];
+
+            // After creating, switch to direct_select to show vertices
+            if (newFeatureId) {
+              setTimeout(() => {
+                draw.changeMode("direct_select", {
+                  featureId: newFeatureId,
+                });
+              }, 10);
+            }
+
+            // Manually trigger update and save snapshot
+            const currentSnapshot = draw.getAll();
+            undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
+            redoStackRef.current = [];
+            updateMeasurements();
+          }
+          return; // Stop further processing for this line
+        }
+
         // ✅ Handle split mode - line created for splitting
         if (
           awaitingSplitRef.current &&
@@ -517,6 +573,15 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         // ✅ Save snapshot to undo stack for undo/redo
         try {
           const currentSnapshot = drawInstance.getAll();
+
+          // After creating, switch to direct_select to show vertices
+          const featureId = e.features[0].id;
+          if (featureId) {
+            setTimeout(() => {
+              drawInstance.changeMode('direct_select', { featureId: featureId });
+            }, 10);
+          }
+
           undoStackRef.current.push(
             JSON.parse(JSON.stringify(currentSnapshot))
           );
@@ -1106,6 +1171,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
     useImperativeHandle(ref, () => ({
       confirmLocation,
       startDrawing,
+      startDrawingLine,
       startDrawingWithLabel,
       deleteAll,
       deleteSelected,
@@ -1131,11 +1197,14 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
     return (
       <div style={{ position: "relative", width: "100%", height: "100%" }}>
         <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
-        <LeftSidebar
-          onSelectLabel={handleLabelSelect}
-          onToggleLabels={toggleLabels}
-          labelsVisible={labelsVisible}
-        />
+        {isLeftSidebarOpen && (
+          <LeftSidebar
+            onSelectLabel={handleLabelSelect}
+            onToggleLabels={toggleLabels}
+            onDrawLine={startDrawingLine}
+            labelsVisible={labelsVisible}
+          />
+        )}
       </div>
     );
   }

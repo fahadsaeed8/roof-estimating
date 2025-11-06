@@ -10,6 +10,7 @@ import {
   Landmark,
   Eye,
   EyeOff,
+  LineChart,
 } from "lucide-react";
 
 interface RoofLabel {
@@ -21,6 +22,7 @@ interface RoofLabel {
 interface LeftSidebarProps {
   onSelectLabel?: (label: RoofLabel) => void; // ✅ parent ko label bhejne ke liye
   onToggleLabels?: () => void;
+  onDrawLine?: () => void;
   labelsVisible?: boolean;
 }
 
@@ -35,16 +37,15 @@ const roofLabels: RoofLabel[] = [
   { name: "Transition", color: "#2c3e50", icon: <Triangle className="" /> },
 ];
 
-const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSelectLabel, onToggleLabels, labelsVisible }) => {
+const LeftSidebar: React.FC<LeftSidebarProps> = ({
+  onSelectLabel,
+  onDrawLine,
+}) => {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
   const handleSelect = (label: RoofLabel) => {
     setSelectedLabel(label.name);
     if (onSelectLabel) onSelectLabel(label); // ✅ parent ko bhejna
-  };
-
-  const handleToggleLabels = () => {
-    if (onToggleLabels) onToggleLabels();
   };
 
   return (
@@ -53,21 +54,14 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSelectLabel, onToggleLabels
         Labels
       </h3>
 
-      {/* Toggle Labels Button */}
+      {/* Draw Line Button */}
       <button
-        onClick={handleToggleLabels}
-        className="flex flex-col items-center transition-all duration-200 opacity-90 hover:opacity-100"
+        onClick={onDrawLine}
+        className="flex flex-col items-center transition-all duration-200 opacity-90"
+        title="Draw Line"
       >
-        <div className="flex items-center justify-center w-9 h-9 rounded-full border-2 border-white/50 bg-white/10">
-          {labelsVisible ? (
-            <Eye className="w-5 h-5 text-white" />
-          ) : (
-            <EyeOff className="w-5 h-5 text-gray-400" />
-          )}
-        </div>
-        <span className="text-[10px] mt-1 text-gray-300">
-          {labelsVisible ? "Show" : "Hide"}
-        </span>
+        <LineChart size={24} color="white" />
+        <span className="text-[10px] mt-1 text-gray-300">Line</span>
       </button>
 
       {roofLabels.map((label) => {
@@ -108,3 +102,18 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSelectLabel, onToggleLabels
 };
 
 export default LeftSidebar;
+//             <span
+//               className={`text-[10px] mt-1 ${
+//                 isSelected ? "text-white font-semibold" : "text-gray-300"
+//               }`}
+//             >
+//               {label.name}
+//             </span>
+//           </button>
+//         );
+//       })}
+//     </div>
+//   );
+// };
+
+// export default LeftSidebar;
