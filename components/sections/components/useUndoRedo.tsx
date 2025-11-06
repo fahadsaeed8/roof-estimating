@@ -28,6 +28,7 @@ interface UndoRedoHookProps {
   onBearingChange?: (bearing: number) => void;
   setCurrentBearing: (bearing: number) => void;
   setPolygonEdgesMap?: (updater: (prev: any) => any) => void;
+  labelsVisible?: boolean;
 }
 
 export const useUndoRedo = ({
@@ -47,16 +48,21 @@ export const useUndoRedo = ({
   onBearingChange,
   setCurrentBearing,
   setPolygonEdgesMap,
+  labelsVisible = true,
 }: UndoRedoHookProps) => {
   const [drawMode, setDrawModeState] = useState<string>("");
 
   // ---------------- UPDATE MEASUREMENTS ----------------
   const updateMeasurements = useCallback(() => {
-    if (!drawRef.current) return;
-    const data = drawRef.current.getAll();
-    
+    if (!drawRef.current || !mapRef.current) return;
+    try {
+      const data = drawRef.current.getAll();
+
     // ✅ Track existing labels before clearing to minimize blinking
-    const existingLabelMap = new Map<string, { marker: mapboxgl.Marker; element: HTMLElement }>();
+    const existingLabelMap = new Map<
+      string,
+      { marker: mapboxgl.Marker; element: HTMLElement }
+    >();
     labelsRef.current.forEach((marker: any) => {
       try {
         const lngLat = marker.getLngLat();
@@ -67,7 +73,7 @@ export const useUndoRedo = ({
         }
       } catch {}
     });
-    
+
     // ✅ Clear labels
     clearLabels();
 
@@ -121,154 +127,254 @@ export const useUndoRedo = ({
               id: `side-${fIndex}-${i}`,
               length: lengthFeet,
               type: "edge",
-              polygonId: ""
+              polygonId: "",
             });
 
-            try {
-              const midpoint = turf.midpoint(from, to).geometry.coordinates as [
-                number,
-                number
-              ];
-              const el = document.createElement("div");
-              el.innerText = toFeetInches(lengthFeet);
-              Object.assign(el.style, {
-                background: "white",
-                color: "black",
-                padding: "1px 3px",
-                fontSize: "12px",
-                borderRadius: "8px",
-                boxShadow: "0 0 3px rgba(0,0,0,0.3)",
-                fontWeight: "700",
-                whiteSpace: "nowrap",
-              });
+            // ✅ Only create edge labels if labelsVisible is true
+            if (labelsVisible) {
+              try {
+                // ✅ Calculate edge angle for label rotation
+                const edgeAngle = Math.atan2(
+                  coords[i + 1][1] - coords[i][1],
+                  coords[i + 1][0] - coords[i][0]
+                );
 
-              // ✅ Check for overlapping labels and adjust position (reduced margin)
-              let adjustedMidpoint = midpoint;
-              const existingMarkers = labelsRef.current;
-              
-              // Check if label would overlap with existing labels (reduced threshold)
-              const overlapThreshold = 0.000005; // Smaller threshold for less margin
-              
-              for (const existingMarker of existingMarkers) {
-                try {
-                  const existingLngLat = existingMarker.getLngLat();
-                  const distance = turf.distance(
-                    turf.point([midpoint[0], midpoint[1]]),
-                    turf.point([existingLngLat.lng, existingLngLat.lat]),
-                    { units: "kilometers" }
-                  );
-                  
-                  // If labels are very close (less than ~0.5 meter), offset this one (reduced threshold)
-                  if (distance < 0.0005) {
-                    // Offset perpendicular to the edge (smaller offset)
-                    const edgeAngle = Math.atan2(
-                      coords[i + 1][1] - coords[i][1],
-                      coords[i + 1][0] - coords[i][0]
+                // ✅ Get midpoint of edge (directly on the line)
+                const midpoint = turf.midpoint(from, to).geometry
+                  .coordinates as [number, number];
+
+                // ✅ Calculate label position along the edge with dynamic offset for overlaps
+                let labelPosition = midpoint;
+                let offsetAlongEdge = 0; // Offset along the line (0 = midpoint)
+
+                // ✅ Check for overlapping labels and adjust position along the edge
+                const existingMarkers = labelsRef.current;
+                const overlapThreshold = 0.0003; // ~30 meters in degrees
+
+                for (const existingMarker of existingMarkers) {
+                  try {
+                    const existingLngLat = existingMarker.getLngLat();
+                    const distance = turf.distance(
+                      turf.point([midpoint[0], midpoint[1]]),
+                      turf.point([existingLngLat.lng, existingLngLat.lat]),
+                      { units: "kilometers" }
                     );
-                    const offsetAngle = edgeAngle + Math.PI / 2; // Perpendicular
-                    const offsetDistance = 0.00001; // Smaller offset for less margin
-                    
-                    adjustedMidpoint = [
-                      midpoint[0] + Math.cos(offsetAngle) * offsetDistance,
-                      midpoint[1] + Math.sin(offsetAngle) * offsetDistance,
-                    ] as [number, number];
-                    break;
-                  }
-                } catch {}
-              }
 
-              // ✅ Check if label existed at this position before (prevent blinking)
-              const labelKey = `${adjustedMidpoint[0].toFixed(6)},${adjustedMidpoint[1].toFixed(6)}`;
-              const existingLabel = existingLabelMap.get(labelKey);
-              
-              if (existingLabel) {
-                // ✅ Reuse existing marker element by updating text
-                try {
-                  existingLabel.element.innerText = toFeetInches(lengthFeet);
-                  // Re-add marker to map (it was removed by clearLabels)
-                  existingLabel.marker.addTo(mapRef.current!);
-                  labelsRef.current.push(existingLabel.marker);
-                } catch {
-                  // If reuse fails, create new marker
+                    // If labels are too close, offset this label along the edge
+                    if (distance < overlapThreshold) {
+                      // Try offsetting along the edge in both directions
+                      const offsetDistance = 0.00005; // Small offset in degrees
+                      const offset1 = offsetAlongEdge + offsetDistance;
+                      const offset2 = offsetAlongEdge - offsetDistance;
+
+                      // Calculate positions along the edge
+                      const edgeLength = lengthFeet * 0.000001; // Approximate conversion
+                      const offset1Pos = [
+                        midpoint[0] + Math.cos(edgeAngle) * offset1,
+                        midpoint[1] + Math.sin(edgeAngle) * offset1,
+                      ] as [number, number];
+
+                      // Check if offset position is better (farther from other labels)
+                      const dist1 = turf.distance(
+                        turf.point(offset1Pos),
+                        turf.point([existingLngLat.lng, existingLngLat.lat]),
+                        { units: "kilometers" }
+                      );
+
+                      if (dist1 > distance) {
+                        labelPosition = offset1Pos;
+                        offsetAlongEdge = offset1;
+                      } else {
+                        // Try opposite direction
+                        const offset2Pos = [
+                          midpoint[0] + Math.cos(edgeAngle) * offset2,
+                          midpoint[1] + Math.sin(edgeAngle) * offset2,
+                        ] as [number, number];
+
+                        const dist2 = turf.distance(
+                          turf.point(offset2Pos),
+                          turf.point([existingLngLat.lng, existingLngLat.lat]),
+                          { units: "kilometers" }
+                        );
+
+                        if (dist2 > distance) {
+                          labelPosition = offset2Pos;
+                          offsetAlongEdge = offset2;
+                        }
+                      }
+                    }
+                  } catch {}
+                }
+
+                // ✅ Create label element - keep horizontal (no rotation)
+                const el = document.createElement("div");
+                el.innerText = toFeetInches(lengthFeet);
+
+                // ✅ Smaller font size for better readability
+                // ✅ Labels stay horizontal regardless of edge angle
+                Object.assign(el.style, {
+                  background: "rgba(255, 255, 255, 0.95)",
+                  color: "black",
+                  padding: "2px 4px",
+                  fontSize: "10px", // ✅ Reduced from 12px
+                  borderRadius: "4px",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap",
+                  // ✅ No rotation - keep labels horizontal
+                  transform: "none",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  pointerEvents: "none", // Prevent label from intercepting clicks
+                });
+
+                // ✅ Check if label existed at this position before (prevent blinking)
+                const labelKey = `${labelPosition[0].toFixed(
+                  6
+                )},${labelPosition[1].toFixed(6)},${fIndex},${i}`;
+                const existingLabel = existingLabelMap.get(labelKey);
+
+                if (existingLabel) {
+                  // ✅ Reuse existing marker element by updating text (keep horizontal)
+                  try {
+                    existingLabel.element.innerText = toFeetInches(lengthFeet);
+                    existingLabel.element.style.transform = "none"; // ✅ Keep horizontal
+                    // Re-add marker to map (it was removed by clearLabels)
+                    existingLabel.marker.setLngLat(labelPosition);
+                    existingLabel.marker.addTo(mapRef.current!);
+                    labelsRef.current.push(existingLabel.marker);
+                  } catch {
+                    // If reuse fails, create new marker
+                    const marker = new mapboxgl.Marker({
+                      element: el,
+                      anchor: "center",
+                      rotationAlignment: "map", // ✅ Keep label aligned with map rotation
+                    })
+                      .setLngLat(labelPosition)
+                      .addTo(mapRef.current!);
+                    labelsRef.current.push(marker);
+                  }
+                } else {
+                  // ✅ Create new marker if none existed at this position
                   const marker = new mapboxgl.Marker({
                     element: el,
                     anchor: "center",
+                    rotationAlignment: "map", // ✅ Keep label aligned with map rotation
                   })
-                    .setLngLat(adjustedMidpoint)
+                    .setLngLat(labelPosition)
                     .addTo(mapRef.current!);
                   labelsRef.current.push(marker);
                 }
-              } else {
-                // ✅ Create new marker if none existed at this position
-                const marker = new mapboxgl.Marker({
-                  element: el,
-                  anchor: "center",
-                })
-                  .setLngLat(adjustedMidpoint)
-                  .addTo(mapRef.current!);
-                labelsRef.current.push(marker);
-              }
-            } catch {}
+              } catch {}
+            }
             polygonPointsAcc.push({ lat: c[1], lon: c[0], seq: i + 1 });
           }
         });
 
-        // center label - reuse existing or create new
-        try {
-          const center = turf.centerOfMass(feature).geometry.coordinates as [
-            number,
-            number
-          ];
-          const centerKey = `${center[0].toFixed(6)},${center[1].toFixed(6)}`;
-          const existingCenterLabel = existingLabelMap.get(centerKey);
-          
-          // ✅ Check if it's a center label (has "ft" text)
-          if (existingCenterLabel && existingCenterLabel.element.innerText.includes("ft")) {
-            // ✅ Reuse existing center marker
-            try {
-              existingCenterLabel.element.innerText = `${perimeterFeet.toFixed(2)} ft`;
-              // Re-add marker to map (it was removed by clearLabels)
-              existingCenterLabel.marker.addTo(mapRef.current!);
-              labelsRef.current.push(existingCenterLabel.marker);
-            } catch {
-              // If reuse fails, create new marker
+        // ✅ Center label - show area instead of edges total length (only if labelsVisible)
+        if (labelsVisible) {
+          try {
+            const center = turf.centerOfMass(feature).geometry.coordinates as [
+              number,
+              number
+            ];
+
+            // ✅ Calculate area for this polygon
+            const areaSqFt = areaSqMeters * 10.7639;
+            const areaFormatted = Math.round(areaSqFt) + " sqft";
+
+            // ✅ Get roof type label from feature properties (if assigned)
+            const roofTypeLabel = feature.properties?.label || null;
+
+            // ✅ Create label text: show area, roof type name if available
+            let labelText = areaFormatted;
+            if (roofTypeLabel) {
+              // ✅ Format: "Ridge\n1200 sqft"
+              labelText = `${roofTypeLabel}\n${areaFormatted}`;
+            }
+
+            const centerKey = `${center[0].toFixed(6)},${center[1].toFixed(6)}`;
+            const existingCenterLabel = existingLabelMap.get(centerKey);
+
+            // ✅ Check if it's a center label (has "sqft" or "sq.ft" or feet'inches" format)
+            if (
+              existingCenterLabel &&
+              (existingCenterLabel.element.innerText.includes("sqft") ||
+                existingCenterLabel.element.innerText.includes("sq.ft") ||
+                existingCenterLabel.element.innerText.includes("'") ||
+                existingCenterLabel.element.innerText.includes("ft"))
+            ) {
+              // ✅ Reuse existing center marker
+              try {
+                // ✅ Update label text - use innerHTML if roof type is present for proper styling
+                if (roofTypeLabel) {
+                  existingCenterLabel.element.innerHTML = `<span style="font-size: 9px; font-weight: 600; color: #555; display: block; margin-bottom: 2px;">${roofTypeLabel}</span><span style="font-size: 11px;">${areaFormatted}</span>`;
+                } else {
+                  existingCenterLabel.element.innerText = labelText;
+                }
+                // Re-add marker to map (it was removed by clearLabels)
+                existingCenterLabel.marker.addTo(mapRef.current!);
+                labelsRef.current.push(existingCenterLabel.marker);
+              } catch {
+                // If reuse fails, create new marker
+                const div = document.createElement("div");
+                div.innerText = labelText;
+                Object.assign(div.style, {
+                  background: "rgba(255, 255, 255, 0.95)",
+                  color: "black",
+                  padding: "4px 6px",
+                  fontSize: roofTypeLabel ? "10px" : "11px", // ✅ Slightly smaller when roof type shown
+                  borderRadius: "6px",
+                  boxShadow: "0 0 4px rgba(0,0,0,0.35)",
+                  fontWeight: "700",
+                  whiteSpace: "pre-line",
+                  textAlign: "center",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  lineHeight: roofTypeLabel ? "1.2" : "1.4",
+                });
+                // ✅ Style roof type name differently (smaller, lighter)
+                if (roofTypeLabel) {
+                  div.innerHTML = `<span style="font-size: 9px; font-weight: 600; color: #555; display: block; margin-bottom: 2px;">${roofTypeLabel}</span><span style="font-size: 11px;">${areaFormatted}</span>`;
+                }
+                const marker = new mapboxgl.Marker({
+                  element: div,
+                  anchor: "center",
+                })
+                  .setLngLat(center)
+                  .addTo(mapRef.current!);
+                labelsRef.current.push(marker);
+              }
+            } else {
+              // ✅ Create new center marker
               const div = document.createElement("div");
-              div.innerText = `${perimeterFeet.toFixed(2)} ft`;
+              if (roofTypeLabel) {
+                // ✅ Use HTML for better styling control
+                div.innerHTML = `<span style="font-size: 9px; font-weight: 600; color: #555; display: block; margin-bottom: 2px;">${roofTypeLabel}</span><span style="font-size: 11px;">${areaFormatted}</span>`;
+              } else {
+                div.innerText = labelText;
+              }
               Object.assign(div.style, {
-                background: "white",
+                background: "rgba(255, 255, 255, 0.95)",
                 color: "black",
-                padding: "3px 5px",
-                fontSize: "12px",
-                borderRadius: "8px",
+                padding: "4px 6px",
+                fontSize: roofTypeLabel ? "10px" : "11px",
+                borderRadius: "6px",
                 boxShadow: "0 0 4px rgba(0,0,0,0.35)",
                 fontWeight: "700",
                 whiteSpace: "pre-line",
+                textAlign: "center",
+                border: "1px solid rgba(0,0,0,0.1)",
+                lineHeight: roofTypeLabel ? "1.2" : "1.4",
               });
-              const marker = new mapboxgl.Marker({ element: div, anchor: "center" })
+              const marker = new mapboxgl.Marker({
+                element: div,
+                anchor: "center",
+              })
                 .setLngLat(center)
                 .addTo(mapRef.current!);
               labelsRef.current.push(marker);
             }
-          } else {
-            // ✅ Create new center marker
-            const div = document.createElement("div");
-            div.innerText = `${perimeterFeet.toFixed(2)} ft`;
-            Object.assign(div.style, {
-              background: "white",
-              color: "black",
-              padding: "3px 5px",
-              fontSize: "12px",
-              borderRadius: "8px",
-              boxShadow: "0 0 4px rgba(0,0,0,0.35)",
-              fontWeight: "700",
-              whiteSpace: "pre-line",
-            });
-            const marker = new mapboxgl.Marker({ element: div, anchor: "center" })
-              .setLngLat(center)
-              .addTo(mapRef.current!);
-            labelsRef.current.push(marker);
-          }
-        } catch {}
+          } catch {}
+        }
       }
     });
 
@@ -283,6 +389,9 @@ export const useUndoRedo = ({
       roofArea: totalAreaSqFt,
       polygonPoints: polygonPointsAcc,
     });
+    } catch (err) {
+      console.warn("updateMeasurements error", err);
+    }
   }, [
     drawRef,
     mapRef,
@@ -294,7 +403,38 @@ export const useUndoRedo = ({
     onBearingChange,
     setCurrentBearing,
     clearLabels,
+    labelsVisible,
   ]);
+
+
+
+  const undo = () => {
+    if (!drawRef.current) return;
+    const stack = undoStackRef.current;
+    if (!stack.length) return;
+    try {
+      const current = drawRef.current.getAll();
+      redoStackRef.current.push(JSON.parse(JSON.stringify(current)));
+    } catch {}
+    const last = stack.pop();
+    restoreSnapshot(last);
+  };
+
+  const redo = () => {
+    if (!drawRef.current) return;
+    const rstack = redoStackRef.current;
+    if (!rstack.length) return;
+    try {
+      const current = drawRef.current.getAll();
+      undoStackRef.current.push(JSON.parse(JSON.stringify(current)));
+    } catch {}
+    const next = rstack.pop();
+    restoreSnapshot(next);
+  };
+
+
+
+  
 
   // ---------------- UNDO / REDO ----------------
   const restoreSnapshot = (snapshot: any) => {
@@ -302,15 +442,19 @@ export const useUndoRedo = ({
     try {
       // Clear all current features
       drawRef.current.deleteAll();
-      
+
       // Clear all labels
       clearLabels();
-      
+
       // Clear all custom layers and sources from map
       const map = mapRef.current;
       const existingLayers = map.getStyle().layers || [];
       existingLayers.forEach((layer: any) => {
-        if (layer.id && (layer.id.includes("custom-line-layer-") || layer.id.includes("-edge-"))) {
+        if (
+          layer.id &&
+          (layer.id.includes("custom-line-layer-") ||
+            layer.id.includes("-edge-"))
+        ) {
           try {
             if (map.getLayer(layer.id)) map.removeLayer(layer.id);
           } catch {}
@@ -334,7 +478,7 @@ export const useUndoRedo = ({
         updateMeasurements();
         return;
       }
-      
+
       // ✅ Restore features from snapshot (preserve all properties including labels/colors)
       snapshot.features.forEach((f: any) => {
         // ✅ Ensure properties are preserved when restoring
@@ -346,7 +490,7 @@ export const useUndoRedo = ({
         };
         drawRef.current?.add(featureToAdd);
       });
-      
+
       // Rebuild polygonEdgesMap and reapply colors for all polygons
       if (setPolygonEdgesMap) {
         const newPolygonEdgesMap: Record<string, any[]> = {};
@@ -355,18 +499,18 @@ export const useUndoRedo = ({
             const featureId = feature.id;
             const coords = feature.geometry.coordinates[0];
             const edges: { id: string; coords: [number, number][] }[] = [];
-            
+
             for (let i = 0; i < coords.length - 1; i++) {
               const id = `${featureId}-edge-${i}`;
-              edges.push({ 
-                id, 
+              edges.push({
+                id,
                 coords: [
-                  [coords[i][0], coords[i][1]] as [number, number], 
-                  [coords[i + 1][0], coords[i + 1][1]] as [number, number]
-                ] 
+                  [coords[i][0], coords[i][1]] as [number, number],
+                  [coords[i + 1][0], coords[i + 1][1]] as [number, number],
+                ],
               });
             }
-            
+
             newPolygonEdgesMap[featureId] = edges;
 
             // ✅ Reapply color layers if color exists and is not yellow
@@ -393,7 +537,7 @@ export const useUndoRedo = ({
                     type: "line",
                     source: edgeId,
                     layout: { "line-cap": "round", "line-join": "round" },
-                    paint: { "line-color": color, "line-width": 5 },
+                    paint: { "line-color": color, "line-width": 3 },
                   });
                 } catch {}
               }
@@ -404,40 +548,22 @@ export const useUndoRedo = ({
         });
         setPolygonEdgesMap(() => newPolygonEdgesMap);
       }
-      
+
       // ✅ Update measurements after restore - use requestAnimationFrame for smooth update
-      // This prevents label blinking
+      // This prevents label blinking and respects labelsVisible state
+      // ✅ Ensure labels and titles are properly restored (including center labels with roof type names)
       requestAnimationFrame(() => {
         updateMeasurements();
+        // ✅ Force a second update after a brief delay to ensure all labels are restored correctly
+        setTimeout(() => {
+          updateMeasurements();
+        }, 100);
       });
     } catch (err) {
       console.warn("restoreSnapshot error", err);
     }
   };
 
-  const undo = () => {
-    if (!drawRef.current) return;
-    const stack = undoStackRef.current;
-    if (!stack.length) return;
-    try {
-      const current = drawRef.current.getAll();
-      redoStackRef.current.push(JSON.parse(JSON.stringify(current)));
-    } catch {}
-    const last = stack.pop();
-    restoreSnapshot(last);
-  };
-
-  const redo = () => {
-    if (!drawRef.current) return;
-    const rstack = redoStackRef.current;
-    if (!rstack.length) return;
-    try {
-      const current = drawRef.current.getAll();
-      undoStackRef.current.push(JSON.parse(JSON.stringify(current)));
-    } catch {}
-    const next = rstack.pop();
-    restoreSnapshot(next);
-  };
 
   // ---------------- SPLIT ----------------
   const startSplitMode = () => {
@@ -447,51 +573,50 @@ export const useUndoRedo = ({
     } catch {}
   };
 
-const handleLineForSplit = (lineFeature: any) => {
-  if (!mapRef.current || !drawRef.current) return;
+  const handleLineForSplit = (lineFeature: any) => {
+    if (!mapRef.current || !drawRef.current) return;
 
-  const map = mapRef.current;
-  const draw = drawRef.current;
+    const map = mapRef.current;
+    const draw = drawRef.current;
 
-  try {
-    const allFeatures = draw.getAll();
-    if (!allFeatures.features.length) return;
+    try {
+      const allFeatures = draw.getAll();
+      if (!allFeatures.features.length) return;
 
-    // Find the selected polygon
-    const selected = allFeatures.features.find(
-      (f: any) => f.properties?.isSelected
-    );
-    if (!selected || selected.geometry.type !== "Polygon") return;
+      // Find the selected polygon
+      const selected = allFeatures.features.find(
+        (f: any) => f.properties?.isSelected
+      );
+      if (!selected || selected.geometry.type !== "Polygon") return;
 
-    // Split polygon using turf
-    const splitResult = turf.lineSplit(selected, lineFeature);
+      // Split polygon using turf
+      const splitResult = turf.lineSplit(selected, lineFeature);
 
-    if (splitResult.features.length > 1) {
-      draw.delete(selected.id);
-      splitResult.features.forEach((f: any) => {
-        draw.add(f);
-      });
+      if (splitResult.features.length > 1) {
+        draw.delete(selected.id);
+        splitResult.features.forEach((f: any) => {
+          draw.add(f);
+        });
 
-      // Update undo/redo stack
-      undoStackRef.current.push(draw.getAll());
-      redoStackRef.current = [];
+        // Update undo/redo stack
+        undoStackRef.current.push(draw.getAll());
+        redoStackRef.current = [];
 
-      console.log("Polygon successfully split!");
+        console.log("Polygon successfully split!");
+      }
+    } catch (err) {
+      console.error("Error splitting polygon:", err);
     }
-  } catch (err) {
-    console.error("Error splitting polygon:", err);
-  }
-};
-
+  };
 
   // ---------------- OVERHANG ----------------
   const applyOverhang = useCallback(() => {
     if (!drawRef.current || !mapRef.current) return;
-    
+
     try {
       const allFeatures = drawRef.current.getAll();
       const selectedFeatures = drawRef.current.getSelected();
-      
+
       // ✅ Get selected polygon or first polygon if none selected
       let polygonToBuffer = null;
       if (selectedFeatures?.features?.length > 0) {
@@ -506,30 +631,30 @@ const handleLineForSplit = (lineFeature: any) => {
         );
         if (firstPolygon) polygonToBuffer = firstPolygon;
       }
-      
+
       if (!polygonToBuffer) {
         alert("Please select a polygon to apply overhang");
         return;
       }
-      
+
       // ✅ Save snapshot before overhang for undo/redo
       const currentSnapshot = drawRef.current.getAll();
       undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
       redoStackRef.current = [];
-      
+
       // ✅ Apply buffer (overhang) - typically 6-12 inches outward (0.5-1 feet)
       const overhangDistance = 0.5; // Default 0.5 feet (6 inches)
-      
+
       try {
         const buffered = turf.buffer(polygonToBuffer, overhangDistance, {
           units: "feet",
         });
-        
+
         // ✅ Replace original polygon with buffered version
         if (polygonToBuffer.id) {
           drawRef.current.delete(polygonToBuffer.id as string);
         }
-        
+
         // ✅ Preserve properties and color from original
         const bufferedFeature = {
           ...buffered,
@@ -538,9 +663,9 @@ const handleLineForSplit = (lineFeature: any) => {
             ...(buffered?.properties || {}),
           },
         };
-        
+
         drawRef.current.add(bufferedFeature);
-        
+
         // ✅ Update measurements after overhang
         setTimeout(() => {
           updateMeasurements();
@@ -552,7 +677,7 @@ const handleLineForSplit = (lineFeature: any) => {
     } catch (err) {
       console.error("Overhang error:", err);
     }
-  }, [drawRef, mapRef, undoStackRef, updateMeasurements]);
+  }, [drawRef, mapRef, undoStackRef, redoStackRef, updateMeasurements]);
 
   // ---------------- MAP ACTIONS ----------------
   const startDrawing = () => {
@@ -579,13 +704,13 @@ const handleLineForSplit = (lineFeature: any) => {
     }
   };
 
-// const setDrawMode = (mode: string) => {
-//   setDrawModeState(mode);
-//   if (mode === "draw_polygon") {
-//     drawRef.current?.changeMode("draw_polygon");
-//   }
-// };
-    // ---------------- MAP ROTATION + VIEW ----------------
+  // const setDrawMode = (mode: string) => {
+  //   setDrawModeState(mode);
+  //   if (mode === "draw_polygon") {
+  //     drawRef.current?.changeMode("draw_polygon");
+  //   }
+  // };
+  // ---------------- MAP ROTATION + VIEW ----------------
   const rotateLeft = () => {
     if (!mapRef.current) return;
     const bearing = mapRef.current.getBearing();
@@ -629,42 +754,39 @@ const handleLineForSplit = (lineFeature: any) => {
     return [c.lng, c.lat];
   };
 
+  const confirmLocation = (coords: [number, number]) => {
+    if (!mapRef.current) return;
+    const [lat, lng] = coords;
+    mapRef.current.flyTo({ center: [lng, lat], zoom: 20 });
+    localStorage.setItem("selectedAddress", JSON.stringify({ lat, lng }));
+  };
 
+  const searchAddress = (address: string) => {
+    if (!mapRef.current) return;
+    fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        address
+      )}.json?access_token=${mapboxgl.accessToken}`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.features?.length > 0) {
+          const coords = data.features[0].center as [number, number];
+          mapRef.current?.flyTo({ center: coords, zoom: 19 });
+        }
+      })
+      .catch((err) => console.warn("geocode error", err));
+  };
 
-    const confirmLocation = (coords: [number, number]) => {
-      if (!mapRef.current) return;
-      const [lat, lng] = coords;
-      mapRef.current.flyTo({ center: [lng, lat], zoom: 20 });
-      localStorage.setItem("selectedAddress", JSON.stringify({ lat, lng }));
-    };
-
-    const searchAddress = (address: string) => {
-      if (!mapRef.current) return;
-      fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          address
-        )}.json?access_token=${mapboxgl.accessToken}`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.features?.length > 0) {
-            const coords = data.features[0].center as [number, number];
-            mapRef.current?.flyTo({ center: coords, zoom: 19 });
-          }
-        })
-        .catch((err) => console.warn("geocode error", err));
-    };
-
-    const getMapCanvasDataURL = () => {
-      try {
-        const canvas = mapRef.current?.getCanvas();
-        if (!canvas) return null;
-        return canvas.toDataURL("image/png");
-      } catch {
-        return null;
-      }
-    };
-
+  const getMapCanvasDataURL = () => {
+    try {
+      const canvas = mapRef.current?.getCanvas();
+      if (!canvas) return null;
+      return canvas.toDataURL("image/png");
+    } catch {
+      return null;
+    }
+  };
 
   return {
     updateMeasurements,

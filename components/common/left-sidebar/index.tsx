@@ -8,6 +8,8 @@ import {
   Circle,
   Shuffle,
   Landmark,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 interface RoofLabel {
@@ -18,6 +20,8 @@ interface RoofLabel {
 
 interface LeftSidebarProps {
   onSelectLabel?: (label: RoofLabel) => void; // ✅ parent ko label bhejne ke liye
+  onToggleLabels?: () => void;
+  labelsVisible?: boolean;
 }
 
 const roofLabels: RoofLabel[] = [
@@ -31,7 +35,7 @@ const roofLabels: RoofLabel[] = [
   { name: "Transition", color: "#2c3e50", icon: <Triangle className="" /> },
 ];
 
-const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSelectLabel }) => {
+const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSelectLabel, onToggleLabels, labelsVisible }) => {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
   const handleSelect = (label: RoofLabel) => {
@@ -39,11 +43,32 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSelectLabel }) => {
     if (onSelectLabel) onSelectLabel(label); // ✅ parent ko bhejna
   };
 
+  const handleToggleLabels = () => {
+    if (onToggleLabels) onToggleLabels();
+  };
+
   return (
     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 bg-[#0a1f44]/90 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-white/10 z-30">
       <h3 className="text-white text-sm text-center font-semibold mb-1">
         Labels
       </h3>
+
+      {/* Toggle Labels Button */}
+      <button
+        onClick={handleToggleLabels}
+        className="flex flex-col items-center transition-all duration-200 opacity-90 hover:opacity-100"
+      >
+        <div className="flex items-center justify-center w-9 h-9 rounded-full border-2 border-white/50 bg-white/10">
+          {labelsVisible ? (
+            <Eye className="w-5 h-5 text-white" />
+          ) : (
+            <EyeOff className="w-5 h-5 text-gray-400" />
+          )}
+        </div>
+        <span className="text-[10px] mt-1 text-gray-300">
+          {labelsVisible ? "Show" : "Hide"}
+        </span>
+      </button>
 
       {roofLabels.map((label) => {
         const isSelected = selectedLabel === label.name;

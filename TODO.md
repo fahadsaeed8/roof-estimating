@@ -1,0 +1,4 @@
+- [ ] Change default mode to "simple_select" in MapContainer.tsx
+- [ ] Customize draw_polygon mode with minVertices: 2
+- [ ] Fix toggle labels to work on single click by adding useEffect for labelsVisible
+- [ ] Test the fixes: map loading, drawing on button click, polygon with 2+ points, single-click toggle
