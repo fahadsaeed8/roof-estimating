@@ -19,15 +19,12 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
 export interface MapSectionHandle {
   startDrawing: () => void;
-  startDrawingWithLabel?: (label: { name: string; color: string }) => void;
-  startDrawingLine: () => void;
+  startSingleDrawing: () => void;
   deleteAll: () => void;
   deleteSelected: () => void;
   setDrawMode: (mode: string) => void;
   undo: () => void;
   redo: () => void;
-  startSplitMode: () => void;
-  applyOverhang: () => void;
   confirmLocation: (coords: [number, number]) => void;
   searchAddress: (address: string) => void;
   toggleLabels: () => void;
@@ -37,6 +34,7 @@ export interface MapSectionHandle {
   toggleStreetView: () => void;
   getCenter?: () => [number, number] | null;
   getMap?: () => mapboxgl.Map | null;
+  handleLabelSelect?: (label: { name: string; color: string }) => void;
   downloadPDF?: () => void;
 }
 
@@ -137,8 +135,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       updateMeasurements,
       undo,
       redo,
-      startSplitMode,
-      applyOverhang,
+      startSingleDrawing: startSingleDrawingFn,
       startDrawing: startDrawingFn,
       deleteAll,
       setDrawMode,
@@ -166,6 +163,11 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       labelsVisible,
     });
 
+    const updateMeasurementsRef = useRef(updateMeasurements);
+    useEffect(() => {
+      updateMeasurementsRef.current = updateMeasurements;
+    }, [updateMeasurements]);
+
     // ✅ Wrapper for startDrawing to handle grid toggle (on/off)
     const startDrawing = () => {
       const currentMode = drawRef.current?.getMode();
@@ -182,15 +184,16 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       }
     };
 
-    const startDrawingLine = () => {
+    const startSingleDrawing = () => {
       const currentMode = drawRef.current?.getMode();
-      if (currentMode === "draw_line_string") {
-        setIsDrawingLine(false);
+      if (currentMode === "draw_line_string" || isDrawingLine) {
+        setIsDrawingLine(false); // Toggle off
+        onGridToggle?.(false);
         drawRef.current?.changeMode("simple_select");
       } else {
-        setIsDrawingLine(true);
-        // Use draw_line_string for single line drawing
-        drawRef.current?.changeMode("draw_line_string");
+        setIsDrawingLine(true); // Toggle on
+        onGridToggle?.(true);
+        startSingleDrawingFn();
       }
     };
 
@@ -308,26 +311,11 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         defaultMode: "simple_select",
         modes: {
           ...MapboxDraw.modes,
-          draw_polygon: {
-            ...MapboxDraw.modes.draw_polygon,
-            onClick: function(state: any, e: any) {
-              // Allow finishing polygon with 2 or more points by clicking near the first vertex
-              if (state.currentVertexPosition >= 2) {
-                const firstVertex = state.polygon.coordinates[0][0];
-                const clickPoint = [e.lngLat.lng, e.lngLat.lat];
-                const distance = Math.sqrt(
-                  Math.pow(firstVertex[0] - clickPoint[0], 2) +
-                  Math.pow(firstVertex[1] - clickPoint[1], 2)
-                );
-                // If click is within threshold of first vertex, close polygon
-                if (distance < 0.0001) {
-                  this.changeMode('simple_select', { featureId: state.polygon.id });
-                  return;
-                }
-              }
-              // Call parent onClick method
-              if (MapboxDraw.modes.draw_polygon.onClick) {
-                MapboxDraw.modes.draw_polygon.onClick.call(this, state, e);
+          draw_polygon: Object.assign({}, MapboxDraw.modes.draw_polygon, {
+            onClick: function (state: any, e: any) {
+              // Continue to use the default behavior
+              if (MapboxDraw.modes.draw_polygon && MapboxDraw.modes.draw_polygon.onClick) {
+                return MapboxDraw.modes.draw_polygon.onClick.call(this, state, e);
               }
             },
             toDisplayFeatures: function(state: any, geojson: any, display: any) {
@@ -336,7 +324,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
                 MapboxDraw.modes.draw_polygon.toDisplayFeatures.call(this, state, geojson, display);
               }
             },
-          },
+          }),
         },
         styles: [
           {
@@ -392,6 +380,142 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       drawRef.current = drawInstance;
       mapInstance.addControl(drawInstance);
 
+      const createSingleLinePolygon = (
+        rawCoords: [number, number][],
+        baseProperties: Record<string, any> = {},
+        featureIdToReplace?: string
+      ): string | null => {
+        const draw = drawRef.current;
+        if (!draw) return null;
+
+        const dedupedCoords: [number, number][] = [];
+        rawCoords.forEach((coord) => {
+          const [lng, lat] = coord;
+          if (!dedupedCoords.length) {
+            dedupedCoords.push([lng, lat]);
+            return;
+          }
+          const [prevLng, prevLat] = dedupedCoords[dedupedCoords.length - 1];
+          if (prevLng !== lng || prevLat !== lat) {
+            dedupedCoords.push([lng, lat]);
+          }
+        });
+
+        if (dedupedCoords.length > 1) {
+          const [firstLng, firstLat] = dedupedCoords[0];
+          const [lastLng, lastLat] = dedupedCoords[dedupedCoords.length - 1];
+          if (firstLng === lastLng && firstLat === lastLat) {
+            dedupedCoords.pop();
+          }
+        }
+
+        if (dedupedCoords.length < 2) {
+          return null;
+        }
+
+        const closedCoords = dedupedCoords.map((coord) => [coord[0], coord[1]]) as [
+          number,
+          number
+        ][];
+        closedCoords.push([dedupedCoords[0][0], dedupedCoords[0][1]]);
+
+        const uniquePointCount = dedupedCoords.length;
+        const shouldMarkSingleLine = uniquePointCount <= 2;
+
+        const polygonFeature = {
+          type: "Feature",
+          properties: {
+            ...baseProperties,
+            ...(shouldMarkSingleLine ? { isSingleLine: true } : {}),
+          },
+          geometry: {
+            type: "Polygon",
+            coordinates: [closedCoords],
+          },
+        };
+
+        if (featureIdToReplace) {
+          try {
+            draw.delete([featureIdToReplace]);
+          } catch {}
+        }
+
+        const newFeatureIds = draw.add(polygonFeature as any);
+        const newFeatureId = newFeatureIds?.[0];
+        if (!newFeatureId) {
+          return null;
+        }
+
+        const newlyAdded = draw.get(newFeatureId as string);
+        if (newlyAdded?.geometry?.type === "Polygon") {
+          const coords = newlyAdded.geometry
+            .coordinates[0] as [number, number][];
+          const edges: { id: string; coords: [number, number][] }[] = [];
+
+          for (let i = 0; i < coords.length - 1; i++) {
+            const edgeId = `${newFeatureId}-edge-${i}`;
+            edges.push({ id: edgeId, coords: [coords[i], coords[i + 1]] });
+
+            try {
+              if (mapInstance.getLayer(edgeId)) mapInstance.removeLayer(edgeId);
+            } catch {}
+            try {
+              if (mapInstance.getSource(edgeId)) mapInstance.removeSource(edgeId);
+            } catch {}
+
+            mapInstance.addSource(edgeId, {
+              type: "geojson",
+              data: {
+                type: "Feature",
+                properties: {},
+                geometry: {
+                  type: "LineString",
+                  coordinates: [coords[i], coords[i + 1]],
+                },
+              },
+            });
+          }
+
+          if (setPolygonEdgesMap) {
+            setPolygonEdgesMap((prev: Record<string, any>) => ({
+              ...prev,
+              [newFeatureId]: edges,
+            }));
+          }
+        }
+
+        onGridToggle?.(false);
+        setSelectedPolygonId(newFeatureId as string);
+
+        setTimeout(() => {
+          try {
+            draw.changeMode("direct_select", {
+              featureId: newFeatureId,
+            });
+          } catch (err) {
+            console.warn("Error entering direct_select mode:", err);
+          }
+        }, 10);
+
+        try {
+          const currentSnapshot = draw.getAll();
+          undoStackRef.current.push(
+            JSON.parse(JSON.stringify(currentSnapshot))
+          );
+          redoStackRef.current = [];
+        } catch (err) {
+          console.warn("Error saving snapshot:", err);
+        }
+
+        requestAnimationFrame(() => {
+          updateMeasurements();
+          setTimeout(() => {
+            updateMeasurements();
+          }, 75);
+        });
+        return newFeatureId as string;
+      };
+
       // ✅ Draw Create Event (track polygon edges + handle split)
       mapInstance.on("draw.create", (e: any) => {
         const feature = e.features[0];
@@ -400,43 +524,15 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         // ✅ Handle creating a "single-line polygon" from a line
         if (isDrawingLine && feature.geometry.type === "LineString") {
           setIsDrawingLine(false); // Reset the mode
-          const draw = drawRef.current;
-          if (!draw) return;
-
-          const lineCoords = feature.geometry.coordinates;
-          if (lineCoords.length >= 2) {
-            // Create a polygon with 3 points: start, end, start
-            const polygonCoords = [[lineCoords[0], lineCoords[1], lineCoords[0]]];
-
-            // Create a new polygon feature
-            const polygonFeature = {
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "Polygon",
-                coordinates: polygonCoords,
-              },
-            };
-
-            // Delete the temporary line and add the new polygon
-            draw.delete([feature.id as string]);
-            const newFeatureIds = draw.add(polygonFeature);
-            const newFeatureId = newFeatureIds[0];
-
-            // After creating, switch to direct_select to show vertices
-            if (newFeatureId) {
-              setTimeout(() => {
-                draw.changeMode("direct_select", {
-                  featureId: newFeatureId,
-                });
-              }, 10);
-            }
-
-            // Manually trigger update and save snapshot
-            const currentSnapshot = draw.getAll();
-            undoStackRef.current.push(JSON.parse(JSON.stringify(currentSnapshot)));
-            redoStackRef.current = [];
-            updateMeasurements();
+          const newFeatureId = createSingleLinePolygon(
+            feature.geometry.coordinates as [number, number][],
+            feature.properties || {},
+            feature.id as string
+          );
+          if (!newFeatureId && feature.id) {
+            try {
+              drawRef.current?.delete([feature.id as string]);
+            } catch {}
           }
           return; // Stop further processing for this line
         }
@@ -542,6 +638,30 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         // This ensures the next drawn point connects properly with previous polygons
 
         const coords = feature.geometry.coordinates[0];
+
+        const uniquePoints: [number, number][] = [];
+        coords.forEach((coord: [number, number], idx: number) => {
+          if (idx === coords.length - 1) return;
+          const [lng, lat] = coord;
+          const exists = uniquePoints.some(
+            ([ulng, ulat]) => ulng === lng && ulat === lat
+          );
+          if (!exists) {
+            uniquePoints.push([lng, lat]);
+          }
+        });
+
+        if (uniquePoints.length <= 2) {
+          const newSingleLineId = createSingleLinePolygon(
+            coords as [number, number][],
+            feature.properties || {},
+            feature.id as string
+          );
+          if (newSingleLineId) {
+            return;
+          }
+        }
+
         const edges: { id: string; coords: [number, number][] }[] = [];
 
         for (let i = 0; i < coords.length - 1; i++) {
@@ -561,6 +681,13 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
                 coordinates: [coords[i], coords[i + 1]],
               },
             },
+          });
+          mapInstance.addLayer({
+            id,
+            type: "line",
+            source: id,
+            layout: { "line-cap": "round", "line-join": "round" },
+            paint: { "line-width": 0.0001, "line-opacity": 0 },
           });
         }
 
@@ -968,14 +1095,6 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
       }
     };
 
-    // ✅ Start drawing with label selected
-    const startDrawingWithLabel = (label: { name: string; color: string }) => {
-      setSelectedLabelName(label.name);
-      setIsDrawMode(true);
-      onGridToggle?.(true);
-      startDrawingFn();
-    };
-
     // ====================== HELPERS =========================
     const confirmLocation = (coords: [number, number]) => {
       if (!mapRef.current) return;
@@ -1015,10 +1134,12 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
     const toggleLabels = () => {
       setLabelsVisible((prev) => {
         const newState = !prev;
-        // Trigger measurement update to show/hide labels
-        setTimeout(() => {
-          updateMeasurements();
-        }, 50);
+        if (!newState) {
+          clearLabels();
+        }
+        requestAnimationFrame(() => {
+          updateMeasurementsRef.current();
+        });
         return newState;
       });
     };
@@ -1139,6 +1260,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
         // Perform the actual deletion
         try {
           draw.delete([polygonToDelete]);
+
           setSelectedPolygonId(null);
 
           // Force a map repaint to ensure clean state
@@ -1171,16 +1293,14 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
     useImperativeHandle(ref, () => ({
       confirmLocation,
       startDrawing,
-      startDrawingLine,
-      startDrawingWithLabel,
+      startSingleDrawing,
+      handleLabelSelect,
       deleteAll,
       deleteSelected,
       setDrawMode,
       searchAddress,
       undo,
       redo,
-      startSplitMode,
-      applyOverhang,
       toggleLabels,
       getMapCanvasDataURL,
       rotateLeft,
@@ -1201,7 +1321,7 @@ const MapContainer = forwardRef<MapSectionHandle, MapContainerProps>(
           <LeftSidebar
             onSelectLabel={handleLabelSelect}
             onToggleLabels={toggleLabels}
-            onDrawLine={startDrawingLine}
+            onDrawLine={startSingleDrawing}
             labelsVisible={labelsVisible}
           />
         )}

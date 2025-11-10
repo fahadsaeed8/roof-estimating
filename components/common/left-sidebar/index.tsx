@@ -20,10 +20,7 @@ interface RoofLabel {
 }
 
 interface LeftSidebarProps {
-  onSelectLabel?: (label: RoofLabel) => void; // ✅ parent ko label bhejne ke liye
-  onToggleLabels?: () => void;
-  onDrawLine?: () => void;
-  labelsVisible?: boolean;
+  onSelectLabel?: (label: RoofLabel) => void;
 }
 
 const roofLabels: RoofLabel[] = [
@@ -37,10 +34,7 @@ const roofLabels: RoofLabel[] = [
   { name: "Transition", color: "#2c3e50", icon: <Triangle className="" /> },
 ];
 
-const LeftSidebar: React.FC<LeftSidebarProps> = ({
-  onSelectLabel,
-  onDrawLine,
-}) => {
+const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSelectLabel }) => {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
   const handleSelect = (label: RoofLabel) => {
@@ -53,16 +47,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <h3 className="text-white text-sm text-center font-semibold mb-1">
         Labels
       </h3>
-
-      {/* Draw Line Button */}
-      <button
-        onClick={onDrawLine}
-        className="flex flex-col items-center transition-all duration-200 opacity-90"
-        title="Draw Line"
-      >
-        <LineChart size={24} color="white" />
-        <span className="text-[10px] mt-1 text-gray-300">Line</span>
-      </button>
 
       {roofLabels.map((label) => {
         const isSelected = selectedLabel === label.name;

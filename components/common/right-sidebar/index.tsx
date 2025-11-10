@@ -7,12 +7,14 @@ import {
   Pencil,
   Eye,
   EyeOff,
+  Minus,
 } from "lucide-react";
 
 interface RightSidebarProps {
   onStartDrawing?: () => void;
+  onStartSingleDrawing?: () => void;
   onSetDrawMode?: () => void;
-  onDeleteAll?: () => void;
+  onDeleteAll?: () => void; 
   onDeleteSelected?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
@@ -25,6 +27,7 @@ interface RightSidebarProps {
 
 export default function RightSidebar({
   onStartDrawing,
+  onStartSingleDrawing,
   onSetDrawMode,
   onDeleteAll,
   onDeleteSelected,
@@ -39,6 +42,11 @@ export default function RightSidebar({
   // ✅ Polygon draw start
   const handleDrawPolygon = () => {
     onStartDrawing?.();
+  };
+
+  // ✅ Line draw start
+  const handleSingleDrawLine = () => {
+    onStartSingleDrawing?.();
   };
 
   const handleStreetView = () => onToggleStreetView?.();
@@ -67,6 +75,17 @@ export default function RightSidebar({
         <Pencil className="w-5 h-5" />
         <span className="text-xs">Draw</span>
       </button>
+
+      {/* Draw Line */}
+      <button
+        onClick={handleSingleDrawLine}
+        className="flex flex-col items-center text-white hover:text-blue-400 transition-colors"
+        title="Draw Line"
+      >
+        <Minus className="w-5 h-5" />
+        <span className="text-xs">Line</span>
+      </button>
+
 
       {/* Delete */}
       <button

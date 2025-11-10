@@ -53,7 +53,7 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
 
     // ✅ Edge click + label assignment (polygon-aware)
     useEffect(() => {
-      const map = mapRef.current?.getMap?.();
+      const map = mapRef.current?.getMap?.(); // This whole useEffect seems to be for a different feature (coloring edges on click) and might be conflicting. The new logic will handle coloring the entire selected polygon.
       if (!map) return;
 
       const handleEdgeClick = (
@@ -595,12 +595,12 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
     // ✅ Expose methods to parent
     useImperativeHandle(ref, () => ({
       startDrawing: () => mapRef.current?.startDrawing(),
+      startSingleDrawing: () => mapRef.current?.startSingleDrawing(),
+      handleLabelSelect: (label: { name: string; color: string }) => mapRef.current?.handleLabelSelect?.(label),
       deleteAll: () => mapRef.current?.deleteAll(),
       setDrawMode: (mode: string) => mapRef.current?.setDrawMode(mode),
       undo: () => mapRef.current?.undo(),
       redo: () => mapRef.current?.redo(),
-      startSplitMode: () => mapRef.current?.startSplitMode(),
-      applyOverhang: () => mapRef.current?.applyOverhang(),
       toggleLabels: () => mapRef.current?.toggleLabels(),
       confirmLocation: (coords: [number, number]) =>
         mapRef.current?.confirmLocation(coords),
@@ -612,6 +612,8 @@ const RoofMapSection = forwardRef<MapSectionHandle, RoofMapSectionProps>(
       toggleStreetView: () => mapRef.current?.toggleStreetView(),
       deleteSelected: () => mapRef.current?.deleteSelected(),
       downloadPDF,
+
+      
     }));
 
     return (
